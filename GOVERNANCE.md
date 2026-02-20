@@ -14,7 +14,7 @@ The founding root of the Honor Chain. The Prime Authority:
 - Acts as tiebreaker on disputed governance decisions
 - Cannot be banned through the normal process
 
-**Current Prime Authority:** Lonnie VanZandt (`npub1z4j4sv8pe6utdkxxxclkzkpt58awpu50ar4dxt7p9gaxn9du4xzq64te4v`)
+**Current Prime Authority:** Lonnie VanZandt (`npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf`)
 
 ### Authority
 

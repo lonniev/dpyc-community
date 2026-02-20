@@ -4,6 +4,8 @@
 
 **Membership registry and governance for the Don't-Pester-Your-Customer Tollbooth community.**
 
+**[Read the DPYC Creed](https://github.com/lonniev/dpyc-community/blob/main/CREED.md)** — our founding declaration of values.
+
 ## What is DPYC?
 
 **Don't Pester Your Customer** — a philosophy for API monetization using pre-funded Bitcoin Lightning balances instead of KYC, stablecoins, or per-request payment negotiation.

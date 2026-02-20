@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lonniev/dpyc-community/schemas/members.schema.json",
+  "title": "DPYC Honor Chain Membership Registry",
+  "description": "Schema for the DPYC community membership registry (members.json).",
+  "type": "object",
+  "required": ["version", "updated_at", "members"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/member"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "member": {
+      "type": "object",
+      "required": ["npub", "role", "status", "member_since"],
+      "properties": {
+        "npub": {
+          "type": "string",
+          "pattern": "^npub1[a-z0-9]{58}$",
+          "description": "Nostr public key in bech32 format."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["prime_authority", "authority", "operator"],
+          "description": "Member's role in the Honor Chain."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "banned", "suspended"],
+          "description": "Current standing in the community."
+        },
+        "member_since": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the member joined (YYYY-MM-DD)."
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name or service identifier."
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/service"
+          },
+          "description": "MCP services operated by this member."
+        },
+        "upstream_authority_npub": {
+          "type": ["string", "null"],
+          "description": "npub of the member's upstream Authority. Null for prime_authority."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes about the member."
+        },
+        "ban_reason": {
+          "type": "string",
+          "description": "Reason for ban — link to GitHub Issue."
+        },
+        "banned_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the member was banned (YYYY-MM-DD)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "service": {
+      "type": "object",
+      "required": ["name", "url", "description"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

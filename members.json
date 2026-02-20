@@ -1,0 +1,33 @@
+{
+  "$schema": "./schemas/members.schema.json",
+  "version": "1.0.0",
+  "updated_at": "2026-02-20T00:00:00Z",
+  "members": [
+    {
+      "npub": "npub1z4j4sv8pe6utdkxxxclkzkpt58awpu50ar4dxt7p9gaxn9du4xzq64te4v",
+      "role": "prime_authority",
+      "status": "active",
+      "member_since": "2026-02-20",
+      "display_name": "Lonnie VanZandt",
+      "services": [],
+      "upstream_authority_npub": null,
+      "notes": "Founding Prime Authority of the DPYC Honor Chain"
+    },
+    {
+      "npub": "npub1h8t6wyvfvuccut2yt67n4aag699lt76x0lek5c8ygl5khnw02p3q7nvy90",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-02-20",
+      "display_name": "thebrain-mcp",
+      "services": [
+        {
+          "name": "thebrain-mcp",
+          "url": "https://personal-brain.fastmcp.app/mcp",
+          "description": "TheBrain knowledge graph access via MCP"
+        }
+      ],
+      "upstream_authority_npub": "npub1z4j4sv8pe6utdkxxxclkzkpt58awpu50ar4dxt7p9gaxn9du4xzq64te4v",
+      "notes": "First Tollbooth Operator — TheBrain MCP Server"
+    }
+  ]
+}

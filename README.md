@@ -1,5 +1,7 @@
 # DPYC Honor Chain
 
+> **This registry:** [`github.com/lonniev/dpyc-community`](https://github.com/lonniev/dpyc-community)
+
 **Membership registry and governance for the Don't-Pester-Your-Customer Tollbooth community.**
 
 ## What is DPYC?
@@ -22,7 +24,7 @@ The DPYC Honor Chain is a voluntary community of Tollbooth Operators and Authori
 
 **Identity** is a [Nostr](https://nostr.com/) keypair. Your `npub` is your member ID everywhere in the ecosystem.
 
-**The registry** is [`members.json`](members.json) in this repository. It is the source of truth for member standing. When a Tollbooth Authority certifies a purchase, it checks this registry to verify the operator's `npub` is active.
+**The registry** is [`members.json`](https://github.com/lonniev/dpyc-community/blob/main/members.json) in this repository. It is the source of truth for member standing. When a Tollbooth Authority certifies a purchase, it checks this registry to verify the operator's `npub` is active.
 
 **Governance** uses GitHub's native tools — PRs for membership changes, Issues for ban proposals, branch protection for integrity. Git's Merkle tree provides a tamper-evident audit trail.
 
@@ -30,7 +32,7 @@ The DPYC Honor Chain is a voluntary community of Tollbooth Operators and Authori
 
 ```
 Prime Authority (Lonnie VanZandt)
-  npub1z4j4sv8pe6utdkxxxclkzkpt58awpu50ar4dxt7p9gaxn9du4xzq64te4v
+  npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf
   |
   +-- thebrain-mcp (Operator)
   |     npub1h8t6wyvfvuccut2yt67n4aag699lt76x0lek5c8ygl5khnw02p3q7nvy90
@@ -55,7 +57,7 @@ Value flows from **actual API consumption at the edges**, not from recruitment. 
 
 2. **Find a sponsoring Authority** — an existing Authority in the Honor Chain who will vouch for you.
 
-3. **Your Authority submits a PR** adding your `npub` to [`members.json`](members.json) with your role, services, and their npub as your `upstream_authority_npub`.
+3. **Your Authority submits a PR** adding your `npub` to [`members.json`](https://github.com/lonniev/dpyc-community/blob/main/members.json) with your role, services, and their npub as your `upstream_authority_npub`.
 
 4. **PR reviewed and merged** — the CI workflow validates the registry, and an Authority with repo access approves.
 
@@ -67,12 +69,14 @@ Value flows from **actual API consumption at the edges**, not from recruitment. 
 4. **Banned members** retain their record (transparency) but can no longer transact through the Honor Chain
 5. **Appeals** via new Issue referencing the original ban — community review, restore PR if upheld
 
-See [GOVERNANCE.md](GOVERNANCE.md) for the full governance process.
+See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNANCE.md) for the full governance process.
 
 ## Related Repositories
 
 | Repository | Purpose |
 |-----------|---------|
+| **[dpyc-community](https://github.com/lonniev/dpyc-community)** | **This repo — Honor Chain registry and governance** |
+| [dpyc-oracle](https://github.com/lonniev/dpyc-oracle) | Free community concierge MCP — membership, governance, onboarding |
 | [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) | Operator-side Python library for MCP monetization |
 | [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and tax collection |
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | First Tollbooth Operator — TheBrain MCP Server |
@@ -91,4 +95,4 @@ See [GOVERNANCE.md](GOVERNANCE.md) for the full governance process.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE) for details.
+Apache License 2.0 — see [LICENSE](https://github.com/lonniev/dpyc-community/blob/main/LICENSE) for details.

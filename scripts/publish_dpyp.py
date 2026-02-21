@@ -17,7 +17,11 @@ import time
 
 from pynostr.event import Event
 from pynostr.key import PrivateKey
-from pynostr.relay_manager import RelayManager
+
+try:
+    from websocket import create_connection  # type: ignore[import-untyped]
+except ImportError:
+    create_connection = None
 
 PROTOCOL_ID = "dpyp-01-base-certificate"
 RELAYS = ["wss://relay.damus.io", "wss://nos.lol"]
@@ -32,7 +36,27 @@ Status: Active.\
 """
 
 
+def _publish_to_relay(relay_url: str, message: str) -> str:
+    """Send a NIP-01 EVENT message to a single relay and return the response."""
+    sslopt = {"cert_reqs": ssl.CERT_NONE}
+    ws = create_connection(relay_url, timeout=10, sslopt=sslopt)
+    try:
+        ws.send(message)
+        resp = ws.recv()
+        return resp
+    finally:
+        ws.close()
+
+
 def main() -> None:
+    if create_connection is None:
+        print(
+            "Error: websocket-client is required. Install with:\n"
+            "  pip install websocket-client",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     nsec = os.environ.get("PRIME_AUTHORITY_NSEC", "").strip()
     if not nsec:
         print("Error: Set PRIME_AUTHORITY_NSEC environment variable.", file=sys.stderr)
@@ -50,10 +74,10 @@ def main() -> None:
             ["repo", "https://github.com/lonniev/dpyc-community"],
             ["spec", f"https://github.com/lonniev/dpyc-community/blob/main/protocols/{PROTOCOL_ID}.md"],
         ],
-        pub_key=pk.public_key.hex(),
+        pubkey=pk.public_key.hex(),
         created_at=int(time.time()),
     )
-    pk.sign_event(event)
+    event.sign(pk.hex())
 
     print(f"Event ID: {event.id}")
     print(f"Author:   {pk.public_key.bech32()}")
@@ -61,21 +85,14 @@ def main() -> None:
     print(f"d-tag:    {PROTOCOL_ID}")
     print()
 
-    relay_manager = RelayManager()
+    message = event.to_message()
     for relay_url in RELAYS:
-        relay_manager.add_relay(relay_url)
+        try:
+            resp = _publish_to_relay(relay_url, message)
+            print(f"  {relay_url} -> {resp}")
+        except Exception as e:
+            print(f"  {relay_url} -> ERROR: {e}")
 
-    relay_manager.open_connections({"cert_reqs": ssl.CERT_NONE})
-    time.sleep(1.5)  # allow connections to establish
-
-    relay_manager.publish_event(event)
-    time.sleep(2)  # allow propagation
-
-    print("Published to relays:")
-    for relay_url in RELAYS:
-        print(f"  {relay_url}")
-
-    relay_manager.close_connections()
     print("\nDone. Verify with:")
     print(f'  {{"kinds": [30078], "#d": ["{PROTOCOL_ID}"]}}')
 

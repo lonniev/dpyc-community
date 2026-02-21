@@ -12,6 +12,23 @@
 
 Customers fund their balance once with a Lightning payment, then use API services without interruption. No credit cards. No identity verification. No payment popups mid-session. Just sats in, service out.
 
+## Why Tollbooth?
+
+Tollbooth monetizes **complete business information** — full MCP tool responses — not raw REST data fragments. A single Tollbooth-metered tool call delivers a ready-to-use answer that would otherwise require assembling dozens of individual API calls.
+
+**Fewer round-trips, no interruptions.** Pre-funded Lightning balances mean each tool call is a single HTTP request. Protocols like [x402](https://github.com/AIM-Intelligence/x402) and [L402](https://docs.lightning.engineering/the-lightning-network/l402) take a different approach — gating individual REST endpoints with per-request payment challenges (402 → pay invoice → retry). That pattern works well for simple resource access, but adds 6+ HTTP round-trips per request and interrupts agent workflows with payment redirects.
+
+**For AI agents:** your tool chain will never be interrupted by payment ceremonies. Fund once, call tools, get answers.
+
+| | Tollbooth (MCP) | x402 / L402 (REST) |
+|---|---|---|
+| **What's metered** | Complete tool responses (business information) | Individual REST endpoints (data fragments) |
+| **Round-trips per call** | 1 (pre-funded balance) | 6+ (challenge → pay → retry) |
+| **Agent experience** | Seamless — no mid-session interruptions | Payment redirects between calls |
+| **Identity** | Nostr npub (no KYC) | Varies by implementation |
+
+x402 and L402 are respected approaches solving real problems in HTTP-native monetization. Tollbooth operates at a different layer — the MCP tool layer — where the unit of value is a complete answer, not a data fragment.
+
 ## What is the Honor Chain?
 
 The DPYC Honor Chain is a voluntary community of Tollbooth Operators and Authorities, organized as a **Network Society** in the [Balaji Srinivasan tradition](https://thenetworkstate.com/). Members agree to:

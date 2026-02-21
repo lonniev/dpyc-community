@@ -1,0 +1,29 @@
+{
+  "components": {
+    "tollbooth-dpyc": {
+      "current": "0.1.11",
+      "minimum": "0.1.7",
+      "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
+    },
+    "tollbooth-authority": {
+      "current": "0.1.1",
+      "minimum": "0.1.0",
+      "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
+    },
+    "dpyc-oracle": {
+      "current": "0.1.0",
+      "minimum": "0.1.0",
+      "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
+    },
+    "thebrain-mcp": {
+      "current": "1.0.0",
+      "minimum": "1.0.0",
+      "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
+    }
+  },
+  "protocols": [
+    "dpyp-01-base-certificate"
+  ],
+  "last_updated": "2026-02-21",
+  "advisory": "Authority operators should redeploy for npub-primary identity enforcement and vault consolidation. See ADVISORY.md for details."
+}

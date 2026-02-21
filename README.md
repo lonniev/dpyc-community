@@ -37,7 +37,7 @@ Prime Authority (Lonnie VanZandt)
   npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf
   |
   +-- thebrain-mcp (Operator)
-  |     npub1h8t6wyvfvuccut2yt67n4aag699lt76x0lek5c8ygl5khnw02p3q7nvy90
+  |     npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h
   |
   +-- Authority A (registered DPYC member)
   |     +-- Operator A1

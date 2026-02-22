@@ -4,6 +4,31 @@
 
 ## Current Advisories
 
+### Version Diagnostic Endpoints Across All Services (2026-02-22)
+
+**Affects:** All DPYC ecosystem services
+
+All three MCP services now expose a free `service_status()` tool that reports software versions and runtime info. This enables programmatic version agreement verification across the ecosystem without incurring charges.
+
+- **dpyc-oracle** 0.1.1: reports dpyc_oracle, python, fastmcp, httpx, nostr_sdk versions
+- **tollbooth-authority** 0.1.1: reports tollbooth_authority, tollbooth_dpyc, fastmcp, python versions
+- **thebrain-mcp** (existing): reports versions via `btcpay_status`
+
+**No action required** — the new tool is automatically available after redeployment.
+
+### dpyc-oracle 0.1.1: Nostr Signature-Based Citizenship Onboarding (2026-02-22)
+
+**Affects:** New community members
+
+The Oracle now supports self-service citizenship onboarding via Nostr Schnorr signature verification. Two new tools:
+
+- `request_citizenship(npub, display_name)` — issues a challenge nonce
+- `confirm_citizenship(npub, challenge_id, signed_event_json)` — verifies the signature and commits membership directly to `main`
+
+Citizens are admitted instantly after proving npub ownership. No PR review delay. The `citizen` role has been added to the registry schema and governance documents.
+
+**Action required:** None for existing members. New citizens can onboard via any Claude conversation connected to the Oracle.
+
 ### tollbooth-dpyc 0.1.15: Soft-Delete Vault Operations (2026-02-22)
 
 **Affects:** All operators using TheBrainVault

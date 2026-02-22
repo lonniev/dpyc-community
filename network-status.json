@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.16",
+      "current": "0.1.17",
       "minimum": "0.1.16",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -25,5 +25,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-02-22",
-  "advisory": "tollbooth-dpyc 0.1.16 introduces tranche-based credit expiration. Credits now have configurable TTLs (default 7 days for operators, never for Authorities). All downstream services updated. See ADVISORY.md for details."
+  "advisory": "tollbooth-dpyc 0.1.17 adds account_statement_tool for customer-facing purchase history and usage reports. Minimum remains 0.1.16 (tranche-based credit expiration). See ADVISORY.md for details."
 }

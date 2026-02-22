@@ -11,8 +11,8 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
-      "current": "0.1.0",
-      "minimum": "0.1.0",
+      "current": "0.1.1",
+      "minimum": "0.1.1",
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
@@ -25,5 +25,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-02-22",
-  "advisory": "tollbooth-dpyc 0.1.15 adds soft-delete vault operations to avoid TheBrain Azure cache staleness. Minimum bumped to 0.1.14 (child-based vault discovery). See ADVISORY.md for details."
+  "advisory": "dpyc-oracle 0.1.1 adds Nostr signature-based citizenship onboarding and service_status diagnostics. All three services now expose version metadata via service_status(). See ADVISORY.md for details."
 }

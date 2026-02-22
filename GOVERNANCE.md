@@ -34,14 +34,33 @@ A leaf node that runs one or more MCP services monetized through the Tollbooth:
 - Serves end users via MCP tools
 - Must maintain active standing to have purchases certified
 
+### Citizen
+
+A community member who has proven ownership of a Nostr keypair but does not operate services or certify purchases:
+
+- Has no Tollbooth obligations or privileges
+- Identified by their `npub` — the same Nostr keypair used by all tiers
+- May participate in governance (ban discussions, appeals)
+- May upgrade to Operator or Authority by finding a sponsoring Authority and submitting a role-change PR
+- Sponsored by the Prime Authority by default (automated onboarding via the DPYC Oracle)
+
+Citizens are admitted through a Nostr signature challenge: the applicant signs a nonce with their private key, proving they control the `npub` without revealing the `nsec`. The Oracle verifies the signature and commits the membership directly — no waiting for PR review.
+
 ## Adding Members
 
-### Process
+### Self-Service Citizen Onboarding
+
+1. **Applicant** generates a Nostr keypair (e.g., `nak key generate`).
+2. **Applicant** calls the DPYC Oracle's `request_citizenship(npub, display_name)` tool, which returns a challenge nonce.
+3. **Applicant** signs the challenge message `DPYC-CITIZENSHIP:<nonce>` with their Nostr private key and calls `confirm_citizenship(npub, challenge_id, signed_event_json)`.
+4. **Oracle** verifies the Schnorr signature, confirms the signing pubkey matches the claimed npub, and commits the applicant directly to `members.json` as a Citizen with `upstream_authority_npub` set to the Prime Authority. Membership is effective immediately.
+
+### Sponsored Member Onboarding
 
 1. **Applicant** generates a Nostr keypair and contacts a sponsoring Authority.
 2. **Sponsoring Authority** submits a PR adding the applicant to `members.json` with:
    - `npub` — the applicant's Nostr public key
-   - `role` — `operator` or `authority`
+   - `role` — `operator`, `authority`, or `citizen`
    - `status` — `active`
    - `member_since` — the current date
    - `upstream_authority_npub` — the sponsoring Authority's npub
@@ -53,7 +72,7 @@ A leaf node that runs one or more MCP services monetized through the Tollbooth:
 
 - The **Prime Authority** can approve any membership PR.
 - **Authorities with repo access** can approve PRs for members in their downstream chain.
-- Self-registration is not allowed — every new member needs a sponsor.
+- Self-registration is not allowed — every new member needs a sponsor (Citizens are sponsored automatically by the Prime Authority via the Oracle).
 
 ## Ban Proposals
 

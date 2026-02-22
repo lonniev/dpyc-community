@@ -37,7 +37,7 @@
         },
         "role": {
           "type": "string",
-          "enum": ["prime_authority", "authority", "operator"],
+          "enum": ["prime_authority", "authority", "operator", "citizen"],
           "description": "Member's role in the Honor Chain."
         },
         "status": {

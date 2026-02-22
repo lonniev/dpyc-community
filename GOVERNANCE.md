@@ -44,7 +44,7 @@ A community member who has proven ownership of a Nostr keypair but does not oper
 - May upgrade to Operator or Authority by finding a sponsoring Authority and submitting a role-change PR
 - Sponsored by the Prime Authority by default (automated onboarding via the DPYC Oracle)
 
-Citizens are admitted through a Nostr signature challenge: the applicant signs a nonce with their private key, proving they control the `npub` without revealing the `nsec`. The Oracle verifies the signature and opens a membership PR automatically.
+Citizens are admitted through a Nostr signature challenge: the applicant signs a nonce with their private key, proving they control the `npub` without revealing the `nsec`. The Oracle verifies the signature and commits the membership directly — no waiting for PR review.
 
 ## Adding Members
 
@@ -53,8 +53,7 @@ Citizens are admitted through a Nostr signature challenge: the applicant signs a
 1. **Applicant** generates a Nostr keypair (e.g., `nak key generate`).
 2. **Applicant** calls the DPYC Oracle's `request_citizenship(npub, display_name)` tool, which returns a challenge nonce.
 3. **Applicant** signs the challenge message `DPYC-CITIZENSHIP:<nonce>` with their Nostr private key and calls `confirm_citizenship(npub, challenge_id, signed_event_json)`.
-4. **Oracle** verifies the Schnorr signature, confirms the signing pubkey matches the claimed npub, and opens a PR adding the applicant to `members.json` as a Citizen with `upstream_authority_npub` set to the Prime Authority.
-5. **An Authority with repo access** reviews and merges the PR.
+4. **Oracle** verifies the Schnorr signature, confirms the signing pubkey matches the claimed npub, and commits the applicant directly to `members.json` as a Citizen with `upstream_authority_npub` set to the Prime Authority. Membership is effective immediately.
 
 ### Sponsored Member Onboarding
 

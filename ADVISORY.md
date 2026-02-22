@@ -4,6 +4,26 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.16: Tranche-Based Credit Expiration (2026-02-22)
+
+**Affects:** All operators and Authorities
+
+Credits are now stored as ordered tranches with optional TTL-based expiration. Key changes:
+
+- **FIFO consumption**: debits draw from the oldest non-expired tranche first
+- **Per-tier TTL**: tier config JSON supports `credit_ttl_seconds` per tier (default 7 days for operators)
+- **Authority balances never expire**: Authorities pass `default_credit_ttl_seconds=None`
+- **Compensating tranches for rollback**: rollbacks create a new never-expiring tranche instead of modifying old ones
+- **Schema v4**: no backward compatibility with v1-v3 ledgers (fresh ledger on old schema)
+- **No re-seeding**: users who let credits expire must purchase new ones
+
+**Minimum version bumped to 0.1.16** — tranche-based `UserLedger` is now required. `balance_api_sats` is a computed property (sum of non-expired tranches), not a stored field.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.16
+2. Add `credit_ttl_seconds` to your config if you want non-default expiration (default: 604800 = 7 days; `None` = never)
+3. Redeploy your service
+
 ### Version Diagnostic Endpoints Across All Services (2026-02-22)
 
 **Affects:** All DPYC ecosystem services

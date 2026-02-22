@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.15",
-      "minimum": "0.1.14",
+      "current": "0.1.16",
+      "minimum": "0.1.16",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -25,5 +25,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-02-22",
-  "advisory": "dpyc-oracle 0.1.1 adds Nostr signature-based citizenship onboarding and service_status diagnostics. All three services now expose version metadata via service_status(). See ADVISORY.md for details."
+  "advisory": "tollbooth-dpyc 0.1.16 introduces tranche-based credit expiration. Credits now have configurable TTLs (default 7 days for operators, never for Authorities). All downstream services updated. See ADVISORY.md for details."
 }

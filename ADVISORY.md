@@ -1,8 +1,22 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-21
+> Last updated: 2026-02-22
 
 ## Current Advisories
+
+### tollbooth-dpyc 0.1.15: Soft-Delete Vault Operations (2026-02-22)
+
+**Affects:** All operators using TheBrainVault
+
+`TheBrainVault` now provides `soft_delete_member()` which avoids TheBrain's slow `DELETE /thoughts` endpoint that leaves ghost entries in the Azure-cached graph for hours. Soft-deleted thoughts are unlinked, renamed to `DELETED <id>`, annotated with a reason, and optionally moved to a Trash Can thought.
+
+Also adds `_update_thought`, `_delete_link`, and `_create_link` API helpers. Constructor accepts optional `trash_thought_id` for trash-can routing.
+
+**Minimum version bumped to 0.1.14** — child-based vault discovery is now required (link-label discovery removed).
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.15
+2. Redeploy your service
 
 ### Authority Operators: Redeploy for npub-Primary Identity (2026-02-21)
 

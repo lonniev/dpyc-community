@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.11",
-      "minimum": "0.1.7",
+      "current": "0.1.15",
+      "minimum": "0.1.14",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -24,6 +24,6 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-02-21",
-  "advisory": "Authority operators should redeploy for npub-primary identity enforcement and vault consolidation. See ADVISORY.md for details."
+  "last_updated": "2026-02-22",
+  "advisory": "tollbooth-dpyc 0.1.15 adds soft-delete vault operations to avoid TheBrain Azure cache staleness. Minimum bumped to 0.1.14 (child-based vault discovery). See ADVISORY.md for details."
 }

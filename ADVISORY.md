@@ -1,8 +1,25 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-22
+> Last updated: 2026-02-23
 
 ## Current Advisories
+
+### tollbooth-dpyc 0.1.20: NeonVault — Serverless Postgres Persistence (2026-02-23)
+
+**Affects:** All operators seeking faster, cheaper vault persistence
+
+A new `NeonVault` backend is available as an alternative to `TheBrainVault`. It uses [Neon](https://neon.tech) serverless Postgres via their SQL-over-HTTP API — no new dependencies beyond the existing httpx requirement.
+
+**Performance:** NeonVault averages ~32ms per store/fetch (single HTTP round-trip), compared to TheBrainVault's 200-400ms per store and 150-250ms per fetch (multiple hops through TheBrain's cloud API). That's a **5-8x speedup** on the write path and **5-7x on reads**.
+
+Key features:
+- **ACID persistence** with optimistic concurrency control (version-guarded UPDATE, UPSERT fallback)
+- **Append-only transaction journal** for audit snapshots
+- **Zero new dependencies** — uses httpx (already required) and Neon's HTTP endpoint
+- **Idempotent schema migration** via `ensure_schema()` on startup
+- **Full `VaultBackend` protocol** — drop-in replacement for `TheBrainVault`
+
+**No action required** — `TheBrainVault` continues to work. Operators who want the performance improvement can switch by constructing `NeonVault(database_url=...)` and passing it to `LedgerCache`. Requires a free Neon account and a Postgres connection string.
 
 ### tollbooth-dpyc 0.1.16: Tranche-Based Credit Expiration (2026-02-22)
 

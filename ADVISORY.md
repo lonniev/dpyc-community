@@ -4,6 +4,33 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.22: Serverless-Aware Per-Entry Flush Strategy (2026-02-23)
+
+**Affects:** All operators running on serverless platforms (FastMCP Cloud)
+
+The `LedgerCache` flush strategy has been upgraded from a global monotonic-clock timer to **per-entry flush triggers**. In serverless environments where there is no background process between requests, the old global `_maybe_flush()` timer could not advance, risking dirty entries being lost on process eviction.
+
+New flush triggers (evaluated per cache entry on `get()`):
+- **Count-based**: flush after N dirty marks (configurable `flush_batch_size`, default 10)
+- **Staleness-based**: flush after T seconds since last flush (configurable `flush_staleness_secs`, default 120)
+
+New convenience methods:
+- **`debit(user_id, tool_name, cost)`** — hydrate + flush-due check + debit + mark_dirty in one call
+- **`write_through_credit(user_id)`** — mark dirty + immediate flush for credit settlements
+
+**Hot path preserved**: 9 out of 10 debits are pure in-memory dict lookup + integer subtraction. The 10th amortizes one vault write. Max loss on serverless eviction = `(N-1) × max_cost_per_call` (90 api_sats at defaults) — operator absorbs the loss, patron never loses credits.
+
+**Backward compatible** — no operator server changes required. Existing `get()` callers benefit transparently. New config fields (`flush_batch_size`, `flush_staleness_secs`) added to `TollboothConfig` with sane defaults.
+
+**Downstream pins updated:**
+- thebrain-mcp PR #89 (merged)
+- tollbooth-authority PR #30 (merged)
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.22
+2. Optionally tune `flush_batch_size` and `flush_staleness_secs` in your `TollboothConfig`
+3. Redeploy your service
+
 ### tollbooth-dpyc 0.1.20: NeonVault — Serverless Postgres Persistence (2026-02-23)
 
 **Affects:** All operators seeking faster, cheaper vault persistence

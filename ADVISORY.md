@@ -4,6 +4,46 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.23: OpenTimestamps Bitcoin Anchoring (2026-02-23)
+
+**Affects:** All operators seeking Bitcoin-grade ledger immutability
+
+**Fourth trust layer**: periodically anchor a Merkle root of all ledger balances to Bitcoin via OpenTimestamps. Patrons can independently verify their balance was included in a Bitcoin-committed hash.
+
+New modules in tollbooth-dpyc:
+- `ots.py`: `MerkleTree` (SHA-256, deterministic), `InclusionProof` (verifiable), `OTSCalendarClient` (async multi-calendar)
+- `tools/anchors.py`: `anchor_ledger_tool`, `get_anchor_proof_tool`, `list_anchors_tool`
+
+Extended:
+- `NeonVault`: new `anchors` table, `fetch_all_balances`, anchor CRUD methods
+- `TollboothConfig`: `ots_enabled`, `ots_calendars` fields
+
+New MCP tools in thebrain-mcp:
+- `anchor_ledger` — operator tool, builds Merkle tree + submits to OTS calendars
+- `get_anchor_proof` — patron tool (1 sat), generates verifiable inclusion proof
+- `list_anchors` — free informational tool, lists recent anchor records
+
+**Zero new dependencies** — uses stdlib `hashlib` for Merkle tree, existing `httpx` for OTS calendar HTTP calls. Reserved `ots = []` extras group for future use.
+
+**Full trust stack now complete:**
+
+| Layer | Purpose | Latency |
+|---|---|---|
+| LedgerCache | Real-time balance authority | Zero |
+| NeonVault | ACID Postgres persistence | ~32ms |
+| AuditedVault | Nostr event audit trail | Zero (bundled) |
+| **OTS Anchoring** | **Bitcoin-anchored state proof** | **Zero (decoupled)** |
+
+**Downstream pins updated:**
+- thebrain-mcp PR #90 (merged)
+- tollbooth-authority PR #31 (merged)
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.23
+2. Set `TOLLBOOTH_OTS_ENABLED=true` and optionally `TOLLBOOTH_OTS_CALENDARS` in your environment
+3. Redeploy your service
+4. Start a new MCP session to pick up the new tools
+
 ### tollbooth-dpyc 0.1.22: Serverless-Aware Per-Entry Flush Strategy (2026-02-23)
 
 **Affects:** All operators running on serverless platforms (FastMCP Cloud)

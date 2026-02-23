@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.22",
-      "minimum": "0.1.22",
+      "current": "0.1.23",
+      "minimum": "0.1.23",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -25,5 +25,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-02-23",
-  "advisory": "tollbooth-dpyc 0.1.22 upgrades LedgerCache with serverless-aware per-entry flush triggers (count + staleness). Minimum bumped to 0.1.22. See ADVISORY.md for details."
+  "advisory": "tollbooth-dpyc 0.1.23 adds OpenTimestamps Bitcoin anchoring — fourth trust layer. Merkle tree of all ledger balances anchored to Bitcoin via OTS calendars. See ADVISORY.md for details."
 }

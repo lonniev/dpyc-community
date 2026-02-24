@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import json
 import os
-import ssl
 import sys
 import time
+from typing import Any
 
 from pynostr.event import Event
 from pynostr.key import PrivateKey
@@ -38,7 +38,7 @@ Status: Active.\
 
 def _publish_to_relay(relay_url: str, message: str) -> str:
     """Send a NIP-01 EVENT message to a single relay and return the response."""
-    sslopt = {"cert_reqs": ssl.CERT_NONE}
+    sslopt: dict[str, Any] = {}
     ws = create_connection(relay_url, timeout=10, sslopt=sslopt)
     try:
         ws.send(message)

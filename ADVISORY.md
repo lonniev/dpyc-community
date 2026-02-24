@@ -4,6 +4,52 @@
 
 ## Current Advisories
 
+### tollbooth-authority 0.2.0: Self-Similar Operator Naming + ToolPricing (2026-02-23)
+
+**Affects:** All operators and downstream MCP servers calling the Authority
+
+**Breaking change**: All Authority MCP tool names have been renamed to standard Tollbooth Operator conventions. Manual tax math replaced with `ToolPricing.compute()` from tollbooth-dpyc 0.1.24.
+
+**Tool renames:**
+
+| Old (v0.1.x) | New (v0.2.0) | Notes |
+|---|---|---|
+| `purchase_tax_credits` | `purchase_credits` | Deprecated shim returns error with migration guidance |
+| `check_tax_payment` | `check_payment` | Deprecated shim returns error with migration guidance |
+| `tax_balance` | `check_balance` | Deprecated shim returns error with migration guidance |
+| `certify_purchase` | `certify_credits` | Deprecated shim delegates to `certify_credits` (pass-through) |
+
+**Fee computation now uses ToolPricing:**
+- Old: `max(TAX_MIN_SATS, ceil(amount_sats * TAX_RATE_PERCENT / 100))`
+- New: `ToolPricing(rate_percent=2.0, rate_param="amount_sats", min_cost=10).compute(amount_sats=N)`
+- **Behavioral equivalence verified** — identical output for all inputs
+
+**New in responses:**
+- `certify_credits` returns both `fee_sats` (new) and `tax_paid_sats` (kept for backward compat) in the response
+- `operator_status` includes a `certification_fee` info block
+
+**Downstream updated:**
+- thebrain-mcp PR #91 (merged) — calls `certify_credits`, removed legacy `purchase_tax_credits_tool` re-export
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.24
+2. Update `tollbooth-authority` to >= 0.2.0
+3. Update any MCP server code that calls old tool names (`certify_purchase` still works as pass-through, but the other three will return errors)
+4. Redeploy and start a new MCP session
+
+### tollbooth-dpyc 0.1.24: ToolPricing Dataclass (2026-02-23)
+
+**Affects:** All operators and Authorities
+
+New `ToolPricing` dataclass for standardized fee/tax computation:
+- `ToolPricing(rate_percent, rate_param, min_cost)` — replaces ad-hoc `max(min, ceil(...))` patterns
+- `compute(**kwargs)` method takes the pricing parameter by name and returns the fee in sats
+- Exported from `tollbooth` top-level package
+
+Used by tollbooth-authority 0.2.0 for certification fee computation. Available to any operator for custom pricing logic.
+
+**No action required** — additive change. Operators can optionally adopt `ToolPricing` for their own fee calculations.
+
 ### tollbooth-dpyc 0.1.23: OpenTimestamps Bitcoin Anchoring (2026-02-23)
 
 **Affects:** All operators seeking Bitcoin-grade ledger immutability
@@ -172,7 +218,7 @@ The `TheBrainVault` implementation is now canonical in `tollbooth-dpyc`. Both th
 
 The complete Tollbooth trust chain has been verified end-to-end:
 - Authority funded via Lightning
-- `certify_purchase` issues Ed25519-signed JWT certificates
+- `certify_credits` (formerly `certify_purchase`) issues Ed25519-signed JWT certificates
 - `purchase_credits` validates certificates and creates invoices for net amount
 - Anti-replay JTI tracking operational
 

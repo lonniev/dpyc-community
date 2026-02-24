@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.24",
-      "minimum": "0.1.24",
+      "current": "0.1.25",
+      "minimum": "0.1.25",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -24,6 +24,6 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-02-23",
-  "advisory": "tollbooth-authority 0.2.0 renames all MCP tools to standard Tollbooth Operator conventions and adopts ToolPricing for fee computation. tollbooth-dpyc 0.1.24 adds ToolPricing dataclass. See ADVISORY.md for migration details."
+  "last_updated": "2026-02-24",
+  "advisory": "SECURITY: tollbooth-dpyc 0.1.25 fixes Critical SSL cert verification bypass (C-1). tollbooth-authority adds admin auth on report_upstream_purchase (H-2). thebrain-mcp adds path traversal protection (H-1), whoami cleanup (H-3), and cryptography floor bump (H-4). All operators should update immediately. See ADVISORY.md for details."
 }

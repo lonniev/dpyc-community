@@ -1,8 +1,35 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-23
+> Last updated: 2026-02-24
 
 ## Current Advisories
+
+### SECURITY: Critical + High Severity Fixes Across Ecosystem (2026-02-24)
+
+**Affects:** All operators and services in the DPYC ecosystem
+
+A full security audit identified 12 findings (1 Critical, 4 High, 5 Medium, 5 Low). The Critical and all High findings have been remediated:
+
+**C-1 (Critical): SSL Certificate Verification Disabled** — `ssl.CERT_NONE` in Nostr relay WebSocket connections allowed MITM attacks on the audit trail.
+- Fixed in: tollbooth-dpyc 0.1.25, dpyc-community `scripts/publish_dpyp.py`
+
+**H-1 (High): Path Traversal in Attachment Tools** — User-supplied file paths in `add_file_attachment` and `get_attachment_content` were not validated, allowing arbitrary file read/write on the server.
+- Fixed in: thebrain-mcp (PR #92) — new `_validate_path_within()` helper enforces `attachment_safe_directory`
+
+**H-2 (High): Missing Authorization on `report_upstream_purchase`** — Any authenticated user could call this admin-only tool to inflate the upstream supply ledger.
+- Fixed in: tollbooth-authority (PR #33) — caller's npub must match `DPYC_AUTHORITY_NPUB`
+
+**H-3 (High): `whoami` Exposed Raw JWT Claims** — Raw Authorization header JWT was decoded without verification and returned to callers.
+- Fixed in: thebrain-mcp (PR #92) — only verified `fastmcp-*` headers and DPYC session status returned
+
+**H-4 (High): Outdated `cryptography` Dependency Floor** — Floor `>=42.0.0` admitted versions with known CVEs.
+- Fixed in: thebrain-mcp (PR #92) and tollbooth-authority (PR #34) — bumped to `cryptography>=46.0.5`
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.25 (**Critical security fix**)
+2. Redeploy `tollbooth-authority` (admin auth + crypto floor)
+3. Redeploy `thebrain-mcp` (path traversal + whoami + crypto floor)
+4. Verify with `service_status()` on each service
 
 ### tollbooth-authority 0.2.0: Self-Similar Operator Naming + ToolPricing (2026-02-23)
 

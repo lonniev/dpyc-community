@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.27",
-      "minimum": "0.1.27",
+      "current": "0.1.28",
+      "minimum": "0.1.28",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -25,5 +25,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-02-25",
-  "advisory": "BREAKING: JWT/Ed25519 certificates removed. tollbooth-dpyc 0.1.27 and tollbooth-authority 0.3.0 now use Nostr Schnorr-signed events (kind 30079) exclusively. AUTHORITY_PUBLIC_KEY and AUTHORITY_SIGNING_KEY env vars removed. All operators must set DPYC_AUTHORITY_NPUB and TOLLBOOTH_NOSTR_OPERATOR_NSEC. See ADVISORY.md for migration details."
+  "advisory": "tollbooth-dpyc 0.1.28: Audit events now NIP-44v2 encrypted for npub patrons — balance data only readable by the patron's nsec. BREAKING (prior advisory): JWT/Ed25519 certificates removed in v0.1.27/v0.3.0. See ADVISORY.md for details."
 }

@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.25",
-      "minimum": "0.1.25",
+      "current": "0.1.27",
+      "minimum": "0.1.27",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.2.0",
-      "minimum": "0.2.0",
+      "current": "0.3.0",
+      "minimum": "0.3.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -24,6 +24,6 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-02-24",
-  "advisory": "SECURITY: tollbooth-dpyc 0.1.25 fixes Critical SSL cert verification bypass (C-1). tollbooth-authority adds admin auth on report_upstream_purchase (H-2). thebrain-mcp adds path traversal protection (H-1), whoami cleanup (H-3), and cryptography floor bump (H-4). All operators should update immediately. See ADVISORY.md for details."
+  "last_updated": "2026-02-25",
+  "advisory": "BREAKING: JWT/Ed25519 certificates removed. tollbooth-dpyc 0.1.27 and tollbooth-authority 0.3.0 now use Nostr Schnorr-signed events (kind 30079) exclusively. AUTHORITY_PUBLIC_KEY and AUTHORITY_SIGNING_KEY env vars removed. All operators must set DPYC_AUTHORITY_NPUB and TOLLBOOTH_NOSTR_OPERATOR_NSEC. See ADVISORY.md for migration details."
 }

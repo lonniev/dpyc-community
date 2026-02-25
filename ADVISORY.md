@@ -4,6 +4,28 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.28: NIP-44 Encrypted Audit Events — Patron Privacy (2026-02-25)
+
+**Affects:** All operators publishing Nostr audit events
+
+Audit event `content` is now **NIP-44v2 encrypted** to the patron's npub when the patron is identified by an npub. Only the patron's nsec can decrypt their balance data. Observers see event metadata (kind, tags, pubkey) but not the encrypted content.
+
+**Key behaviors:**
+- **npub patrons**: Content encrypted via NIP-44v2 (secp256k1 ECDH + HKDF + ChaCha20-Poly1305). Events include `["encrypted", "nip44"]` tag.
+- **Plaintext fallback refused**: If NIP-44 deps are unavailable for npub patrons, events are silently skipped (never published in cleartext).
+- **Non-npub patrons**: Legacy Horizon IDs still get plaintext events (no behavioral change).
+- **Zero new dependencies**: Uses `coincurve` and `cryptography` already present as transitive deps of `pynostr`.
+
+**Patron verification flow** (future tool):
+1. Filter relay: `kinds=[30078], #p=[my_hex_pubkey], #t=["tollbooth-audit"]`
+2. Decrypt each event: `nip44_decrypt(my_nsec, operator_pubkey, event.content)`
+3. Result: full plaintext audit record with balance, deposits, tool usage
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.28
+2. Redeploy your service — encryption activates automatically for npub patrons
+3. No configuration changes needed
+
 ### BREAKING: Nostr-Only Certificates — JWT/Ed25519 Removed (2026-02-25)
 
 **Affects:** All operators and Authorities in the DPYC ecosystem

@@ -1,8 +1,34 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-24
+> Last updated: 2026-02-25
 
 ## Current Advisories
+
+### BREAKING: Nostr-Only Certificates — JWT/Ed25519 Removed (2026-02-25)
+
+**Affects:** All operators and Authorities in the DPYC ecosystem
+
+The certificate system has been migrated from Ed25519 JWTs to **Nostr Schnorr-signed events (kind 30079)** as the sole certificate mechanism. `PyJWT` and `cryptography` (for signing) have been removed as dependencies.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.27** | `verify_certificate()` deleted; `verify_certificate_auto()` Nostr-only; `authority_public_key` config removed; `PyJWT[crypto]` dep dropped |
+| tollbooth-authority | **0.3.0** | `signing.py`, `certificate.py`, `generate_keypair.py` deleted; `PyJWT`, `cryptography` deps dropped; `AUTHORITY_SIGNING_KEY` env var removed; nsec now mandatory |
+| thebrain-mcp | latest | `AUTHORITY_PUBLIC_KEY` env var removed; trust gate requires `DPYC_AUTHORITY_NPUB` only |
+
+**Removed env vars** (no longer recognized):
+- `AUTHORITY_PUBLIC_KEY` — replaced by `DPYC_AUTHORITY_NPUB`
+- `AUTHORITY_SIGNING_KEY` — replaced by `TOLLBOOTH_NOSTR_OPERATOR_NSEC`
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.27
+2. Update `tollbooth-authority` to >= 0.3.0
+3. Ensure `TOLLBOOTH_NOSTR_OPERATOR_NSEC` is set on your Authority (nsec from your DPYC keypair)
+4. Ensure `DPYC_AUTHORITY_NPUB` is set on all Operator services
+5. Remove any `AUTHORITY_PUBLIC_KEY` or `AUTHORITY_SIGNING_KEY` env vars from your deployments
+6. Redeploy all services and start new MCP sessions
 
 ### SECURITY: Critical + High Severity Fixes Across Ecosystem (2026-02-24)
 

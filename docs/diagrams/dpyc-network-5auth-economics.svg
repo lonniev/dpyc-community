@@ -1,0 +1,415 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+      .title { font-size: 22px; font-weight: 700; fill: #FFFFFF; }
+      .subtitle { font-size: 13px; fill: #AAAAAA; }
+      .node-label { font-size: 12px; font-weight: 600; fill: #FFFFFF; text-anchor: middle; }
+      .node-sublabel { font-size: 10px; fill: #CCCCCC; text-anchor: middle; }
+      .metric-label { font-size: 11px; fill: #E0E0E0; }
+      .metric-value { font-size: 13px; font-weight: 700; fill: #F7931A; }
+      .flow-label { font-size: 10px; fill: #F7931A; font-weight: 600; }
+      .assumptions-title { font-size: 11px; font-weight: 700; fill: #FFFFFF; }
+      .assumptions-text { font-size: 10px; fill: #BBBBBB; }
+      .section-label { font-size: 11px; font-weight: 600; fill: #999999; text-anchor: middle; letter-spacing: 1.5px; text-transform: uppercase; }
+      .operator-label { font-size: 9px; fill: #CCCCCC; text-anchor: middle; }
+      .patron-label { font-size: 10px; fill: #888888; text-anchor: middle; }
+    </style>
+    <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#F7931A" opacity="0.7"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#666666" opacity="0.6"/>
+    </marker>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bgGrad)" rx="8"/>
+
+  <!-- Title -->
+  <text x="600" y="38" text-anchor="middle" class="title">DPYC Honor Chain -- 5-Authority Network Economics</text>
+  <text x="600" y="56" text-anchor="middle" class="subtitle">Cascading certification fees across a multi-hop Authority topology</text>
+
+  <!-- ============================================================ -->
+  <!-- AUTHORITY LAYER -->
+  <!-- ============================================================ -->
+  <text x="600" y="82" class="section-label">AUTHORITIES</text>
+
+  <!-- Authority A (Prime / First Curator) - top center -->
+  <rect x="510" y="90" width="180" height="50" rx="10" fill="#2a1a00" stroke="#F7931A" stroke-width="2"/>
+  <text x="600" y="112" class="node-label" fill="#F7931A">A -- First Curator</text>
+  <text x="600" y="127" class="node-sublabel">Prime Authority (root)</text>
+
+  <!-- Authority B - below A, offset left -->
+  <rect x="260" y="190" width="160" height="44" rx="10" fill="#1a1a3a" stroke="#5588CC" stroke-width="1.5"/>
+  <text x="340" y="210" class="node-label" fill="#5588CC">B -- Authority</text>
+  <text x="340" y="224" class="node-sublabel">upstream: A</text>
+
+  <!-- Authority C - below B, further left -->
+  <rect x="100" y="280" width="160" height="44" rx="10" fill="#1a1a3a" stroke="#5588CC" stroke-width="1.5"/>
+  <text x="180" y="300" class="node-label" fill="#5588CC">C -- Authority</text>
+  <text x="180" y="314" class="node-sublabel">upstream: B</text>
+
+  <!-- Authority D - below A, offset right -->
+  <rect x="720" y="190" width="160" height="44" rx="10" fill="#1a1a3a" stroke="#5588CC" stroke-width="1.5"/>
+  <text x="800" y="210" class="node-label" fill="#5588CC">D -- Authority</text>
+  <text x="800" y="224" class="node-sublabel">upstream: A</text>
+
+  <!-- Authority E - below A, far right -->
+  <rect x="940" y="190" width="160" height="44" rx="10" fill="#1a1a3a" stroke="#5588CC" stroke-width="1.5"/>
+  <text x="1020" y="210" class="node-label" fill="#5588CC">E -- Authority</text>
+  <text x="1020" y="224" class="node-sublabel">upstream: A</text>
+
+  <!-- Chain arrows: C -> B -> A, D -> A, E -> A -->
+  <!-- C to B -->
+  <line x1="220" y1="280" x2="310" y2="234" stroke="#F7931A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowOrange)" opacity="0.7"/>
+  <text x="245" y="258" class="flow-label">2% cert</text>
+
+  <!-- B to A -->
+  <line x1="380" y1="190" x2="540" y2="140" stroke="#F7931A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowOrange)" opacity="0.7"/>
+  <text x="440" y="162" class="flow-label">2% cert</text>
+
+  <!-- D to A -->
+  <line x1="770" y1="190" x2="650" y2="140" stroke="#F7931A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowOrange)" opacity="0.7"/>
+  <text x="725" y="162" class="flow-label">2% cert</text>
+
+  <!-- E to A -->
+  <line x1="990" y1="190" x2="680" y2="138" stroke="#F7931A" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowOrange)" opacity="0.5"/>
+  <text x="860" y="154" class="flow-label">2% cert</text>
+
+  <!-- ============================================================ -->
+  <!-- OPERATOR LAYER (6 per Authority = 30 total) -->
+  <!-- ============================================================ -->
+  <text x="600" y="360" class="section-label">OPERATORS (6 per Authority = 30 total)</text>
+
+  <!-- Operators for A (6 nodes, centered around x=600) -->
+  <g>
+    <rect x="480" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <rect x="512" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <rect x="544" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <rect x="632" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <rect x="664" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <rect x="696" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#F7931A" stroke-width="1" opacity="0.8"/>
+    <line x1="600" y1="140" x2="560" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <line x1="600" y1="140" x2="640" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <text x="600" y="407" class="operator-label">A's Operators</text>
+  </g>
+
+  <!-- Operators for B (6 nodes, centered around x=340) -->
+  <g>
+    <rect x="252" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="284" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="316" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="348" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="380" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="412" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <line x1="340" y1="234" x2="310" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <line x1="340" y1="234" x2="370" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <text x="340" y="407" class="operator-label">B's Operators</text>
+  </g>
+
+  <!-- Operators for C (6 nodes, centered around x=180) -->
+  <g>
+    <rect x="92" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="124" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="156" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="188" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="220" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="252" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <line x1="180" y1="324" x2="150" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <line x1="180" y1="324" x2="210" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <text x="180" y="407" class="operator-label">C's Operators</text>
+  </g>
+
+  <!-- Operators for D (6 nodes, centered around x=800) -->
+  <g>
+    <rect x="712" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="744" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="776" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="808" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="840" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="872" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <line x1="800" y1="234" x2="770" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <line x1="800" y1="234" x2="830" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <text x="800" y="407" class="operator-label">D's Operators</text>
+  </g>
+
+  <!-- Operators for E (6 nodes, centered around x=1020) -->
+  <g>
+    <rect x="932" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="964" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="996" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="1028" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="1060" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <rect x="1092" y="375" width="24" height="18" rx="4" fill="#2a2a2a" stroke="#5588CC" stroke-width="1" opacity="0.8"/>
+    <line x1="1020" y1="234" x2="990" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <line x1="1020" y1="234" x2="1050" y2="375" stroke="#555555" stroke-width="0.8" opacity="0.4"/>
+    <text x="1020" y="407" class="operator-label">E's Operators</text>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- PATRON LAYER -->
+  <!-- ============================================================ -->
+  <text x="600" y="440" class="section-label">PATRONS (~200 across the network)</text>
+
+  <!-- Patron dots row 1 -->
+  <g opacity="0.5">
+    <circle cx="80" cy="462" r="3" fill="#666666"/>
+    <circle cx="96" cy="462" r="3" fill="#666666"/>
+    <circle cx="112" cy="462" r="3" fill="#666666"/>
+    <circle cx="128" cy="462" r="3" fill="#666666"/>
+    <circle cx="144" cy="462" r="3" fill="#666666"/>
+    <circle cx="160" cy="462" r="3" fill="#666666"/>
+    <circle cx="176" cy="462" r="3" fill="#666666"/>
+    <circle cx="192" cy="462" r="3" fill="#666666"/>
+    <circle cx="208" cy="462" r="3" fill="#666666"/>
+    <circle cx="224" cy="462" r="3" fill="#666666"/>
+    <circle cx="240" cy="462" r="3" fill="#666666"/>
+    <circle cx="256" cy="462" r="3" fill="#666666"/>
+    <circle cx="272" cy="462" r="3" fill="#666666"/>
+    <circle cx="288" cy="462" r="3" fill="#666666"/>
+    <circle cx="304" cy="462" r="3" fill="#666666"/>
+    <circle cx="320" cy="462" r="3" fill="#666666"/>
+    <circle cx="336" cy="462" r="3" fill="#666666"/>
+    <circle cx="352" cy="462" r="3" fill="#666666"/>
+    <circle cx="368" cy="462" r="3" fill="#666666"/>
+    <circle cx="384" cy="462" r="3" fill="#666666"/>
+    <circle cx="400" cy="462" r="3" fill="#666666"/>
+    <circle cx="416" cy="462" r="3" fill="#666666"/>
+    <circle cx="432" cy="462" r="3" fill="#666666"/>
+    <circle cx="448" cy="462" r="3" fill="#666666"/>
+    <circle cx="464" cy="462" r="3" fill="#666666"/>
+    <circle cx="480" cy="462" r="3" fill="#666666"/>
+    <circle cx="496" cy="462" r="3" fill="#666666"/>
+    <circle cx="512" cy="462" r="3" fill="#666666"/>
+    <circle cx="528" cy="462" r="3" fill="#666666"/>
+    <circle cx="544" cy="462" r="3" fill="#666666"/>
+    <circle cx="560" cy="462" r="3" fill="#666666"/>
+    <circle cx="576" cy="462" r="3" fill="#666666"/>
+    <circle cx="592" cy="462" r="3" fill="#666666"/>
+    <circle cx="608" cy="462" r="3" fill="#666666"/>
+    <circle cx="624" cy="462" r="3" fill="#666666"/>
+    <circle cx="640" cy="462" r="3" fill="#666666"/>
+    <circle cx="656" cy="462" r="3" fill="#666666"/>
+    <circle cx="672" cy="462" r="3" fill="#666666"/>
+    <circle cx="688" cy="462" r="3" fill="#666666"/>
+    <circle cx="704" cy="462" r="3" fill="#666666"/>
+    <circle cx="720" cy="462" r="3" fill="#666666"/>
+    <circle cx="736" cy="462" r="3" fill="#666666"/>
+    <circle cx="752" cy="462" r="3" fill="#666666"/>
+    <circle cx="768" cy="462" r="3" fill="#666666"/>
+    <circle cx="784" cy="462" r="3" fill="#666666"/>
+    <circle cx="800" cy="462" r="3" fill="#666666"/>
+    <circle cx="816" cy="462" r="3" fill="#666666"/>
+    <circle cx="832" cy="462" r="3" fill="#666666"/>
+    <circle cx="848" cy="462" r="3" fill="#666666"/>
+    <circle cx="864" cy="462" r="3" fill="#666666"/>
+    <circle cx="880" cy="462" r="3" fill="#666666"/>
+    <circle cx="896" cy="462" r="3" fill="#666666"/>
+    <circle cx="912" cy="462" r="3" fill="#666666"/>
+    <circle cx="928" cy="462" r="3" fill="#666666"/>
+    <circle cx="944" cy="462" r="3" fill="#666666"/>
+    <circle cx="960" cy="462" r="3" fill="#666666"/>
+    <circle cx="976" cy="462" r="3" fill="#666666"/>
+    <circle cx="992" cy="462" r="3" fill="#666666"/>
+    <circle cx="1008" cy="462" r="3" fill="#666666"/>
+    <circle cx="1024" cy="462" r="3" fill="#666666"/>
+    <circle cx="1040" cy="462" r="3" fill="#666666"/>
+    <circle cx="1056" cy="462" r="3" fill="#666666"/>
+    <circle cx="1072" cy="462" r="3" fill="#666666"/>
+    <circle cx="1088" cy="462" r="3" fill="#666666"/>
+    <circle cx="1104" cy="462" r="3" fill="#666666"/>
+    <circle cx="1120" cy="462" r="3" fill="#666666"/>
+  </g>
+
+  <!-- Patron dots row 2 -->
+  <g opacity="0.35">
+    <circle cx="88" cy="478" r="3" fill="#666666"/>
+    <circle cx="104" cy="478" r="3" fill="#666666"/>
+    <circle cx="120" cy="478" r="3" fill="#666666"/>
+    <circle cx="136" cy="478" r="3" fill="#666666"/>
+    <circle cx="152" cy="478" r="3" fill="#666666"/>
+    <circle cx="168" cy="478" r="3" fill="#666666"/>
+    <circle cx="184" cy="478" r="3" fill="#666666"/>
+    <circle cx="200" cy="478" r="3" fill="#666666"/>
+    <circle cx="216" cy="478" r="3" fill="#666666"/>
+    <circle cx="232" cy="478" r="3" fill="#666666"/>
+    <circle cx="248" cy="478" r="3" fill="#666666"/>
+    <circle cx="264" cy="478" r="3" fill="#666666"/>
+    <circle cx="280" cy="478" r="3" fill="#666666"/>
+    <circle cx="296" cy="478" r="3" fill="#666666"/>
+    <circle cx="312" cy="478" r="3" fill="#666666"/>
+    <circle cx="328" cy="478" r="3" fill="#666666"/>
+    <circle cx="344" cy="478" r="3" fill="#666666"/>
+    <circle cx="360" cy="478" r="3" fill="#666666"/>
+    <circle cx="376" cy="478" r="3" fill="#666666"/>
+    <circle cx="392" cy="478" r="3" fill="#666666"/>
+    <circle cx="408" cy="478" r="3" fill="#666666"/>
+    <circle cx="424" cy="478" r="3" fill="#666666"/>
+    <circle cx="440" cy="478" r="3" fill="#666666"/>
+    <circle cx="456" cy="478" r="3" fill="#666666"/>
+    <circle cx="472" cy="478" r="3" fill="#666666"/>
+    <circle cx="488" cy="478" r="3" fill="#666666"/>
+    <circle cx="504" cy="478" r="3" fill="#666666"/>
+    <circle cx="520" cy="478" r="3" fill="#666666"/>
+    <circle cx="536" cy="478" r="3" fill="#666666"/>
+    <circle cx="552" cy="478" r="3" fill="#666666"/>
+    <circle cx="568" cy="478" r="3" fill="#666666"/>
+    <circle cx="584" cy="478" r="3" fill="#666666"/>
+    <circle cx="600" cy="478" r="3" fill="#666666"/>
+    <circle cx="616" cy="478" r="3" fill="#666666"/>
+    <circle cx="632" cy="478" r="3" fill="#666666"/>
+    <circle cx="648" cy="478" r="3" fill="#666666"/>
+    <circle cx="664" cy="478" r="3" fill="#666666"/>
+    <circle cx="680" cy="478" r="3" fill="#666666"/>
+    <circle cx="696" cy="478" r="3" fill="#666666"/>
+    <circle cx="712" cy="478" r="3" fill="#666666"/>
+    <circle cx="728" cy="478" r="3" fill="#666666"/>
+    <circle cx="744" cy="478" r="3" fill="#666666"/>
+    <circle cx="760" cy="478" r="3" fill="#666666"/>
+    <circle cx="776" cy="478" r="3" fill="#666666"/>
+    <circle cx="792" cy="478" r="3" fill="#666666"/>
+    <circle cx="808" cy="478" r="3" fill="#666666"/>
+    <circle cx="824" cy="478" r="3" fill="#666666"/>
+    <circle cx="840" cy="478" r="3" fill="#666666"/>
+    <circle cx="856" cy="478" r="3" fill="#666666"/>
+    <circle cx="872" cy="478" r="3" fill="#666666"/>
+    <circle cx="888" cy="478" r="3" fill="#666666"/>
+    <circle cx="904" cy="478" r="3" fill="#666666"/>
+    <circle cx="920" cy="478" r="3" fill="#666666"/>
+    <circle cx="936" cy="478" r="3" fill="#666666"/>
+    <circle cx="952" cy="478" r="3" fill="#666666"/>
+    <circle cx="968" cy="478" r="3" fill="#666666"/>
+    <circle cx="984" cy="478" r="3" fill="#666666"/>
+    <circle cx="1000" cy="478" r="3" fill="#666666"/>
+    <circle cx="1016" cy="478" r="3" fill="#666666"/>
+    <circle cx="1032" cy="478" r="3" fill="#666666"/>
+    <circle cx="1048" cy="478" r="3" fill="#666666"/>
+    <circle cx="1064" cy="478" r="3" fill="#666666"/>
+    <circle cx="1080" cy="478" r="3" fill="#666666"/>
+    <circle cx="1096" cy="478" r="3" fill="#666666"/>
+    <circle cx="1112" cy="478" r="3" fill="#666666"/>
+  </g>
+
+  <!-- Fade dots row 3 -->
+  <g opacity="0.2">
+    <circle cx="96" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="120" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="144" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="168" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="192" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="216" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="240" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="264" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="480" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="504" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="528" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="552" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="648" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="672" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="696" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="720" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="936" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="960" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="984" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="1008" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="1032" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="1056" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="1080" cy="494" r="2.5" fill="#555555"/>
+    <circle cx="1104" cy="494" r="2.5" fill="#555555"/>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- FLOW DIAGRAM (right side) -->
+  <!-- ============================================================ -->
+  <rect x="40" y="518" width="340" height="260" rx="8" fill="#111122" stroke="#333355" stroke-width="1"/>
+  <text x="210" y="542" text-anchor="middle" class="assumptions-title" fill="#F7931A">Fee Flow</text>
+
+  <!-- Patron -> Operator -->
+  <rect x="65" y="558" width="100" height="28" rx="6" fill="#2a2a2a" stroke="#666666" stroke-width="1"/>
+  <text x="115" y="576" class="node-label" font-size="10">Patron</text>
+
+  <line x1="165" y1="572" x2="205" y2="572" stroke="#F7931A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+  <text x="185" y="564" class="flow-label" font-size="9">fare</text>
+
+  <rect x="210" y="558" width="100" height="28" rx="6" fill="#2a2a2a" stroke="#5588CC" stroke-width="1"/>
+  <text x="260" y="576" class="node-label" font-size="10">Operator</text>
+
+  <!-- Operator -> Authority -->
+  <line x1="260" y1="586" x2="260" y2="610" stroke="#F7931A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+  <text x="280" y="603" class="flow-label" font-size="9">2% cert fee</text>
+
+  <rect x="210" y="614" width="100" height="28" rx="6" fill="#2a2a2a" stroke="#5588CC" stroke-width="1"/>
+  <text x="260" y="632" class="node-label" font-size="10">Authority</text>
+
+  <!-- Authority -> Upstream -->
+  <line x1="260" y1="642" x2="260" y2="666" stroke="#F7931A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+  <text x="280" y="659" class="flow-label" font-size="9">2% cascade</text>
+
+  <rect x="195" y="670" width="130" height="28" rx="6" fill="#2a1a00" stroke="#F7931A" stroke-width="1"/>
+  <text x="260" y="688" class="node-label" fill="#F7931A" font-size="10">Upstream Auth.</text>
+
+  <!-- Curator royalty annotation -->
+  <line x1="200" y1="706" x2="320" y2="706" stroke="#F7931A" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>
+  <text x="60" y="724" class="flow-label" font-size="9">+ 2% curator royalty on each settlement</text>
+  <text x="60" y="740" class="flow-label" font-size="9">(collected by First Curator from all Authorities)</text>
+
+  <!-- ============================================================ -->
+  <!-- EFFECTIVE RATES BOX -->
+  <!-- ============================================================ -->
+  <rect x="420" y="518" width="340" height="260" rx="8" fill="#111122" stroke="#333355" stroke-width="1"/>
+  <text x="590" y="542" text-anchor="middle" class="assumptions-title" fill="#F7931A">Effective Certification Rates</text>
+
+  <!-- Single hop -->
+  <text x="440" y="572" class="metric-label">Single-hop (D, E direct to A)</text>
+  <text x="440" y="592" class="metric-value" font-size="20">2.0%</text>
+  <text x="520" y="592" class="metric-label">effective total</text>
+
+  <!-- Two hop -->
+  <text x="440" y="624" class="metric-label">Two-hop (B via A)</text>
+  <text x="440" y="644" class="metric-value" font-size="20">2.04%</text>
+  <text x="530" y="644" class="metric-label">effective (+0.04%)</text>
+
+  <!-- Three hop -->
+  <text x="440" y="676" class="metric-label">Three-hop (C via B via A)</text>
+  <text x="440" y="696" class="metric-value" font-size="20">2.0408%</text>
+  <text x="550" y="696" class="metric-label">effective (+0.81% cascade)</text>
+
+  <!-- Note -->
+  <text x="440" y="734" class="assumptions-text">Cascade formula: 1 - (1 - 0.02)^n where n = hops</text>
+  <text x="440" y="750" class="assumptions-text">Even at max depth (3 hops), effective rate stays under 2.05%</text>
+
+  <!-- ============================================================ -->
+  <!-- WEEKLY PROJECTIONS BOX -->
+  <!-- ============================================================ -->
+  <rect x="800" y="518" width="370" height="260" rx="8" fill="#111122" stroke="#333355" stroke-width="1"/>
+  <text x="985" y="542" text-anchor="middle" class="assumptions-title" fill="#F7931A">Weekly Projections (at scale)</text>
+
+  <!-- Weekly volume -->
+  <text x="820" y="572" class="metric-label">Ecosystem gross weekly revenue</text>
+  <text x="820" y="596" class="metric-value" font-size="22">~$1,638</text>
+  <text x="925" y="596" class="metric-label">/ week</text>
+
+  <!-- Curator share -->
+  <text x="820" y="628" class="metric-label">First Curator (royalty income)</text>
+  <text x="820" y="652" class="metric-value" font-size="22">~$32</text>
+  <text x="890" y="652" class="metric-label">/ week</text>
+
+  <!-- Divider -->
+  <line x1="820" y1="670" x2="1150" y2="670" stroke="#333355" stroke-width="1"/>
+
+  <!-- Assumptions -->
+  <text x="820" y="692" class="assumptions-title">Assumptions</text>
+  <text x="820" y="710" class="assumptions-text">1,000 sats ~ $0.65 USD (~$65K BTC price)</text>
+  <text x="820" y="726" class="assumptions-text">30 operators across 5 authorities</text>
+  <text x="820" y="742" class="assumptions-text">1,000 tool calls / hour across the network</text>
+  <text x="820" y="758" class="assumptions-text">Avg 15 api_sats per tool call</text>
+</svg>

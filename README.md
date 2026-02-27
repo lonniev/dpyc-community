@@ -114,6 +114,12 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 [The Phantom Tollbooth on the Lightning Turnpike](https://stablecoin.myshopify.com/blogs/our-value/the-phantom-tollbooth-on-the-lightning-turnpike) — the full story of how we're monetizing the monetization of AI APIs.
 
+## Economic Model
+
+![DPYC Network Economics](docs/diagrams/dpyc-network-5auth-economics.svg)
+
+The Honor Chain uses a cascading certification fee model. Each Authority collects a 2% ad valorem fee when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect (+0.81%), keeping the total effective rate under 2.05% even at maximum depth.
+
 ## License
 
 Apache License 2.0 — see [LICENSE](https://github.com/lonniev/dpyc-community/blob/main/LICENSE) for details.

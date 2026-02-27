@@ -1,5 +1,7 @@
 # DPYC Honor Chain
 
+![DPYC Logo](https://raw.githubusercontent.com/lonniev/dpyc-community/main/assets/dpyc-logo.png)
+
 > **This registry:** [`github.com/lonniev/dpyc-community`](https://github.com/lonniev/dpyc-community)
 
 **Membership registry and governance for the Don't-Pester-Your-Customer Tollbooth community.**

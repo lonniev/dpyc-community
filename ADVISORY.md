@@ -1,8 +1,27 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-25
+> Last updated: 2026-02-28
 
 ## Current Advisories
+
+### tollbooth-dpyc 0.1.47 / excalibur-mcp 0.6.2: DRY Version + NIP-17 Inbound Fix (2026-02-28)
+
+**Affects:** All operators and downstream MCP servers
+
+**tollbooth-dpyc 0.1.46** — NIP-17 inbound receive path fix:
+- Gift wrap events with fuzzed `created_at` (0-48h past per NIP-17 spec) were silently discarded by the local freshness filter. The relay filter correctly widened `since` by 48h, but the local candidate loop applied the narrow 15-min window. Fixed by widening the local cutoff for kind 1059 events.
+- Two user-facing messages in `open_channel()` still referenced "JSON" instead of the @@@ delimiter format. Fixed.
+
+**tollbooth-dpyc 0.1.47** — DRY version:
+- `__version__` now reads from `importlib.metadata.version()` instead of a hardcoded string. `pyproject.toml` is the single source of truth.
+
+**excalibur-mcp 0.6.2** — DRY version + dep bump:
+- Same `importlib.metadata` fix. Bumps tollbooth-dpyc dependency to >= 0.1.46.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.47
+2. Redeploy your service — NIP-17 DM replies will now be received correctly
+3. Verify with `service_status()` — versions should report from package metadata
 
 ### tollbooth-dpyc 0.1.28: NIP-44 Encrypted Audit Events — Patron Privacy (2026-02-25)
 

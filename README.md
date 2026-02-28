@@ -1,5 +1,7 @@
 # DPYC Honor Chain
 
+![DPYC Logo](https://raw.githubusercontent.com/lonniev/dpyc-community/main/assets/dpyc-logo.png)
+
 > **This registry:** [`github.com/lonniev/dpyc-community`](https://github.com/lonniev/dpyc-community)
 
 **Membership registry and governance for the Don't-Pester-Your-Customer Tollbooth community.**
@@ -115,6 +117,12 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 ## Further Reading
 
 [The Phantom Tollbooth on the Lightning Turnpike](https://stablecoin.myshopify.com/blogs/our-value/the-phantom-tollbooth-on-the-lightning-turnpike) — the full story of how we're monetizing the monetization of AI APIs.
+
+## Economic Model
+
+![DPYC Network Economics](docs/diagrams/dpyc-network-5auth-economics.svg)
+
+The Honor Chain uses a cascading certification fee model. Each Authority collects a 2% ad valorem fee when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect (+0.81%), keeping the total effective rate under 2.05% even at maximum depth.
 
 [DPYP-01: Base Certificate Protocol](https://github.com/lonniev/dpyc-community/blob/main/protocols/dpyp-01-base-certificate.md) — the canonical specification for Honor Chain credit certificates.
 

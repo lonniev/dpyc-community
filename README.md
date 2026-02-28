@@ -56,6 +56,9 @@ Prime Authority (Lonnie VanZandt)
   +-- thebrain-mcp (Operator)
   |     npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h
   |
+  +-- excalibur-mcp (Operator)
+  |     X (Twitter) posting service with Secure Courier credential delivery
+  |
   +-- Authority A (registered DPYC member)
   |     +-- Operator A1
   |     +-- Operator A2
@@ -99,6 +102,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) | Operator-side Python library for MCP monetization |
 | [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and tax collection |
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | First Tollbooth Operator — TheBrain MCP Server |
+| [excalibur-mcp](https://github.com/lonniev/excalibur-mcp) | X (Twitter) posting MCP service with Secure Courier credential delivery |
 
 ## Built On
 
@@ -111,6 +115,8 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 ## Further Reading
 
 [The Phantom Tollbooth on the Lightning Turnpike](https://stablecoin.myshopify.com/blogs/our-value/the-phantom-tollbooth-on-the-lightning-turnpike) — the full story of how we're monetizing the monetization of AI APIs.
+
+[DPYP-01: Base Certificate Protocol](https://github.com/lonniev/dpyc-community/blob/main/protocols/dpyp-01-base-certificate.md) — the canonical specification for Honor Chain credit certificates.
 
 ## License
 

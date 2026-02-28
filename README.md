@@ -116,7 +116,9 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 ## Further Reading
 
-[The Phantom Tollbooth on the Lightning Turnpike](https://stablecoin.myshopify.com/blogs/our-value/the-phantom-tollbooth-on-the-lightning-turnpike) — the full story of how we're monetizing the monetization of AI APIs.
+- [Tollbooth Whitepaper](docs/WHITEPAPER.md) — full technical architecture, economic model, and the DPYC Honor Chain
+- [Competitive Landscape](docs/COMPETITIVE-LANDSCAPE.md) — how Tollbooth compares to L402, x402, MCPize, and other approaches
+- [The Phantom Tollbooth on the Lightning Turnpike](https://stablecoin.myshopify.com/blogs/our-value/the-phantom-tollbooth-on-the-lightning-turnpike) — the full story of how we're monetizing the monetization of AI APIs
 
 ## Economic Model
 

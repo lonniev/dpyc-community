@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <!-- USPTO Patent Figure: 8.5x11 inch sheet -->
+  <!-- Margins: top=2.5cm(100), left=2.5cm(100), right=1.5cm(63), bottom=1.0cm(38) -->
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .box-label { font-size: 11px; text-anchor: middle; }
+    .arrow-label { font-size: 10px; text-anchor: middle; }
+    .group-label { font-size: 12px; font-weight: bold; text-anchor: middle; }
+    rect.component { fill: white; stroke: black; stroke-width: 2; }
+    rect.group { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    line.lead { stroke: black; stroke-width: 0.75; }
+    line.arrow-line { stroke: black; stroke-width: 1.5; }
+    path.arrow-line { stroke: black; stroke-width: 1.5; fill: none; }
+    marker { fill: black; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <!-- Sheet number -->
+  <text x="425" y="80" class="sheet-num">1/6</text>
+
+  <!-- ============================================ -->
+  <!-- TRUST CHAIN GROUP (dashed boundary) -->
+  <!-- ============================================ -->
+  <rect class="group" x="220" y="120" width="400" height="460" rx="0"/>
+  <text x="420" y="140" class="group-label">TRUST CHAIN 500</text>
+
+  <!-- 108 First Curator -->
+  <rect class="component" x="320" y="155" width="200" height="50" rx="3"/>
+  <text x="420" y="175" class="box-label">FIRST CURATOR</text>
+  <text x="420" y="190" class="box-label">(self-signs)</text>
+  <text class="ref-num" x="280" y="180"><tspan>108</tspan></text>
+  <line class="lead" x1="295" y1="180" x2="318" y2="180"/>
+
+  <!-- 106 Authority -->
+  <rect class="component" x="320" y="260" width="200" height="50" rx="3"/>
+  <text x="420" y="280" class="box-label">AUTHORITY</text>
+  <text x="420" y="295" class="box-label">CERTIFICATION SERVICE</text>
+  <text class="ref-num" x="280" y="285"><tspan>106</tspan></text>
+  <line class="lead" x1="295" y1="285" x2="318" y2="285"/>
+
+  <!-- Arrow 108 → 106 -->
+  <line class="arrow-line" x1="420" y1="205" x2="420" y2="258" marker-end="url(#arrowhead)"/>
+  <text x="470" y="237" class="arrow-label">signs</text>
+
+  <!-- 104 Operator -->
+  <rect class="component" x="320" y="370" width="200" height="50" rx="3"/>
+  <text x="420" y="390" class="box-label">OPERATOR</text>
+  <text x="420" y="405" class="box-label">MCP SERVICE + TOLLBOOTH</text>
+  <text class="ref-num" x="280" y="395"><tspan>104</tspan></text>
+  <line class="lead" x1="295" y1="395" x2="318" y2="395"/>
+
+  <!-- Arrow 106 → 104 -->
+  <line class="arrow-line" x1="420" y1="310" x2="420" y2="368" marker-end="url(#arrowhead)"/>
+  <text x="478" y="345" class="arrow-label">certifies</text>
+
+  <!-- 102 Consumer -->
+  <rect class="component" x="320" y="480" width="200" height="50" rx="3"/>
+  <text x="420" y="500" class="box-label">CONSUMER /</text>
+  <text x="420" y="515" class="box-label">AI AGENT</text>
+  <text class="ref-num" x="280" y="505"><tspan>102</tspan></text>
+  <line class="lead" x1="295" y1="505" x2="318" y2="505"/>
+
+  <!-- Arrow 104 ↔ 102 (bidirectional - tools) -->
+  <line class="arrow-line" x1="400" y1="420" x2="400" y2="478" marker-end="url(#arrowhead)"/>
+  <line class="arrow-line" x1="440" y1="478" x2="440" y2="420" marker-end="url(#arrowhead)"/>
+  <text x="370" y="455" class="arrow-label">tools</text>
+  <text x="475" y="455" class="arrow-label">api_sats</text>
+
+  <!-- ============================================ -->
+  <!-- SETTLEMENT LAYER (right side) -->
+  <!-- ============================================ -->
+  <rect class="group" x="640" y="280" width="140" height="220" rx="0"/>
+
+  <!-- 200 BTCPay Server -->
+  <rect class="component" x="655" y="300" width="110" height="45" rx="3"/>
+  <text x="710" y="320" class="box-label">BTCPAY</text>
+  <text x="710" y="333" class="box-label">SERVER</text>
+  <text class="ref-num" x="660" y="290"><tspan>200</tspan></text>
+
+  <!-- 202 Lightning Network -->
+  <rect class="component" x="655" y="400" width="110" height="45" rx="3"/>
+  <text x="710" y="420" class="box-label">LIGHTNING</text>
+  <text x="710" y="433" class="box-label">NETWORK</text>
+  <text class="ref-num" x="660" y="390"><tspan>202</tspan></text>
+
+  <!-- Arrow 200 → 202 -->
+  <line class="arrow-line" x1="710" y1="345" x2="710" y2="398" marker-end="url(#arrowhead)"/>
+  <text x="738" y="376" class="arrow-label">settles</text>
+
+  <!-- Arrow 104 → 200 (creates invoices) -->
+  <line class="arrow-line" x1="520" y1="385" x2="653" y2="322" marker-end="url(#arrowhead)"/>
+  <text x="590" y="340" class="arrow-label">invoices</text>
+
+  <!-- Arrow 102 → 202 (pays) -->
+  <line class="arrow-line" x1="520" y1="510" x2="653" y2="425" marker-end="url(#arrowhead)"/>
+  <text x="600" y="480" class="arrow-label">pays</text>
+
+  <!-- ============================================ -->
+  <!-- NOSTR IDENTITY LAYER (left side) -->
+  <!-- ============================================ -->
+
+  <!-- 600 Nostr Relay Network -->
+  <rect class="component" x="110" y="390" width="130" height="55" rx="3"/>
+  <text x="175" y="410" class="box-label">NOSTR RELAY</text>
+  <text x="175" y="425" class="box-label">NETWORK</text>
+  <text class="ref-num" x="115" y="380"><tspan>600</tspan></text>
+
+  <!-- Arrow 102 → 600 (credential exchange) -->
+  <path class="arrow-line" d="M 320,505 L 175,505 L 175,447" marker-end="url(#arrowhead)"/>
+  <text x="240" y="520" class="arrow-label">credentials</text>
+
+  <!-- ============================================ -->
+  <!-- GOVERNANCE LAYER (bottom) -->
+  <!-- ============================================ -->
+  <rect class="group" x="120" y="600" width="560" height="180" rx="0"/>
+  <text x="400" y="620" class="group-label">GOVERNANCE LAYER</text>
+
+  <!-- 110 Community Registry -->
+  <rect class="component" x="140" y="640" width="140" height="50" rx="3"/>
+  <text x="210" y="660" class="box-label">COMMUNITY</text>
+  <text x="210" y="675" class="box-label">REGISTRY</text>
+  <text class="ref-num" x="145" y="705"><tspan>110</tspan></text>
+
+  <!-- 112 Oracle Service -->
+  <rect class="component" x="330" y="640" width="140" height="50" rx="3"/>
+  <text x="400" y="660" class="box-label">ORACLE</text>
+  <text x="400" y="675" class="box-label">SERVICE</text>
+  <text class="ref-num" x="335" y="705"><tspan>112</tspan></text>
+
+  <!-- 114 Governance Document -->
+  <rect class="component" x="520" y="640" width="140" height="50" rx="3"/>
+  <text x="590" y="660" class="box-label">GOVERNANCE</text>
+  <text x="590" y="675" class="box-label">DOCUMENT</text>
+  <text class="ref-num" x="525" y="705"><tspan>114</tspan></text>
+
+  <!-- Arrow 112 → 110 (reads) -->
+  <line class="arrow-line" x1="330" y1="665" x2="282" y2="665" marker-end="url(#arrowhead)"/>
+  <text x="305" y="658" class="arrow-label">reads</text>
+
+  <!-- Arrow 112 → 114 (reads) -->
+  <line class="arrow-line" x1="470" y1="665" x2="518" y2="665" marker-end="url(#arrowhead)"/>
+  <text x="495" y="658" class="arrow-label">reads</text>
+
+  <!-- Arrow 106 → 110 (checks standing) -->
+  <path class="arrow-line" d="M 320,295 L 210,295 L 210,638" marker-end="url(#arrowhead)"/>
+  <text x="190" y="560" class="arrow-label" transform="rotate(-90, 190, 560)">checks standing</text>
+
+  <!-- Arrow 102 → 112 (citizenship) -->
+  <path class="arrow-line" d="M 375,530 L 375,560 L 400,560 L 400,638" marker-end="url(#arrowhead)"/>
+  <text x="430" y="575" class="arrow-label">citizenship</text>
+
+  <!-- ============================================ -->
+  <!-- 100 System boundary label -->
+  <!-- ============================================ -->
+  <text class="ref-num" x="115" y="135"><tspan>100</tspan></text>
+  <line class="lead" x1="130" y1="138" x2="130" y2="155"/>
+
+  <!-- ============================================ -->
+  <!-- Figure label -->
+  <!-- ============================================ -->
+  <text x="425" y="830" class="fig-label">FIG. 1</text>
+
+</svg>

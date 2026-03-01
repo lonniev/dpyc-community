@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .box-text { font-size: 10px; text-anchor: middle; }
+    .small-text { font-size: 9px; text-anchor: middle; }
+    .actor-label { font-size: 12px; font-weight: bold; text-anchor: middle; }
+    .yn { font-size: 10px; font-weight: bold; }
+    rect.step { fill: white; stroke: black; stroke-width: 2; }
+    polygon.decision { fill: white; stroke: black; stroke-width: 2; }
+    line.flow { stroke: black; stroke-width: 1.5; }
+    path.flow { stroke: black; stroke-width: 1.5; fill: none; }
+    line.lead { stroke: black; stroke-width: 0.75; }
+    line.lifeline { stroke: black; stroke-width: 0.75; stroke-dasharray: 4,3; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <text x="425" y="80" class="sheet-num">4/6</text>
+
+  <!-- Actor boxes at top -->
+  <rect class="step" x="110" y="110" width="120" height="35" rx="3"/>
+  <text x="170" y="132" class="actor-label">OPERATOR</text>
+  <text class="ref-num" x="105" y="125">104</text>
+
+  <rect class="step" x="365" y="110" width="120" height="35" rx="3"/>
+  <text x="425" y="132" class="actor-label">AUTHORITY</text>
+  <text class="ref-num" x="360" y="125">106</text>
+
+  <rect class="step" x="590" y="110" width="120" height="35" rx="3"/>
+  <text x="650" y="128" class="actor-label">REGISTRY</text>
+  <text x="650" y="140" class="small-text">110</text>
+
+  <!-- Lifelines -->
+  <line class="lifeline" x1="170" y1="145" x2="170" y2="920"/>
+  <line class="lifeline" x1="425" y1="145" x2="425" y2="920"/>
+  <line class="lifeline" x1="650" y1="145" x2="650" y2="920"/>
+
+  <!-- STEP 1: Operator requests certification -->
+  <text x="115" y="175" style="font-size:10px; font-weight:bold">STEP 1</text>
+  <line class="flow" x1="170" y1="185" x2="423" y2="185" marker-end="url(#ah)"/>
+  <text x="297" y="180" class="box-text">certify_credits(amount)</text>
+  <text class="ref-num" x="300" y="198">514</text>
+
+  <!-- STEP 2: Authority checks registry -->
+  <text x="430" y="220" style="font-size:10px; font-weight:bold">STEP 2</text>
+  <line class="flow" x1="425" y1="230" x2="648" y2="230" marker-end="url(#ah)"/>
+  <text x="537" y="225" class="box-text">fetch members.json</text>
+
+  <line class="flow" x1="648" y1="250" x2="427" y2="250" marker-end="url(#ah)"/>
+  <text x="537" y="265" class="box-text">member record</text>
+  <text class="ref-num" x="545" y="278">714</text>
+
+  <!-- Decision: Active? -->
+  <polygon class="decision" points="425,290 475,310 425,330 375,310"/>
+  <text x="425" y="313" class="small-text">ACTIVE?</text>
+
+  <!-- NO branch -->
+  <text x="368" y="315" class="yn">N</text>
+  <path class="flow" d="M 375,310 L 300,310 L 300,340 L 172,340" marker-end="url(#ah)"/>
+  <text x="240" y="355" class="box-text">REFUSE: not active</text>
+
+  <!-- YES branch continues -->
+  <text x="432" y="348" class="yn">Y</text>
+  <line class="flow" x1="425" y1="330" x2="425" y2="370"/>
+
+  <!-- STEP 3: Calculate fee -->
+  <text x="430" y="375" style="font-size:10px; font-weight:bold">STEP 3</text>
+  <rect class="step" x="355" y="385" width="140" height="55" rx="3"/>
+  <text x="425" y="400" class="box-text">CALCULATE FEE</text>
+  <text x="425" y="412" class="small-text">gross_sats 514</text>
+  <text x="425" y="424" class="small-text">− fee_sats 510</text>
+  <text x="425" y="436" class="small-text">= net_sats 512</text>
+
+  <line class="flow" x1="425" y1="440" x2="425" y2="460"/>
+
+  <!-- STEP 4: Sign certificate -->
+  <text x="430" y="470" style="font-size:10px; font-weight:bold">STEP 4</text>
+  <rect class="step" x="340" y="480" width="170" height="70" rx="3"/>
+  <text x="425" y="496" class="box-text">BUILD CLAIMS 506</text>
+  <text x="425" y="510" class="small-text">gross, net, fee, operator_npub,</text>
+  <text x="425" y="522" class="small-text">authority_npub, timestamp, jti,</text>
+  <text x="425" y="534" class="small-text">expires_at</text>
+  <text class="ref-num" x="520" y="490">502</text>
+
+  <line class="flow" x1="425" y1="550" x2="425" y2="570"/>
+
+  <rect class="step" x="350" y="572" width="150" height="40" rx="3"/>
+  <text x="425" y="590" class="box-text">SCHNORR SIGN</text>
+  <text x="425" y="602" class="small-text">SHA-256(claims)</text>
+  <text class="ref-num" x="510" y="585">504</text>
+
+  <!-- STEP 5: Return certificate to Operator -->
+  <text x="215" y="630" style="font-size:10px; font-weight:bold">STEP 5</text>
+  <line class="flow" x1="423" y1="635" x2="172" y2="635" marker-end="url(#ah)"/>
+  <text x="297" y="650" class="box-text">signed certificate (base64)</text>
+
+  <!-- STEP 6: Operator verifies and creates invoice -->
+  <text x="115" y="680" style="font-size:10px; font-weight:bold">STEP 6</text>
+  <rect class="step" x="110" y="690" width="160" height="55" rx="3"/>
+  <text x="190" y="706" class="box-text">VERIFY SIGNATURE 516</text>
+  <text x="190" y="720" class="small-text">Check JTI 508</text>
+  <text x="190" y="732" class="small-text">Check expiration</text>
+
+  <line class="flow" x1="190" y1="745" x2="190" y2="770"/>
+
+  <rect class="step" x="110" y="772" width="160" height="40" rx="3"/>
+  <text x="190" y="790" class="box-text">CREATE INVOICE</text>
+  <text x="190" y="802" class="small-text">for net_sats 512 (not gross)</text>
+  <text class="ref-num" x="278" y="788">204</text>
+
+  <!-- STEP 7: Record JTI (anti-replay) -->
+  <text x="115" y="835" style="font-size:10px; font-weight:bold">STEP 7</text>
+  <rect class="step" x="110" y="845" width="160" height="35" rx="3"/>
+  <text x="190" y="867" class="box-text">RECORD JTI (anti-replay)</text>
+  <text class="ref-num" x="278" y="855">508</text>
+
+  <!-- Annotation: Self-similar pattern -->
+  <rect x="540" y="450" width="200" height="80" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="640" y="470" class="small-text">SELF-SIMILAR NOTE:</text>
+  <text x="640" y="484" class="small-text">Authority 106 is itself an</text>
+  <text x="640" y="498" class="small-text">Operator 104 whose tool is</text>
+  <text x="640" y="512" class="small-text">certify_credits. Same protocol</text>
+  <text x="640" y="526" class="small-text">applies at every tier.</text>
+
+  <text x="425" y="960" class="fig-label">FIG. 4</text>
+</svg>

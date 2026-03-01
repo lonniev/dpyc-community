@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .step-label { font-size: 10px; text-anchor: middle; }
+    .step-label-left { font-size: 10px; text-anchor: start; }
+    rect.step { fill: white; stroke: black; stroke-width: 2; }
+    polygon.decision { fill: white; stroke: black; stroke-width: 2; }
+    ellipse.terminal { fill: white; stroke: black; stroke-width: 2; }
+    line.flow { stroke: black; stroke-width: 1.5; }
+    path.flow { stroke: black; stroke-width: 1.5; fill: none; }
+    line.lead { stroke: black; stroke-width: 0.75; }
+    .decision-label { font-size: 9px; text-anchor: middle; }
+    .yn { font-size: 10px; font-weight: bold; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <text x="425" y="80" class="sheet-num">2/6</text>
+
+  <!-- Column labels (actors) -->
+  <text x="200" y="120" class="step-label" style="font-weight:bold; font-size:12px">CONSUMER 102</text>
+  <text x="500" y="120" class="step-label" style="font-weight:bold; font-size:12px">OPERATOR 104</text>
+  <text x="720" y="120" class="step-label" style="font-weight:bold; font-size:12px">BTCPAY 200</text>
+
+  <!-- Vertical lane dividers (dashed) -->
+  <line x1="350" y1="130" x2="350" y2="960" stroke="black" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <line x1="630" y1="130" x2="630" y2="960" stroke="black" stroke-width="0.5" stroke-dasharray="4,4"/>
+
+  <!-- ===== PHASE 1: CREDIT PURCHASE ===== -->
+  <text x="110" y="155" style="font-size:11px; font-weight:bold;">PHASE 1: PURCHASE</text>
+
+  <!-- S1: Consumer sends purchase request -->
+  <rect class="step" x="130" y="165" width="140" height="40" rx="3"/>
+  <text x="200" y="183" class="step-label">SEND PURCHASE</text>
+  <text x="200" y="195" class="step-label">REQUEST</text>
+  <text class="ref-num" x="113" y="183">312</text>
+
+  <!-- Arrow to Operator -->
+  <line class="flow" x1="270" y1="185" x2="398" y2="185" marker-end="url(#ah)"/>
+
+  <!-- S2: Operator obtains certificate from Authority -->
+  <rect class="step" x="400" y="165" width="150" height="40" rx="3"/>
+  <text x="475" y="183" class="step-label">OBTAIN CERTIFICATE</text>
+  <text x="475" y="195" class="step-label">FROM AUTHORITY</text>
+  <text class="ref-num" x="560" y="178">502</text>
+
+  <!-- Arrow down -->
+  <line class="flow" x1="475" y1="205" x2="475" y2="225" marker-end="url(#ah)"/>
+
+  <!-- S3: Verify certificate -->
+  <rect class="step" x="400" y="227" width="150" height="35" rx="3"/>
+  <text x="475" y="249" class="step-label">VERIFY SIGNATURE 516</text>
+  <text class="ref-num" x="560" y="240">508</text>
+  <line class="lead" x1="557" y1="243" x2="552" y2="248"/>
+
+  <!-- Arrow to BTCPay -->
+  <line class="flow" x1="550" y1="245" x2="648" y2="245" marker-end="url(#ah)"/>
+
+  <!-- S4: Create Lightning invoice -->
+  <rect class="step" x="650" y="227" width="120" height="35" rx="3"/>
+  <text x="710" y="249" class="step-label">CREATE INVOICE</text>
+  <text class="ref-num" x="660" y="222">204</text>
+
+  <!-- Arrow back to Consumer -->
+  <path class="flow" d="M 710,262 L 710,280 L 200,280" marker-end="url(#ah)"/>
+
+  <!-- ===== PHASE 2: SETTLEMENT ===== -->
+  <text x="110" y="310" style="font-size:11px; font-weight:bold;">PHASE 2: SETTLEMENT</text>
+
+  <!-- S5: Consumer pays invoice -->
+  <rect class="step" x="130" y="320" width="140" height="35" rx="3"/>
+  <text x="200" y="342" class="step-label">PAY LIGHTNING INVOICE</text>
+  <text class="ref-num" x="113" y="338">202</text>
+
+  <!-- Arrow to BTCPay -->
+  <path class="flow" d="M 270,337 L 648,337" marker-end="url(#ah)"/>
+
+  <!-- S6: Settlement confirmed -->
+  <rect class="step" x="650" y="320" width="120" height="35" rx="3"/>
+  <text x="710" y="342" class="step-label">SETTLE PAYMENT</text>
+  <text class="ref-num" x="660" y="312">206</text>
+
+  <!-- Arrow to Operator -->
+  <path class="flow" d="M 710,355 L 710,375 L 553,375" marker-end="url(#ah)"/>
+
+  <!-- S7: Credit balance -->
+  <rect class="step" x="400" y="365" width="150" height="50" rx="3"/>
+  <text x="475" y="383" class="step-label">CREDIT LEDGER 300</text>
+  <text x="475" y="395" class="step-label">WITH api_sats 304</text>
+  <text x="475" y="407" class="step-label">× VIP MULTIPLIER 306</text>
+
+  <!-- Arrow down -->
+  <line class="flow" x1="475" y1="415" x2="475" y2="432" marker-end="url(#ah)"/>
+
+  <!-- S8: Create tranche -->
+  <rect class="step" x="400" y="434" width="150" height="40" rx="3"/>
+  <text x="475" y="450" class="step-label">CREATE TRANCHE 302</text>
+  <text x="475" y="462" class="step-label">(expires +30d)</text>
+
+  <!-- ===== PHASE 3: TOOL USAGE ===== -->
+  <text x="110" y="500" style="font-size:11px; font-weight:bold;">PHASE 3: TOOL USAGE</text>
+
+  <!-- S9: Consumer invokes tool -->
+  <rect class="step" x="130" y="510" width="140" height="35" rx="3"/>
+  <text x="200" y="532" class="step-label">INVOKE TOOL</text>
+  <text class="ref-num" x="113" y="528">316</text>
+
+  <!-- Arrow to Operator -->
+  <line class="flow" x1="270" y1="527" x2="398" y2="527" marker-end="url(#ah)"/>
+
+  <!-- S10: Evaluate constraints -->
+  <rect class="step" x="400" y="510" width="150" height="35" rx="3"/>
+  <text x="475" y="532" class="step-label">EVALUATE CONSTRAINTS</text>
+  <text class="ref-num" x="560" y="522">400</text>
+
+  <!-- Arrow down -->
+  <line class="flow" x1="475" y1="545" x2="475" y2="562" marker-end="url(#ah)"/>
+
+  <!-- S11: Balance sufficient? (diamond) -->
+  <polygon class="decision" points="475,565 545,595 475,625 405,595"/>
+  <text x="475" y="598" class="decision-label">BALANCE</text>
+  <text x="475" y="610" class="decision-label">≥ COST?</text>
+  <text class="ref-num" x="553" y="585">314</text>
+
+  <!-- YES branch: deduct -->
+  <text x="480" y="643" class="yn">Y</text>
+  <line class="flow" x1="475" y1="625" x2="475" y2="655" marker-end="url(#ah)"/>
+
+  <!-- S12: FIFO deduction -->
+  <rect class="step" x="400" y="657" width="150" height="35" rx="3"/>
+  <text x="475" y="679" class="step-label">DEDUCT FROM OLDEST</text>
+  <text class="ref-num" x="560" y="670">308</text>
+
+  <!-- Arrow back to Consumer (response) -->
+  <path class="flow" d="M 400,675 L 270,675" marker-end="url(#ah)"/>
+  <rect class="step" x="130" y="657" width="140" height="35" rx="3"/>
+  <text x="200" y="679" class="step-label">RECEIVE RESPONSE</text>
+  <text class="ref-num" x="113" y="670">318</text>
+
+  <!-- NO branch: insufficient -->
+  <text x="395" y="590" class="yn">N</text>
+  <path class="flow" d="M 405,595 L 350,595 L 350,720 L 398,720" marker-end="url(#ah)"/>
+  <rect class="step" x="400" y="705" width="150" height="35" rx="3"/>
+  <text x="475" y="727" class="step-label">RETURN ERROR:</text>
+  <text class="ref-num" x="560" y="720">312</text>
+
+  <!-- ===== PHASE 4: EXPIRATION ===== -->
+  <text x="110" y="770" style="font-size:11px; font-weight:bold;">PHASE 4: EXPIRATION</text>
+
+  <!-- S13: Time passes, tranche expires -->
+  <rect class="step" x="400" y="780" width="150" height="40" rx="3"/>
+  <text x="475" y="798" class="step-label">TRANCHE EXPIRES</text>
+  <text x="475" y="810" class="step-label">(DEMURRAGE)</text>
+  <text class="ref-num" x="560" y="790">310</text>
+
+  <!-- Arrow down -->
+  <line class="flow" x1="475" y1="820" x2="475" y2="838" marker-end="url(#ah)"/>
+
+  <!-- S14: Prune expired, reduce balance -->
+  <rect class="step" x="400" y="840" width="150" height="35" rx="3"/>
+  <text x="475" y="862" class="step-label">PRUNE FROM LEDGER 300</text>
+
+  <!-- ===== PHASE 5: TOP-UP (loops back) ===== -->
+  <text x="110" y="905" style="font-size:11px; font-weight:bold;">PHASE 5: TOP-UP</text>
+
+  <!-- Arrow looping back to Phase 1 -->
+  <path class="flow" d="M 475,875 L 475,920 L 120,920 L 120,185 L 128,185" marker-end="url(#ah)" stroke-dasharray="6,3"/>
+  <text x="120" y="940" class="step-label-left" style="font-style:italic">Repeat Phase 1</text>
+
+  <!-- Figure label -->
+  <text x="425" y="985" class="fig-label">FIG. 2</text>
+
+</svg>

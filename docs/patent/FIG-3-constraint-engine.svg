@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .box-text { font-size: 10px; text-anchor: middle; }
+    .small-text { font-size: 9px; text-anchor: middle; }
+    .yn { font-size: 10px; font-weight: bold; }
+    rect.step { fill: white; stroke: black; stroke-width: 2; }
+    rect.constraint { fill: white; stroke: black; stroke-width: 1.5; }
+    rect.ctx { fill: white; stroke: black; stroke-width: 1; stroke-dasharray: 6,3; }
+    polygon.decision { fill: white; stroke: black; stroke-width: 2; }
+    ellipse.terminal { fill: white; stroke: black; stroke-width: 2; }
+    line.flow { stroke: black; stroke-width: 1.5; }
+    path.flow { stroke: black; stroke-width: 1.5; fill: none; }
+    line.lead { stroke: black; stroke-width: 0.75; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <text x="425" y="80" class="sheet-num">3/6</text>
+
+  <!-- ENTRY: Tool Invocation -->
+  <rect class="step" x="300" y="110" width="200" height="40" rx="3"/>
+  <text x="400" y="128" class="box-text">TOOL INVOCATION</text>
+  <text x="400" y="140" class="box-text">(base cost defined)</text>
+  <text class="ref-num" x="510" y="128">316</text>
+
+  <line class="flow" x1="400" y1="150" x2="400" y2="170" marker-end="url(#ah)"/>
+
+  <!-- BUILD CONTEXT -->
+  <rect class="step" x="280" y="172" width="240" height="38" rx="3"/>
+  <text x="400" y="196" class="box-text">BUILD CONSTRAINT CONTEXT</text>
+  <text class="ref-num" x="530" y="188">404</text>
+
+  <!-- Context sub-components (dashed group) -->
+  <rect class="ctx" x="160" y="225" width="130" height="45"/>
+  <text x="225" y="245" class="box-text">LEDGER</text>
+  <text x="225" y="257" class="box-text">SNAPSHOT</text>
+  <text class="ref-num" x="155" y="240">406</text>
+
+  <rect class="ctx" x="310" y="225" width="130" height="45"/>
+  <text x="375" y="245" class="box-text">PATRON</text>
+  <text x="375" y="257" class="box-text">IDENTITY</text>
+  <text class="ref-num" x="305" y="240">408</text>
+
+  <rect class="ctx" x="460" y="225" width="140" height="45"/>
+  <text x="530" y="245" class="box-text">ENVIRONMENT</text>
+  <text x="530" y="257" class="box-text">SNAPSHOT</text>
+  <text class="ref-num" x="610" y="240">410</text>
+
+  <!-- Lines from context to sub-components -->
+  <line class="flow" x1="340" y1="210" x2="225" y2="223" marker-end="url(#ah)"/>
+  <line class="flow" x1="400" y1="210" x2="375" y2="223" marker-end="url(#ah)"/>
+  <line class="flow" x1="460" y1="210" x2="530" y2="223" marker-end="url(#ah)"/>
+
+  <line class="flow" x1="400" y1="210" x2="400" y2="290" marker-end="url(#ah)"/>
+
+  <!-- ===== CONSTRAINT PIPELINE 402 ===== -->
+  <rect x="145" y="290" width="510" height="390" rx="0" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="10,5"/>
+  <text x="400" y="310" style="font-size:12px; font-weight:bold; text-anchor:middle;">CONSTRAINT PIPELINE 402</text>
+  <text class="ref-num" x="130" y="305">400</text>
+
+  <!-- Constraint 1: TemporalWindow -->
+  <rect class="constraint" x="290" y="320" width="220" height="30" rx="2"/>
+  <text x="400" y="340" class="box-text">TEMPORAL WINDOW CONSTRAINT</text>
+  <text class="ref-num" x="520" y="338">416</text>
+
+  <line class="flow" x1="400" y1="350" x2="400" y2="362" marker-end="url(#ah)"/>
+
+  <!-- Constraint 2: FiniteSupply -->
+  <rect class="constraint" x="290" y="364" width="220" height="30" rx="2"/>
+  <text x="400" y="384" class="box-text">FINITE SUPPLY CONSTRAINT</text>
+  <text class="ref-num" x="520" y="382">418</text>
+
+  <line class="flow" x1="400" y1="394" x2="400" y2="406" marker-end="url(#ah)"/>
+
+  <!-- Constraint 3: PeriodicRefresh -->
+  <rect class="constraint" x="290" y="408" width="220" height="30" rx="2"/>
+  <text x="400" y="428" class="box-text">PERIODIC REFRESH CONSTRAINT</text>
+  <text class="ref-num" x="520" y="426">420</text>
+
+  <line class="flow" x1="400" y1="438" x2="400" y2="450" marker-end="url(#ah)"/>
+
+  <!-- Constraint 4: Coupon -->
+  <rect class="constraint" x="290" y="452" width="220" height="30" rx="2"/>
+  <text x="400" y="472" class="box-text">COUPON CONSTRAINT</text>
+  <text class="ref-num" x="520" y="470">422</text>
+
+  <line class="flow" x1="400" y1="482" x2="400" y2="494" marker-end="url(#ah)"/>
+
+  <!-- Constraint 5: FreeTrial -->
+  <rect class="constraint" x="290" y="496" width="220" height="30" rx="2"/>
+  <text x="400" y="516" class="box-text">FREE TRIAL CONSTRAINT</text>
+  <text class="ref-num" x="520" y="514">424</text>
+
+  <line class="flow" x1="400" y1="526" x2="400" y2="538" marker-end="url(#ah)"/>
+
+  <!-- Constraint 6: Loyalty -->
+  <rect class="constraint" x="290" y="540" width="220" height="30" rx="2"/>
+  <text x="400" y="560" class="box-text">LOYALTY DISCOUNT CONSTRAINT</text>
+  <text class="ref-num" x="520" y="558">426</text>
+
+  <line class="flow" x1="400" y1="570" x2="400" y2="582" marker-end="url(#ah)"/>
+
+  <!-- Constraint 7: BulkBonus -->
+  <rect class="constraint" x="290" y="584" width="220" height="30" rx="2"/>
+  <text x="400" y="604" class="box-text">BULK BONUS CONSTRAINT</text>
+  <text class="ref-num" x="520" y="602">428</text>
+
+  <line class="flow" x1="400" y1="614" x2="400" y2="626" marker-end="url(#ah)"/>
+
+  <!-- Constraint 8: HappyHour -->
+  <rect class="constraint" x="290" y="628" width="220" height="30" rx="2"/>
+  <text x="400" y="648" class="box-text">HAPPY HOUR CONSTRAINT</text>
+  <text class="ref-num" x="520" y="646">430</text>
+
+  <!-- Each constraint emits result 412 with optional modifier 414 -->
+  <!-- Side annotations showing outputs -->
+  <text x="175" y="440" class="small-text">Each constraint</text>
+  <text x="175" y="452" class="small-text">emits RESULT 412</text>
+  <text x="175" y="464" class="small-text">with optional</text>
+  <text x="175" y="476" class="small-text">PRICE MODIFIER 414</text>
+
+  <!-- End of pipeline -->
+  <line class="flow" x1="400" y1="658" x2="400" y2="695" marker-end="url(#ah)"/>
+
+  <!-- ACCUMULATOR -->
+  <rect class="step" x="280" y="697" width="240" height="50" rx="3"/>
+  <text x="400" y="715" class="box-text">ACCUMULATE MODIFIERS</text>
+  <text x="400" y="727" class="small-text">% compound · sats add · free propagates</text>
+  <text x="400" y="739" class="small-text">bonus multipliers compound</text>
+  <text class="ref-num" x="530" y="712">436</text>
+
+  <line class="flow" x1="400" y1="747" x2="400" y2="770" marker-end="url(#ah)"/>
+
+  <!-- FINAL PRICE -->
+  <rect class="step" x="280" y="772" width="240" height="40" rx="3"/>
+  <text x="400" y="790" class="box-text">CALCULATE FINAL PRICE</text>
+  <text x="400" y="802" class="small-text">base_cost × accumulated_modifiers</text>
+  <text class="ref-num" x="530" y="785">434</text>
+
+  <line class="flow" x1="400" y1="812" x2="400" y2="835" marker-end="url(#ah)"/>
+
+  <!-- Decision: Balance sufficient? -->
+  <polygon class="decision" points="400,838 470,865 400,892 330,865"/>
+  <text x="400" y="862" class="small-text">BALANCE</text>
+  <text x="400" y="873" class="small-text">≥ COST?</text>
+  <text class="ref-num" x="478" y="858">314</text>
+
+  <!-- YES -->
+  <text x="395" y="910" class="yn">Y</text>
+  <line class="flow" x1="400" y1="892" x2="400" y2="922" marker-end="url(#ah)"/>
+  <rect class="step" x="310" y="924" width="180" height="35" rx="3"/>
+  <text x="400" y="946" class="box-text">DEDUCT (FIFO) AND PERMIT</text>
+  <text class="ref-num" x="500" y="940">308</text>
+
+  <!-- NO -->
+  <text x="315" y="860" class="yn">N</text>
+  <path class="flow" d="M 330,865 L 200,865 L 200,940 L 308,940" marker-end="url(#ah)"/>
+  <rect class="step" x="130" y="924" width="170" height="35" rx="3"/>
+  <text x="215" y="946" class="box-text">DENY: INSUFFICIENT</text>
+
+  <!-- Any constraint denied -->
+  <text x="700" y="470" class="small-text" style="text-anchor:end">Any constraint</text>
+  <text x="700" y="482" class="small-text" style="text-anchor:end">returns denied →</text>
+  <text x="700" y="494" class="small-text" style="text-anchor:end">DENY (in</text>
+  <text x="700" y="506" class="small-text" style="text-anchor:end">ALL_MUST_PASS</text>
+  <text x="700" y="518" class="small-text" style="text-anchor:end">mode)</text>
+
+  <text x="425" y="1005" class="fig-label">FIG. 3</text>
+</svg>

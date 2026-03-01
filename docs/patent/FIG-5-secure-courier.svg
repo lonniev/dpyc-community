@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .box-text { font-size: 10px; text-anchor: middle; }
+    .small-text { font-size: 9px; text-anchor: middle; }
+    .actor-label { font-size: 11px; font-weight: bold; text-anchor: middle; }
+    .phase-label { font-size: 11px; font-weight: bold; }
+    rect.step { fill: white; stroke: black; stroke-width: 2; }
+    line.flow { stroke: black; stroke-width: 1.5; }
+    path.flow { stroke: black; stroke-width: 1.5; fill: none; }
+    line.lifeline { stroke: black; stroke-width: 0.75; stroke-dasharray: 4,3; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <text x="425" y="80" class="sheet-num">5/6</text>
+
+  <!-- Four actors -->
+  <rect class="step" x="105" y="105" width="100" height="40" rx="3"/>
+  <text x="155" y="122" class="actor-label">CONSUMER</text>
+  <text x="155" y="135" class="small-text">102</text>
+
+  <rect class="step" x="260" y="105" width="100" height="40" rx="3"/>
+  <text x="310" y="122" class="actor-label">AI CHAT</text>
+  <text x="310" y="135" class="small-text">INTERFACE</text>
+
+  <rect class="step" x="430" y="105" width="110" height="40" rx="3"/>
+  <text x="485" y="122" class="actor-label">MCP SERVICE</text>
+  <text x="485" y="135" class="small-text">104</text>
+
+  <rect class="step" x="615" y="105" width="110" height="40" rx="3"/>
+  <text x="670" y="122" class="actor-label">NOSTR RELAY</text>
+  <text x="670" y="135" class="small-text">600</text>
+
+  <!-- Lifelines -->
+  <line class="lifeline" x1="155" y1="145" x2="155" y2="950"/>
+  <line class="lifeline" x1="310" y1="145" x2="310" y2="950"/>
+  <line class="lifeline" x1="485" y1="145" x2="485" y2="950"/>
+  <line class="lifeline" x1="670" y1="145" x2="670" y2="950"/>
+
+  <!-- ===== PHASE 1: CHANNEL OPENING 610 ===== -->
+  <text x="115" y="170" class="phase-label">PHASE 1: CHANNEL OPEN</text>
+  <text class="ref-num" x="290" y="170">610</text>
+
+  <!-- Consumer → Chat: request channel -->
+  <line class="flow" x1="155" y1="185" x2="308" y2="185" marker-end="url(#ah)"/>
+  <text x="232" y="180" class="small-text">request access</text>
+
+  <!-- Chat → MCP: call tool -->
+  <line class="flow" x1="310" y1="200" x2="483" y2="200" marker-end="url(#ah)"/>
+  <text x="397" y="195" class="small-text">request_credential_channel(npub 602)</text>
+
+  <!-- MCP generates poison nonce -->
+  <rect class="step" x="430" y="215" width="110" height="30" rx="2"/>
+  <text x="485" y="234" class="small-text">GENERATE NONCE</text>
+  <text class="ref-num" x="548" y="228">614</text>
+
+  <!-- MCP encrypts and sends welcome DM -->
+  <rect class="step" x="430" y="255" width="110" height="30" rx="2"/>
+  <text x="485" y="274" class="small-text">NIP-44 ENCRYPT</text>
+  <text class="ref-num" x="548" y="268">606</text>
+
+  <rect class="step" x="430" y="295" width="110" height="30" rx="2"/>
+  <text x="485" y="314" class="small-text">NIP-17 WRAP</text>
+  <text class="ref-num" x="548" y="308">608</text>
+
+  <!-- MCP → Relay: send gift-wrapped DM -->
+  <line class="flow" x1="540" y1="310" x2="668" y2="310" marker-end="url(#ah)"/>
+  <text x="604" y="305" class="small-text">kind:1059</text>
+
+  <!-- Relay → Consumer: DM arrives -->
+  <line class="flow" x1="668" y1="340" x2="157" y2="340" marker-end="url(#ah)"/>
+  <text x="400" y="335" class="small-text">welcome DM arrives in Nostr client</text>
+  <text class="ref-num" x="415" y="355">604</text>
+
+  <!-- MCP → Chat: confirmation -->
+  <line class="flow" x1="483" y1="360" x2="312" y2="360" marker-end="url(#ah)"/>
+  <text x="397" y="375" class="small-text">channel opened</text>
+
+  <!-- ===== PHASE 2: ENCRYPTED DELIVERY ===== -->
+  <text x="115" y="405" class="phase-label">PHASE 2: CREDENTIAL DELIVERY</text>
+
+  <!-- Consumer composes credentials -->
+  <rect class="step" x="110" y="420" width="90" height="30" rx="2"/>
+  <text x="155" y="439" class="small-text">FILL TEMPLATE</text>
+
+  <rect class="step" x="110" y="460" width="90" height="30" rx="2"/>
+  <text x="155" y="479" class="small-text">NIP-44 ENCRYPT</text>
+
+  <rect class="step" x="110" y="500" width="90" height="30" rx="2"/>
+  <text x="155" y="519" class="small-text">NIP-17 WRAP</text>
+
+  <!-- Consumer → Relay: send encrypted credentials -->
+  <line class="flow" x1="200" y1="515" x2="668" y2="515" marker-end="url(#ah)"/>
+  <text x="430" y="510" class="small-text">kind:1059 (credentials encrypted)</text>
+
+  <!-- Annotation: credentials never in chat -->
+  <rect x="240" y="540" width="180" height="25" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="330" y="557" class="small-text" style="font-style:italic">CREDENTIALS NEVER IN CHAT</text>
+
+  <!-- ===== PHASE 3: CREDENTIAL RECEIPT ===== -->
+  <text x="115" y="590" class="phase-label">PHASE 3: RECEIPT</text>
+
+  <!-- Chat → MCP: receive_credentials -->
+  <line class="flow" x1="310" y1="605" x2="483" y2="605" marker-end="url(#ah)"/>
+  <text x="397" y="600" class="small-text">receive_credentials(npub, passphrase)</text>
+
+  <!-- MCP → Relay: scan for DM -->
+  <line class="flow" x1="540" y1="620" x2="668" y2="620" marker-end="url(#ah)"/>
+  <text x="604" y="615" class="small-text">scan for kind:1059</text>
+
+  <!-- Relay → MCP: encrypted DM -->
+  <line class="flow" x1="668" y1="640" x2="542" y2="640" marker-end="url(#ah)"/>
+
+  <!-- MCP processes -->
+  <rect class="step" x="430" y="655" width="110" height="30" rx="2"/>
+  <text x="485" y="674" class="small-text">NIP-17 UNWRAP</text>
+
+  <rect class="step" x="430" y="695" width="110" height="30" rx="2"/>
+  <text x="485" y="714" class="small-text">NIP-44 DECRYPT</text>
+
+  <rect class="step" x="430" y="735" width="110" height="30" rx="2"/>
+  <text x="485" y="749" class="small-text">VERIFY NONCE 614</text>
+  <text class="ref-num" x="548" y="748">618</text>
+
+  <rect class="step" x="430" y="775" width="110" height="30" rx="2"/>
+  <text x="485" y="789" class="small-text">ENCRYPT W/</text>
+  <text x="485" y="799" class="small-text">PASSPHRASE</text>
+  <text class="ref-num" x="548" y="788">620</text>
+
+  <!-- MCP → Vault: store -->
+  <rect class="step" x="430" y="815" width="110" height="30" rx="2"/>
+  <text x="485" y="834" class="small-text">STORE IN VAULT</text>
+  <text class="ref-num" x="548" y="828">612</text>
+
+  <!-- MCP → Relay: delete DM -->
+  <line class="flow" x1="540" y1="855" x2="668" y2="855" marker-end="url(#ah)"/>
+  <text x="604" y="850" class="small-text">delete from relay</text>
+
+  <!-- ===== PHASE 4: FUTURE SESSIONS ===== -->
+  <text x="115" y="890" class="phase-label">PHASE 4: REACTIVATION</text>
+
+  <line class="flow" x1="310" y1="905" x2="483" y2="905" marker-end="url(#ah)"/>
+  <text x="397" y="900" class="small-text">activate_session(passphrase)</text>
+
+  <line class="flow" x1="483" y1="920" x2="312" y2="920" marker-end="url(#ah)"/>
+  <text x="397" y="935" class="small-text">session active</text>
+
+  <text x="425" y="985" class="fig-label">FIG. 5</text>
+</svg>

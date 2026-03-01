@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1100" width="850" height="1100">
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: black; }
+    .sheet-num { font-size: 18px; font-weight: bold; text-anchor: middle; }
+    .fig-label { font-size: 16px; font-weight: bold; text-anchor: middle; }
+    .ref-num { font-size: 13px; font-weight: bold; }
+    .box-text { font-size: 10px; text-anchor: middle; }
+    .small-text { font-size: 9px; text-anchor: middle; }
+    .group-label { font-size: 12px; font-weight: bold; text-anchor: middle; }
+    rect.step { fill: white; stroke: black; stroke-width: 2; }
+    rect.group { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 8,4; }
+    rect.ci { fill: white; stroke: black; stroke-width: 1.5; }
+    line.flow { stroke: black; stroke-width: 1.5; }
+    path.flow { stroke: black; stroke-width: 1.5; fill: none; }
+    line.lead { stroke: black; stroke-width: 0.75; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+
+  <text x="425" y="80" class="sheet-num">6/6</text>
+
+  <!-- ===== VERSION-CONTROLLED REPOSITORY 700 ===== -->
+  <rect class="group" x="130" y="110" width="590" height="250" rx="0"/>
+  <text x="425" y="132" class="group-label">VERSION-CONTROLLED REPOSITORY 700</text>
+
+  <!-- 110 Community Registry (members.json) -->
+  <rect class="step" x="155" y="150" width="150" height="55" rx="3"/>
+  <text x="230" y="170" class="box-text">COMMUNITY</text>
+  <text x="230" y="183" class="box-text">REGISTRY</text>
+  <text x="230" y="196" class="small-text">(members.json)</text>
+  <text class="ref-num" x="315" y="168">110</text>
+
+  <!-- 114 Governance Document -->
+  <rect class="step" x="345" y="150" width="150" height="55" rx="3"/>
+  <text x="420" y="170" class="box-text">GOVERNANCE</text>
+  <text x="420" y="183" class="box-text">DOCUMENT</text>
+  <text x="420" y="196" class="small-text">(GOVERNANCE.md)</text>
+  <text class="ref-num" x="505" y="168">114</text>
+
+  <!-- 712 Tax Rate Configuration -->
+  <rect class="step" x="535" y="150" width="150" height="55" rx="3"/>
+  <text x="610" y="170" class="box-text">TAX RATE</text>
+  <text x="610" y="183" class="box-text">CONFIGURATION</text>
+  <text x="610" y="196" class="small-text">(network-status.json)</text>
+  <text class="ref-num" x="695" y="168">712</text>
+
+  <!-- 702 Branch Protection Rules -->
+  <rect class="step" x="200" y="225" width="200" height="45" rx="3"/>
+  <text x="300" y="242" class="box-text">BRANCH PROTECTION 702</text>
+  <text x="300" y="256" class="small-text">PR required · review · CI pass · no force-push</text>
+
+  <!-- 714 Member Record Schema -->
+  <rect class="step" x="440" y="225" width="200" height="45" rx="3"/>
+  <text x="540" y="242" class="box-text">MEMBER RECORD 714</text>
+  <text x="540" y="256" class="small-text">npub · role · status · upstream · services</text>
+
+  <!-- Lines from protection to files -->
+  <line class="lead" x1="300" y1="225" x2="230" y2="207"/>
+  <line class="lead" x1="300" y1="225" x2="420" y2="207"/>
+  <line class="lead" x1="540" y1="225" x2="230" y2="207"/>
+
+  <!-- Arrow from 702 annotation -->
+  <line class="lead" x1="400" y1="248" x2="440" y2="248"/>
+
+  <!-- ===== CI VALIDATION PIPELINE 704 ===== -->
+  <rect class="group" x="130" y="380" width="590" height="85" rx="0"/>
+  <text x="425" y="400" class="group-label">CI VALIDATION PIPELINE 704</text>
+
+  <rect class="ci" x="150" y="410" width="110" height="35" rx="2"/>
+  <text x="205" y="432" class="box-text">SCHEMA CHECK</text>
+
+  <rect class="ci" x="275" y="410" width="110" height="35" rx="2"/>
+  <text x="330" y="428" class="box-text">NPUB FORMAT</text>
+  <text x="330" y="440" class="small-text">(bech32)</text>
+
+  <rect class="ci" x="400" y="410" width="110" height="35" rx="2"/>
+  <text x="455" y="432" class="box-text">UNIQUENESS</text>
+
+  <rect class="ci" x="525" y="410" width="170" height="35" rx="2"/>
+  <text x="610" y="428" class="box-text">UPSTREAM REF</text>
+  <text x="610" y="440" class="small-text">INTEGRITY</text>
+
+  <!-- Flow between CI stages -->
+  <line class="flow" x1="260" y1="428" x2="273" y2="428" marker-end="url(#ah)"/>
+  <line class="flow" x1="385" y1="428" x2="398" y2="428" marker-end="url(#ah)"/>
+  <line class="flow" x1="510" y1="428" x2="523" y2="428" marker-end="url(#ah)"/>
+
+  <!-- Arrow from repo to CI -->
+  <line class="flow" x1="425" y1="360" x2="425" y2="378" marker-end="url(#ah)"/>
+  <text x="445" y="372" class="small-text">triggers</text>
+
+  <!-- ===== GOVERNANCE ACTIONS 706 (left column) ===== -->
+  <rect class="group" x="130" y="495" width="200" height="210" rx="0"/>
+  <text x="230" y="515" class="group-label">GOVERNANCE ACTIONS</text>
+
+  <rect class="step" x="150" y="525" width="160" height="30" rx="2"/>
+  <text x="230" y="545" class="box-text">ADD MEMBER PR</text>
+  <text class="ref-num" x="320" y="540">706</text>
+
+  <rect class="step" x="150" y="565" width="160" height="35" rx="2"/>
+  <text x="230" y="580" class="box-text">BAN MEMBER PR</text>
+  <text x="230" y="592" class="small-text">(72-hour discussion)</text>
+  <text class="ref-num" x="320" y="578">708</text>
+
+  <rect class="step" x="150" y="610" width="160" height="30" rx="2"/>
+  <text x="230" y="630" class="box-text">APPEAL PR</text>
+
+  <rect class="step" x="150" y="650" width="160" height="30" rx="2"/>
+  <text x="230" y="670" class="box-text">TAX RATE CHANGE PR</text>
+
+  <!-- Arrows from actions to repo -->
+  <path class="flow" d="M 310,540 L 360,540 L 360,360 L 350,360" marker-end="url(#ah)" stroke-dasharray="0"/>
+  <path class="flow" d="M 310,580 L 370,580 L 370,360 L 360,360" marker-end="url(#ah)"/>
+
+  <!-- ===== ORACLE SERVICE 112 (middle) ===== -->
+  <rect class="group" x="360" y="495" width="170" height="210" rx="0"/>
+  <text x="445" y="515" class="group-label">ORACLE 112</text>
+
+  <rect class="step" x="375" y="530" width="140" height="25" rx="2"/>
+  <text x="445" y="547" class="box-text">lookup_member(npub)</text>
+
+  <rect class="step" x="375" y="565" width="140" height="25" rx="2"/>
+  <text x="445" y="582" class="box-text">get_rulebook()</text>
+
+  <rect class="step" x="375" y="600" width="140" height="25" rx="2"/>
+  <text x="445" y="617" class="box-text">request_citizenship()</text>
+  <text class="ref-num" x="523" y="610">616</text>
+
+  <rect class="step" x="375" y="635" width="140" height="25" rx="2"/>
+  <text x="445" y="652" class="box-text">confirm_citizenship()</text>
+  <text class="ref-num" x="523" y="645">618</text>
+
+  <rect class="step" x="375" y="670" width="140" height="25" rx="2"/>
+  <text x="445" y="687" class="box-text">get_tax_rate()</text>
+
+  <!-- Arrow from Oracle tools to repo -->
+  <path class="flow" d="M 445,530 L 445,490 L 280,490 L 280,360 L 300,360" marker-end="url(#ah)"/>
+  <text x="350" y="485" class="small-text">reads</text>
+
+  <!-- confirm_citizenship direct commit -->
+  <path class="flow" d="M 445,660 L 445,720 L 230,720 L 230,360 L 250,360" marker-end="url(#ah)"/>
+  <text x="260" y="735" class="small-text">direct commit</text>
+
+  <!-- ===== RUNTIME ENFORCEMENT 710 (right) ===== -->
+  <rect class="group" x="560" y="495" width="170" height="145" rx="0"/>
+  <text x="645" y="515" class="group-label">RUNTIME 710</text>
+
+  <rect class="step" x="575" y="530" width="140" height="40" rx="3"/>
+  <text x="645" y="547" class="box-text">AUTHORITY 106</text>
+  <text x="645" y="560" class="small-text">certify_credits()</text>
+
+  <rect class="step" x="575" y="585" width="140" height="35" rx="3"/>
+  <text x="645" y="600" class="box-text">REGISTRY CACHE</text>
+  <text x="645" y="612" class="small-text">(refresh interval)</text>
+
+  <!-- Arrow from Authority to cache -->
+  <line class="flow" x1="645" y1="570" x2="645" y2="583" marker-end="url(#ah)"/>
+  <text x="690" y="578" class="small-text">checks</text>
+
+  <!-- Arrow from cache to repo -->
+  <path class="flow" d="M 645,620 L 645,645 L 740,645 L 740,300 L 720,300 L 610,207" marker-end="url(#ah)"/>
+  <text x="750" y="470" class="small-text" style="text-anchor:start; writing-mode:tb">periodic refresh</text>
+
+  <!-- ===== ENFORCEMENT NOTE ===== -->
+  <rect x="130" y="760" width="590" height="60" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="425" y="780" class="box-text" style="font-weight:bold">ENFORCEMENT MECHANISM</text>
+  <text x="425" y="795" class="small-text">Banned member → certify_credits refused → cannot create invoices → cannot sell API access</text>
+  <text x="425" y="808" class="small-text">Economic defense resides in network participation, not in proprietary code</text>
+
+  <text x="425" y="870" class="fig-label">FIG. 6</text>
+</svg>

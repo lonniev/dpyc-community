@@ -4,6 +4,29 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.52: LNURL-pay Resolution for Lightning Payouts (2026-03-01)
+
+**Affects:** All operators with royalty payouts configured (`TOLLBOOTH_ROYALTY_ADDRESS`)
+
+BTCPay's Lightning payout processor can only auto-pay BOLT11 invoices (`lnbc...`), not Lightning addresses (`user@domain`). Previously, royalty payouts passed the Lightning address directly to `create_payout()`, causing payouts to get stuck in "Awaiting Payment" forever.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.52** | New `lnurl.py` module resolves Lightning addresses to BOLT11 invoices via LNURL-pay protocol (LUD-06 + LUD-16) before calling `create_payout()`. No new dependencies — uses httpx. |
+
+**Key behaviors:**
+- Destinations already in BOLT11 format (`lnbc...`) skip resolution entirely
+- Resolution failures return an error dict — never block credit settlement
+- New `payout_destination` field in payout results shows the resolved invoice prefix
+- No configuration changes needed — existing `TOLLBOOTH_ROYALTY_ADDRESS` (e.g., `tollbooth@btcpay.digitalthread.link`) works automatically
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.52 (or leave at >= 0.1.51 — backward compatible)
+2. Redeploy your service — payouts will auto-resolve and auto-pay within 1 minute
+3. Cancel any stuck payouts in BTCPay from before this fix
+
 ### BREAKING: NSEC-Only Identity — Authority Separation and npub Env Purge (2026-03-01)
 
 **Affects:** All operators and Authorities in the DPYC ecosystem

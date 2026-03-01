@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.51",
+      "current": "0.1.52",
       "minimum": "0.1.51",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -30,5 +30,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-01",
-  "advisory": "BREAKING: NSEC-Only Identity — all services now derive their npub from TOLLBOOTH_NOSTR_OPERATOR_NSEC and resolve their upstream authority from the DPYC community registry. DPYC_AUTHORITY_NPUB and DPYC_OPERATOR_NPUB env vars have been purged. See ADVISORY.md for migration details."
+  "advisory": "tollbooth-dpyc 0.1.52: Lightning address payouts now resolve to BOLT11 invoices via LNURL-pay before calling BTCPay. Fixes stuck royalty payouts. No action required — compatible with all >=0.1.51 deployments."
 }

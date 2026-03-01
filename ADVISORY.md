@@ -1,8 +1,42 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-02-28
+> Last updated: 2026-03-01
 
 ## Current Advisories
+
+### BREAKING: NSEC-Only Identity — Authority Separation and npub Env Purge (2026-03-01)
+
+**Affects:** All operators and Authorities in the DPYC ecosystem
+
+All services now derive their own npub from `TOLLBOOTH_NOSTR_OPERATOR_NSEC` and resolve their upstream authority dynamically from the [DPYC community registry](https://github.com/lonniev/dpyc-community/blob/main/members.json). Hardcoded npub env vars have been purged.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.51** | New `DPYCRegistry` class with `resolve_authority_npub()` moved into the shared library; exported from `tollbooth` top-level |
+| tollbooth-authority | **0.3.1** | Local `registry.py` replaced with re-export from tollbooth-dpyc; `dpyc_authority_npub` and `dpyc_upstream_authority_npub` config fields removed; `report_upstream_purchase` admin auth uses `signer.npub` |
+| excalibur-mcp | **0.6.5** | `dpyc_operator_npub` and `dpyc_authority_npub` config fields removed; new `_resolve_authority_npub()` derives identity at runtime |
+| thebrain-mcp | **1.8.0** | Same pattern as excalibur-mcp; `purchase_credits` and `btcpay_status` use registry resolution |
+| dpyc-community | — | New members: "Lonnie-Authority" (dedicated authority identity) and "excalibur-mcp" (operator); thebrain-mcp upstream updated |
+
+**Identity separation:** The Prime Authority's personal npub (`npub1l94pd4...`) is now distinct from the operational Authority identity (`npub1fuhq0c...`, "Lonnie-Authority"). Each operator has its own keypair and resolves its upstream authority from the registry.
+
+**Removed env vars** (no longer recognized — DELETE from all deployments):
+- `DPYC_AUTHORITY_NPUB` — replaced by registry resolution via `DPYCRegistry.resolve_authority_npub()`
+- `DPYC_OPERATOR_NPUB` — replaced by deriving from `TOLLBOOTH_NOSTR_OPERATOR_NSEC`
+- `DPYC_UPSTREAM_AUTHORITY_NPUB` — replaced by registry resolution
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.51
+2. Update `tollbooth-authority` to >= 0.3.1
+3. Update `excalibur-mcp` to >= 0.6.5
+4. Update `thebrain-mcp` to >= 1.8.0
+5. **Delete** `DPYC_AUTHORITY_NPUB`, `DPYC_OPERATOR_NPUB`, and `DPYC_UPSTREAM_AUTHORITY_NPUB` from all deployments
+6. Ensure `TOLLBOOTH_NOSTR_OPERATOR_NSEC` is set on each service (each service needs its own unique keypair)
+7. Redeploy all services
+
+**Supersedes:** The "Ensure `DPYC_AUTHORITY_NPUB` is set on all Operator services" guidance from the 2026-02-25 Nostr-Only advisory is now obsolete. That env var no longer exists.
 
 ### tollbooth-dpyc 0.1.47 / excalibur-mcp 0.6.2: DRY Version + NIP-17 Inbound Fix (2026-02-28)
 

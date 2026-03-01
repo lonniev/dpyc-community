@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.28",
-      "minimum": "0.1.28",
+      "current": "0.1.52",
+      "minimum": "0.1.51",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.3.0",
-      "minimum": "0.3.0",
+      "current": "0.3.1",
+      "minimum": "0.3.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -16,14 +16,19 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.0.0",
-      "minimum": "1.0.0",
+      "current": "1.8.0",
+      "minimum": "1.8.0",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
+    },
+    "excalibur-mcp": {
+      "current": "0.6.5",
+      "minimum": "0.6.5",
+      "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-02-25",
-  "advisory": "tollbooth-dpyc 0.1.28: Audit events now NIP-44v2 encrypted for npub patrons — balance data only readable by the patron's nsec. BREAKING (prior advisory): JWT/Ed25519 certificates removed in v0.1.27/v0.3.0. See ADVISORY.md for details."
+  "last_updated": "2026-03-01",
+  "advisory": "tollbooth-dpyc 0.1.52: Lightning address payouts now resolve to BOLT11 invoices via LNURL-pay before calling BTCPay. Fixes stuck royalty payouts. No action required — compatible with all >=0.1.51 deployments."
 }

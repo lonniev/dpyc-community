@@ -4,6 +4,40 @@
 
 ## Current Advisories
 
+### BREAKING: thebrain-mcp 1.9.0 — Secure Courier + NeonCredentialVault (2026-03-01)
+
+**Affects:** All thebrain-mcp users (credential flow completely replaced)
+
+Credentials are now delivered via **encrypted Nostr DMs** (Secure Courier), not typed into the MCP chat. The passphrase-based vault (PersonalBrainVault / TheBrainVault) has been removed entirely. Credential persistence moved to **NeonCredentialVault** (Neon serverless Postgres — same DB as the commerce ledger).
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.53** | New `NeonCredentialVault` class — `CredentialVaultBackend` implementation sharing NeonVault's httpx client. Composite PK `(service, npub)`. |
+| thebrain-mcp | **1.9.0** | Secure Courier wiring. `register_credentials`, `upgrade_credentials`, `activate_session`, `activate_dpyc` **removed**. New tools: `request_credential_channel`, `receive_credentials`, `forget_credentials` (all FREE). vault.py stripped to session-only. `cryptography` dependency removed. |
+
+**Removed tools** (no longer available):
+- `register_credentials` → replaced by `request_credential_channel` + `receive_credentials`
+- `upgrade_credentials` → no longer needed (no passphrase vault)
+- `activate_session` → replaced by `receive_credentials` vault-first lookup
+- `activate_dpyc` → removed (was already deprecated)
+
+**New user flow:**
+1. `session_status` → returns onboarding `next_steps`
+2. `request_credential_channel(recipient_npub=<npub>)` → welcome DM arrives in Nostr client
+3. User replies via Nostr DM: `{"api_key": "...", "brain_id": "..."}`
+4. `receive_credentials(sender_npub=<npub>)` → credentials vaulted, session activated
+
+**Returning users:** `receive_credentials(sender_npub=<npub>)` does a vault-first lookup in NeonCredentialVault — instant activation, no relay I/O, no passphrase.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.53
+2. Update `thebrain-mcp` to >= 1.9.0
+3. Ensure `NEON_DATABASE_URL` is set (NeonVault is now mandatory — TheBrainVault fallback removed)
+4. Existing users must re-register via the Secure Courier flow (hard cutover, no migration)
+5. Start a new MCP session to pick up the new tools
+
 ### tollbooth-dpyc 0.1.52: LNURL-pay Resolution for Lightning Payouts (2026-03-01)
 
 **Affects:** All operators with royalty payouts configured (`TOLLBOOTH_ROYALTY_ADDRESS`)

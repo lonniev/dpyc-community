@@ -23,8 +23,8 @@ Defines the base JWT certificate schema for Tollbooth purchase orders. Every Aut
 | `exp`            | int    | Expiration timestamp (Unix epoch seconds)                  |
 | `dpyc_protocol`  | string | Protocol identifier — MUST be `"dpyp-01-base-certificate"` |
 | `amount_sats`    | int    | Total purchase amount in satoshis                          |
-| `tax_paid_sats`  | int    | Tax deducted from operator balance                         |
-| `net_sats`       | int    | `amount_sats - tax_paid_sats` — effective user credit      |
+| `fee_sats`       | int    | Certification fee deducted from operator balance           |
+| `net_sats`       | int    | `amount_sats - fee_sats` — effective user credit           |
 
 ### Optional
 

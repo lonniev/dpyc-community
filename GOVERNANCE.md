@@ -22,7 +22,7 @@ An intermediate node in the Honor Chain that:
 
 - Purchases cert-sats from its upstream Authority
 - Certifies purchase orders for its downstream Operators
-- Collects tax on each certification
+- Charges a certification fee on each purchase order
 - Can sponsor new Operators and sub-Authorities
 - Has repo write access to approve membership PRs for their downstream members
 
@@ -30,7 +30,7 @@ An intermediate node in the Honor Chain that:
 
 A leaf node that runs one or more MCP services monetized through the Tollbooth:
 
-- Purchases tax credits from their sponsoring Authority
+- Purchases api_sat credits from their sponsoring Authority
 - Serves end users via MCP tools
 - Must maintain active standing to have purchases certified
 

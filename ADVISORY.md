@@ -4,6 +4,21 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.57: Pop-and-Acknowledge Relay DMs (2026-03-02)
+
+**Affects:** All operators using Secure Courier credential delivery
+
+Every DM encountered during `receive_credentials` is now consumed from the relay (NIP-09 deletion + local queue purge) regardless of validity. Each popped message gets a reply DM to the sender explaining acceptance or rejection. This keeps relay queues clean and gives users immediate feedback on malformed credentials.
+
+| Version | Change |
+|---------|--------|
+| **0.1.56** | Purge stale DMs from local queue after poison match |
+| **0.1.57** | Pop-and-acknowledge all DMs — wrong poison, no @@@ markers, NIP-04 rejected, undecryptable — all popped with reason reply |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.57
+2. Redeploy
+
 ### tollbooth-dpyc 0.1.55 / thebrain-mcp 1.9.1: Secure Courier Hotfixes (2026-03-02)
 
 **Affects:** All operators using Secure Courier credential delivery

@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.55",
+      "current": "0.1.57",
       "minimum": "0.1.51",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -30,5 +30,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-02",
-  "advisory": "tollbooth-dpyc 0.1.55: Tempered greedy @@@ regex fixes multi-field parsing failure where brain_id was lost after api_key parsed. Update to >=0.1.55 and redeploy."
+  "advisory": "tollbooth-dpyc 0.1.57: Pop-and-acknowledge relay DMs — every DM is consumed and deleted from the relay with a reply to the sender explaining acceptance or rejection. Update to >=0.1.57 and redeploy."
 }

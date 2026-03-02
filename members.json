@@ -54,6 +54,16 @@
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
       "notes": "Excalibur MCP Server — Social media operator"
-    }
+    },
+    {
+      "npub": "npub1d999638gqpn8c594teklxtxva0uvxdng80q3ycyqvldjdl457c7qcrq64z",
+      "role": "citizen",
+      "status": "active",
+      "member_since": "2026-03-02",
+      "display_name": "Lonnie VanZandt (Twitter)",
+      "services": [],
+      "upstream_authority_npub": null,
+      "notes": "Personal Twitter identity — Schnorr signature verified"
+    }    
   ]
 }

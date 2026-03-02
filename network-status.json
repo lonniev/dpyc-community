@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.53",
+      "current": "0.1.54",
       "minimum": "0.1.51",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -16,7 +16,7 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.0",
+      "current": "1.9.1",
       "minimum": "1.9.0",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
@@ -30,5 +30,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-01",
-  "advisory": "BREAKING: thebrain-mcp 1.9.0 — Secure Courier replaces in-chat credential registration. register_credentials, activate_session, upgrade_credentials removed. Existing users must re-register via request_credential_channel + receive_credentials (encrypted Nostr DM). Credential vault moved from TheBrainVault to NeonCredentialVault (tollbooth-dpyc 0.1.53)."
+  "advisory": "tollbooth-dpyc 0.1.54 + thebrain-mcp 1.9.1: Hotfixes for Secure Courier launch. Fixed AuditedVault unwrap (_inner not _vault), @@@ delimiter regex now handles multiline values from mobile Nostr clients, removed (REQUIRED) labels from welcome DM. Update tollbooth-dpyc to >=0.1.54 and redeploy."
 }

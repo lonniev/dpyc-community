@@ -4,6 +4,35 @@
 
 ## Current Advisories
 
+### Unified Commerce Terminology: tax → certification fee (2026-03-02)
+
+**Affects:** All operators and Authorities in the DPYC ecosystem
+
+The "tax" vocabulary has been retired across the entire stack. The Authority charges a **certification fee** on each purchase order — computed by `ToolPricing.compute()` — not a separate tax. Certificate claims now emit `fee_sats` instead of `tax_paid_sats`.
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.58** | Removed `purchase_tax_credits_tool()` → replaced by `direct_purchase_tool()`. Certificate verification returns `fee_sats` (reads both `fee_sats` and `tax_paid_sats` from incoming certs for backward compat). |
+| tollbooth-authority | **0.3.2** | `certify_credits` response and Nostr event claims emit `fee_sats` only (`tax_paid_sats` removed). Deprecated v0.1.x tool shims removed: `purchase_tax_credits`, `check_tax_payment`, `tax_balance`, `certify_purchase`. New tools: `account_statement`, `account_statement_infographic` (SVG). |
+| dpyc-community | — | GOVERNANCE.md, README.md, DPYP-01 protocol spec updated: "tax" → "certification fee" / "fee schedule" / `fee_sats`. |
+
+**New tools in tollbooth-authority v0.3.2:**
+- `account_statement` — structured JSON operator account (balance, deposits, fees paid, certified amount, tranches, fee schedule)
+- `account_statement_infographic` — SVG rendering of the above, dark-themed with Bitcoin-orange accents
+
+**Removed tools in tollbooth-authority v0.3.2:**
+- `purchase_tax_credits` → use `purchase_credits`
+- `check_tax_payment` → use `check_payment`
+- `tax_balance` → use `check_balance`
+- `certify_purchase` → use `certify_credits`
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.58
+2. Update `tollbooth-authority` to >= 0.3.2
+3. If your code reads `tax_paid_sats` from `certify_credits` responses, switch to `fee_sats`
+4. If your code calls any removed tool names, switch to the current names (see table above)
+5. Redeploy
+
 ### tollbooth-dpyc 0.1.57: Pop-and-Acknowledge Relay DMs (2026-03-02)
 
 **Affects:** All operators using Secure Courier credential delivery

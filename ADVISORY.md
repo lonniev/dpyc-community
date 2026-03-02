@@ -4,6 +4,22 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.54 / thebrain-mcp 1.9.1: Secure Courier Hotfixes (2026-03-01)
+
+**Affects:** All operators using Secure Courier credential delivery
+
+Two hotfixes for issues discovered during the first live Secure Courier onboarding:
+
+| Component | Version | Fix |
+|-----------|---------|-----|
+| thebrain-mcp | **1.9.1** | `AuditedVault` unwrap used wrong attribute (`_vault` → `_inner`). `receive_credentials` and `forget_credentials` crashed with `'AuditedVault' object has no attribute '_execute'`. |
+| tollbooth-dpyc | **0.1.54** | `@@@` delimiter regex now uses `re.DOTALL` so values spanning line breaks (injected by mobile Nostr clients like 0xchat) are parsed correctly. Removed `(REQUIRED)` / `(optional)` labels from welcome DM template. |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.54
+2. Update `thebrain-mcp` to >= 1.9.1
+3. Redeploy
+
 ### BREAKING: thebrain-mcp 1.9.0 — Secure Courier + NeonCredentialVault (2026-03-01)
 
 **Affects:** All thebrain-mcp users (credential flow completely replaced)

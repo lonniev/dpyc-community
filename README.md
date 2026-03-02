@@ -38,7 +38,7 @@ The DPYC Honor Chain is a voluntary community of Tollbooth Operators and Authori
 1. **Use BTC and Lightning** for all commerce within the ecosystem
 2. **Avoid saving customer PII** — especially financial data (the DPYC philosophy)
 3. **Properly identify their upstream Tollbooth Authority** via their Nostr npub
-4. **Honor their Authority's tax rate** as the cost of participating in the chain
+4. **Honor their Authority's fee schedule** as the cost of participating in the chain
 5. **Accept community governance** including member banning for violations
 
 ## How It Works
@@ -69,7 +69,7 @@ Prime Authority (Lonnie VanZandt)
   ...
 ```
 
-Value flows from **actual API consumption at the edges**, not from recruitment. Each Authority collects a small tax from its Operators, motivating them to vet onboarding, police downstream, and maintain standing. This is a **franchise model**, not MLM.
+Value flows from **actual API consumption at the edges**, not from recruitment. Each Authority charges a certification fee from its Operators, motivating them to vet onboarding, police downstream, and maintain standing. This is a **franchise model**, not MLM.
 
 ## How to Join
 
@@ -102,7 +102,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | **[dpyc-community](https://github.com/lonniev/dpyc-community)** | **This repo — Honor Chain registry and governance** |
 | [dpyc-oracle](https://github.com/lonniev/dpyc-oracle) | Free community concierge MCP — membership, governance, onboarding |
 | [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) | Operator-side Python library for MCP monetization |
-| [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and tax collection |
+| [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and fee collection |
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | First Tollbooth Operator — TheBrain MCP Server |
 | [excalibur-mcp](https://github.com/lonniev/excalibur-mcp) | X (Twitter) posting MCP service with Secure Courier credential delivery |
 

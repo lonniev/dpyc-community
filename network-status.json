@@ -1,12 +1,12 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.57",
-      "minimum": "0.1.51",
+      "current": "0.1.66",
+      "minimum": "0.1.66",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.3.1",
+      "current": "0.3.4",
       "minimum": "0.3.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
@@ -16,19 +16,19 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.1",
-      "minimum": "1.9.0",
+      "current": "1.9.4",
+      "minimum": "1.9.4",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.5",
-      "minimum": "0.6.5",
+      "current": "0.6.8",
+      "minimum": "0.6.8",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-02",
-  "advisory": "tollbooth-dpyc 0.1.57: Pop-and-acknowledge relay DMs — every DM is consumed and deleted from the relay with a reply to the sender explaining acceptance or rejection. Update to >=0.1.57 and redeploy."
+  "last_updated": "2026-03-03",
+  "advisory": "Auto-certify purchase_credits: Operators now contact the Authority behind the scenes via Horizon OAuth — no manual certify_credits step needed. Update tollbooth-dpyc to >=0.1.66, thebrain-mcp to >=1.9.4, excalibur-mcp to >=0.6.8 and redeploy."
 }

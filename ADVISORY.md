@@ -1,8 +1,39 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-03-02
+> Last updated: 2026-03-03
 
 ## Current Advisories
+
+### Auto-Certify purchase_credits: One-Step Credit Purchase (2026-03-03)
+
+**Affects:** All operators in the DPYC ecosystem
+
+The `purchase_credits` tool on operator servers (thebrain-mcp, excalibur-mcp) no longer requires a pre-obtained Authority certificate. The operator server now contacts its upstream Authority behind the scenes via **Horizon OAuth server-to-server MCP call**, obtains a signed certificate, and creates the Lightning invoice — all in one tool call.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.66** | New `AuthorityCertifier` class — `fastmcp.Client` with `auth="oauth"` for server-to-server certificate acquisition. New `resolve_authority_service()` — resolves operator npub to Authority MCP endpoint URL via community registry. |
+| thebrain-mcp | **1.9.4** | `purchase_credits` drops `certificate` parameter — auto-certifies internally. `purchase_credits` and `check_payment` actor stubs wired to server.py. |
+| excalibur-mcp | **0.6.8** | Same auto-certify pattern as thebrain-mcp. |
+| dpyc-community | — | Authority member's `services[]` now includes `tollbooth-authority` FastMCP Cloud URL for endpoint discovery. |
+
+**New call flow (simplified):**
+1. `purchase_credits(amount_sats=100)` — one call, no pre-setup
+2. Pay the Lightning invoice
+3. `check_payment(invoice_id)` — credits land in your balance
+
+**Old call flow (removed):**
+1. ~~`authority_certify_credits(operator_id, amount_sats)` — get JWT~~ (no longer needed)
+2. ~~`purchase_credits(amount_sats, certificate=JWT)` — pass JWT~~ (certificate param removed)
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.66
+2. Update `thebrain-mcp` to >= 1.9.4
+3. Update `excalibur-mcp` to >= 0.6.8
+4. Redeploy all operator services
+5. Start a new MCP session to pick up the updated tool signatures
 
 ### Unified Commerce Terminology: tax → certification fee (2026-03-02)
 

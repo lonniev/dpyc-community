@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Validate members.json against the JSON schema and DPYC business rules.
+"""Validate the DPYC membership registry.
 
 Checks:
-  1. JSON Schema validation (structure, types, enums, npub pattern)
-  2. No duplicate npubs
-  3. All non-prime members have a valid upstream_authority_npub that exists
-  4. prime_authority members have upstream_authority_npub = null
-  5. Banned members have ban_reason and banned_at
+  1. Individual member files: schema, filename↔npub, directory↔role
+  2. Generated index (members.json): schema, business rules
+  3. No duplicate npubs
+  4. All non-prime members have a valid upstream_authority_npub
+  5. prime_authority members have upstream_authority_npub = null
+  6. Banned members have ban_reason
 
 Exit code 0 = valid, 1 = errors found.
 """
@@ -20,6 +21,13 @@ from pathlib import Path
 
 NPUB_PATTERN = re.compile(r"^npub1[a-z0-9]{58}$")
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+ROLE_DIRS = {
+    "prime_authority": "prime",
+    "authority": "authorities",
+    "operator": "operators",
+    "citizen": "citizens",
+}
 
 
 def load_json(path: Path) -> dict:
@@ -47,6 +55,63 @@ def validate_schema(members_data: dict, schema: dict) -> list[str]:
     for error in validator.iter_errors(members_data):
         path = " -> ".join(str(p) for p in error.absolute_path) or "(root)"
         errors.append(f"Schema: {path}: {error.message}")
+    return errors
+
+
+def validate_member_files() -> list[str]:
+    """Validate individual member files: schema, filename, directory placement."""
+    errors = []
+    members_dir = REPO_ROOT / "members"
+
+    if not members_dir.exists():
+        return []  # No member files yet — skip
+
+    # Load member schema if available
+    validator = None
+    try:
+        import jsonschema
+
+        member_schema_path = REPO_ROOT / "schemas" / "member.schema.json"
+        if member_schema_path.exists():
+            schema = json.loads(member_schema_path.read_text())
+            validator = jsonschema.Draft202012Validator(schema)
+    except ImportError:
+        pass
+
+    for role, dirname in ROLE_DIRS.items():
+        role_dir = members_dir / dirname
+        if not role_dir.exists():
+            continue
+
+        for filepath in sorted(role_dir.glob("*.json")):
+            rel = filepath.relative_to(REPO_ROOT)
+
+            try:
+                member = json.loads(filepath.read_text())
+            except json.JSONDecodeError as exc:
+                errors.append(f"{rel}: invalid JSON: {exc}")
+                continue
+
+            # Schema validation
+            if validator:
+                for error in validator.iter_errors(member):
+                    path = " -> ".join(str(p) for p in error.absolute_path) or "(root)"
+                    errors.append(f"{rel}: {path}: {error.message}")
+
+            # Filename must match npub
+            expected = f"{member.get('npub', '')}.json"
+            if filepath.name != expected:
+                errors.append(f"{rel}: filename must match npub (expected {expected})")
+
+            # Directory must match role
+            member_role = member.get("role", "")
+            expected_dir = ROLE_DIRS.get(member_role)
+            if expected_dir and dirname != expected_dir:
+                errors.append(
+                    f"{rel}: role '{member_role}' belongs in "
+                    f"members/{expected_dir}/, not members/{dirname}/"
+                )
+
     return errors
 
 
@@ -124,15 +189,17 @@ def main() -> int:
         print("ERROR: schemas/members.schema.json not found")
         return 1
 
-    members_data = load_json(members_path)
-    schema = load_json(schema_path)
-
     errors: list[str] = []
 
-    # Schema validation
+    # Validate individual member files
+    errors.extend(validate_member_files())
+
+    # Validate the index (members.json)
+    members_data = load_json(members_path)
+    schema = load_json(schema_path)
     errors.extend(validate_schema(members_data, schema))
 
-    # Business rules
+    # Business rules on the index
     members = members_data.get("members", [])
     errors.extend(validate_business_rules(members))
 

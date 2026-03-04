@@ -1,0 +1,16 @@
+{
+  "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-02-20",
+  "display_name": "thebrain-mcp",
+  "services": [
+    {
+      "name": "thebrain-mcp",
+      "url": "https://personal-brain.fastmcp.app/mcp",
+      "description": "TheBrain knowledge graph access via MCP"
+    }
+  ],
+  "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+  "notes": "First Tollbooth Operator — TheBrain MCP Server"
+}

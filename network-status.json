@@ -21,7 +21,7 @@
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.8",
+      "current": "0.6.9",
       "minimum": "0.6.8",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     }

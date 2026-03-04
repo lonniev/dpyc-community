@@ -1,10 +1,10 @@
-# DPYC Honor Chain
+# DPYC™ Honor Chain
 
 ![DPYC Logo](https://raw.githubusercontent.com/lonniev/dpyc-community/main/assets/dpyc-logo.png)
 
 > **This registry:** [`github.com/lonniev/dpyc-community`](https://github.com/lonniev/dpyc-community)
 
-**Membership registry and governance for the Don't-Pester-Your-Customer Tollbooth community.**
+**Membership registry and governance for the Don't Pester Your Customer™ Tollbooth community.**
 
 **[Read the DPYC Creed](https://github.com/lonniev/dpyc-community/blob/main/CREED.md)** — our founding declaration of values.
 
@@ -16,7 +16,7 @@ Customers fund their balance once with a Lightning payment, then use API service
 
 ## Why Tollbooth?
 
-Tollbooth monetizes **complete business information** — full MCP tool responses — not raw REST data fragments. A single Tollbooth-metered tool call delivers a ready-to-use answer that would otherwise require assembling dozens of individual API calls.
+Tollbooth DPYC™ monetizes **complete business information** — full MCP tool responses — not raw REST data fragments. A single Tollbooth-metered tool call delivers a ready-to-use answer that would otherwise require assembling dozens of individual API calls.
 
 **Fewer round-trips, no interruptions.** Pre-funded Lightning balances mean each tool call is a single HTTP request. Protocols like [x402](https://github.com/AIM-Intelligence/x402) and [L402](https://docs.lightning.engineering/the-lightning-network/l402) take a different approach — gating individual REST endpoints with per-request payment challenges (402 → pay invoice → retry). That pattern works well for simple resource access, but adds 6+ HTTP round-trips per request and interrupts agent workflows with payment redirects.
 
@@ -127,6 +127,10 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 The Honor Chain uses a cascading certification fee model. Each Authority collects a 2% ad valorem fee when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect (+0.81%), keeping the total effective rate under 2.05% even at maximum depth.
 
 [DPYP-01: Base Certificate Protocol](https://github.com/lonniev/dpyc-community/blob/main/protocols/dpyp-01-base-certificate.md) — the canonical specification for Honor Chain credit certificates.
+
+## Trademarks
+
+DPYC, Tollbooth DPYC, and Don't Pester Your Customer are trademarks of Lonnie VanZandt. See [TRADEMARKS.md](TRADEMARKS.md) for usage guidelines.
 
 ## License
 

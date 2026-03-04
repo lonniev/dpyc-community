@@ -1,4 +1,4 @@
-# DPYC Honor Chain Governance
+# DPYC™ Honor Chain Governance
 
 This document describes how the DPYC community manages membership, resolves disputes, and maintains the integrity of the Honor Chain registry.
 
@@ -121,6 +121,10 @@ Citizens are admitted through a Nostr signature challenge: the applicant signs a
   - No branch deletions
 - **Git history** provides a tamper-evident audit trail — every membership change is a signed, hashed commit in a Merkle tree.
 - **CI validation** enforces schema compliance, npub format, uniqueness, and upstream reference integrity on every PR.
+
+## Trademarks
+
+DPYC, Tollbooth DPYC, and Don't Pester Your Customer are trademarks of Lonnie VanZandt. See [TRADEMARKS.md](TRADEMARKS.md) for usage guidelines.
 
 ## Amendments
 

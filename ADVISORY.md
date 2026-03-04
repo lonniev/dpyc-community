@@ -1,4 +1,4 @@
-# DPYC Network Advisory
+# DPYC™ Network Advisory
 
 > Last updated: 2026-03-04
 

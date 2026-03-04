@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/members.schema.json",
   "version": "1.0.0",
-  "updated_at": "2026-03-04T00:00:00Z",
+  "updated_at": "2026-03-04T21:36:37Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -36,22 +36,6 @@
       "notes": "Dedicated Authority identity for Tollbooth certificate signing"
     },
     {
-      "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
-      "role": "operator",
-      "status": "active",
-      "member_since": "2026-02-20",
-      "display_name": "thebrain-mcp",
-      "services": [
-        {
-          "name": "thebrain-mcp",
-          "url": "https://personal-brain.fastmcp.app/mcp",
-          "description": "TheBrain knowledge graph access via MCP"
-        }
-      ],
-      "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
-      "notes": "First Tollbooth Operator — TheBrain MCP Server"
-    },
-    {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "role": "operator",
       "status": "active",
@@ -68,14 +52,30 @@
       "notes": "Excalibur MCP Server — Social media operator"
     },
     {
+      "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-02-20",
+      "display_name": "thebrain-mcp",
+      "services": [
+        {
+          "name": "thebrain-mcp",
+          "url": "https://personal-brain.fastmcp.app/mcp",
+          "description": "TheBrain knowledge graph access via MCP"
+        }
+      ],
+      "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+      "notes": "First Tollbooth Operator — TheBrain MCP Server"
+    },
+    {
       "npub": "npub1d999638gqpn8c594teklxtxva0uvxdng80q3ycyqvldjdl457c7qcrq64z",
       "role": "citizen",
       "status": "active",
       "member_since": "2026-03-02",
       "display_name": "Lonnie VanZandt (Twitter)",
       "services": [],
-      "upstream_authority_npub": null,
+      "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
       "notes": "Personal Twitter identity — Schnorr signature verified"
-    }    
+    }
   ]
 }

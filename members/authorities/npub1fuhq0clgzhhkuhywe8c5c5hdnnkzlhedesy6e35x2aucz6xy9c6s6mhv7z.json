@@ -1,0 +1,16 @@
+{
+  "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+  "role": "authority",
+  "status": "active",
+  "member_since": "2026-03-01",
+  "display_name": "Lonnie-Authority",
+  "services": [
+    {
+      "name": "tollbooth-authority",
+      "url": "https://tollbooth-authority.fastmcp.app/mcp",
+      "description": "DPYC Authority — certificate signing and operator registration"
+    }
+  ],
+  "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
+  "notes": "Dedicated Authority identity for Tollbooth certificate signing"
+}

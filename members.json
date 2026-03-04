@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/members.schema.json",
   "version": "1.0.0",
-  "updated_at": "2026-03-03T00:00:00Z",
+  "updated_at": "2026-03-04T00:00:00Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -9,7 +9,13 @@
       "status": "active",
       "member_since": "2026-02-20",
       "display_name": "Lonnie VanZandt",
-      "services": [],
+      "services": [
+        {
+          "name": "dpyc-oracle",
+          "url": "https://dpyc-oracle.fastmcp.app/mcp",
+          "description": "DPYC Oracle — community concierge for the Honor Chain"
+        }
+      ],
       "upstream_authority_npub": null,
       "notes": "Founding Prime Authority of the DPYC Honor Chain"
     },

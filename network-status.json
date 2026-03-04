@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.68",
-      "minimum": "0.1.66",
+      "current": "0.1.69",
+      "minimum": "0.1.68",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -16,8 +16,8 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.5",
-      "minimum": "1.9.4",
+      "current": "1.9.6",
+      "minimum": "1.9.5",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
@@ -30,5 +30,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-04",
-  "advisory": "Oracle delegation: Operators can now delegate community queries (how_to_join, get_tax_rate, lookup_member, about, network_advisory) to the DPYC Oracle via MCP-to-MCP routing. Update tollbooth-dpyc to >=0.1.68 and thebrain-mcp to >=1.9.5."
+  "advisory": "Credential card DM delivery: Secure Courier now sends ncred1... credential cards back to patrons via Nostr DM on first-time receipt. OPERATOR_BASE_CATALOG and AUTHORITY_BASE_CATALOG provide canonical tool metadata for all protocol implementations. Python 3.10 datetime.fromisoformat Z-suffix compat fix. Update tollbooth-dpyc to >=0.1.69 and thebrain-mcp to >=1.9.6."
 }

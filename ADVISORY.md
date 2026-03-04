@@ -1,8 +1,38 @@
 # DPYC Network Advisory
 
-> Last updated: 2026-03-03
+> Last updated: 2026-03-04
 
 ## Current Advisories
+
+### Oracle Delegation: Operator→Oracle Direct Routing (2026-03-04)
+
+**Affects:** All operators in the DPYC ecosystem
+
+Operators can now delegate community queries to the DPYC Oracle via direct MCP-to-MCP routing — no separate MCP connection from the AI agent needed. Five free Oracle tools are now available through any Operator server:
+
+| Tool | Description |
+|------|-------------|
+| `brain_how_to_join` | DPYC onboarding instructions |
+| `brain_get_tax_rate` | Current certification fee rate |
+| `brain_lookup_member` | Look up a member by Nostr npub |
+| `brain_dpyc_about` | DPYC ecosystem description |
+| `brain_network_advisory` | Active network advisories |
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.68** | New `OracleClient` class — generic MCP-to-MCP delegate for Oracle calls. New `resolve_oracle_service()` — walks authority chain to Prime Authority to find the `dpyc-oracle` service. |
+| thebrain-mcp | **1.9.5** | 5 new `@tool` functions delegating to Oracle. Cached `_resolve_oracle_service_url()` for process-lifetime resolution. Actor stubs replaced with real delegation. |
+| dpyc-community | — | Prime Authority's `services[]` now includes `dpyc-oracle` FastMCP Cloud URL for endpoint discovery. |
+
+**Architecture:** Operator→Oracle (2-hop direct routing). Oracle tools are free and unauthenticated — no Authority intermediation, no credits required.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.68
+2. Update `thebrain-mcp` to >= 1.9.5
+3. Redeploy operator services
+4. Start a new MCP session to pick up the 5 new tool registrations
 
 ### Auto-Certify purchase_credits: One-Step Credit Purchase (2026-03-03)
 

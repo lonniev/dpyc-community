@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.66",
+      "current": "0.1.68",
       "minimum": "0.1.66",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -16,7 +16,7 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.4",
+      "current": "1.9.5",
       "minimum": "1.9.4",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
@@ -29,6 +29,6 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-03",
-  "advisory": "Auto-certify purchase_credits: Operators now contact the Authority behind the scenes via Horizon OAuth — no manual certify_credits step needed. Update tollbooth-dpyc to >=0.1.66, thebrain-mcp to >=1.9.4, excalibur-mcp to >=0.6.8 and redeploy."
+  "last_updated": "2026-03-04",
+  "advisory": "Oracle delegation: Operators can now delegate community queries (how_to_join, get_tax_rate, lookup_member, about, network_advisory) to the DPYC Oracle via MCP-to-MCP routing. Update tollbooth-dpyc to >=0.1.68 and thebrain-mcp to >=1.9.5."
 }

@@ -1,8 +1,38 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-06
+> Last updated: 2026-03-07
 
 ## Current Advisories
+
+### Tax Incidence Fix and Legacy Royalty Removal (2026-03-07)
+
+**Affects:** All operators and patrons in the DPYC ecosystem
+
+Two related economic bugs have been identified and resolved:
+
+**1. Tax Incidence Bug — Patron was paying certification fee instead of operator**
+
+The certification fee (2% ad valorem) was incorrectly deducted from the patron's invoice amount. When a patron purchased 1000 api_sats, the BTCPay invoice was created for `net_sats` (980) instead of the full `amount_sats` (1000). The patron received fewer credits than requested. The correct behavior: the operator absorbs the certification fee as a cost of doing business, and the patron pays the full sticker price.
+
+**2. Legacy Royalty Payout — double-taxation removed**
+
+A legacy "royalty payout" side effect fired a separate 2% BTCPay payout to a configured originator address on every settled invoice — in addition to the Authority certification fee already deducted from the operator's reserve. This resulted in double-taxation. The correct model: the certification fee cascade is the sole taxation mechanism. Authorities are Operators of their upstream Authority; the Prime Authority collects revenue through the same cascade as every other Authority.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.78** | Invoice uses `amount_sats` (not `net_sats`). Royalty payout function, config fields, and BTCPay payout checks removed entirely. |
+| thebrain-mcp | **1.9.6** | Royalty ENV vars removed. `check_payment` no longer fires payout. `purchase_credits` docstring corrected. |
+| excalibur-mcp | **0.6.14** | Same royalty cleanup. Tax docstring corrected. |
+| tollbooth-authority | **0.3.8** | Upstream royalty payout removed. `certify_credits` `net_sats` documented as operator-only accounting field. |
+| dpyc-oracle | **0.2.3** | `economic_model()` updated — describes cascade as sole revenue mechanism, removes "curator royalty" reference. |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.78
+2. Update all MCP servers to latest versions
+3. Remove `TOLLBOOTH_ROYALTY_ADDRESS`, `TOLLBOOTH_ROYALTY_PERCENT`, `TOLLBOOTH_ROYALTY_MIN_SATS` ENV vars from deployments
+4. Redeploy services
 
 ### Authority Curator Onboarding via Nostr DM Challenge-Response (2026-03-06)
 

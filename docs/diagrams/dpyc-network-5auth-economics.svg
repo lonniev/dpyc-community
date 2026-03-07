@@ -357,10 +357,10 @@
   <rect x="195" y="670" width="130" height="28" rx="6" fill="#2a1a00" stroke="#F7931A" stroke-width="1"/>
   <text x="260" y="688" class="node-label" fill="#F7931A" font-size="10">Upstream Auth.</text>
 
-  <!-- Curator royalty annotation -->
+  <!-- Cascade fee annotation -->
   <line x1="200" y1="706" x2="320" y2="706" stroke="#F7931A" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>
-  <text x="60" y="724" class="flow-label" font-size="9">+ 2% curator royalty on each settlement</text>
-  <text x="60" y="740" class="flow-label" font-size="9">(collected by First Curator from all Authorities)</text>
+  <text x="60" y="724" class="flow-label" font-size="9">Cascade: each Authority pays 2% when topping up its upstream reserve</text>
+  <text x="60" y="740" class="flow-label" font-size="9">(Prime Authority revenue via same cascade mechanism)</text>
 
   <!-- ============================================================ -->
   <!-- EFFECTIVE RATES BOX -->
@@ -399,7 +399,7 @@
   <text x="925" y="596" class="metric-label">/ week</text>
 
   <!-- Curator share -->
-  <text x="820" y="628" class="metric-label">First Curator (royalty income)</text>
+  <text x="820" y="628" class="metric-label">Prime Authority (cascade fee income)</text>
   <text x="820" y="652" class="metric-value" font-size="22">~$32</text>
   <text x="890" y="652" class="metric-label">/ week</text>
 

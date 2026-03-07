@@ -1,8 +1,39 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-06
 
 ## Current Advisories
+
+### Authority Curator Onboarding via Nostr DM Challenge-Response (2026-03-06)
+
+**Affects:** New Authority operators joining the DPYC ecosystem
+
+A new 3-step protocol allows Authority curators to onboard without manual env var configuration or server restarts. The entire flow uses Nostr DM challenge-response with Schnorr-signed anti-replay protection.
+
+**Protocol flow:**
+
+1. `register_authority_npub(npub)` — Authority sends DM challenge to candidate
+2. Candidate replies via Nostr client: `claim = @@@yes@@@` with poison slug
+3. `confirm_authority_claim(npub)` — verifies candidate DM, sends approval request to Prime Authority
+4. Prime replies via Nostr client: `approval = @@@yes@@@` with poison slug
+5. `check_authority_approval(npub)` — checks Prime approval, persists curator npub, registers in community
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.77** | New `authority_config` key-value table in NeonVault for persisting curator npub. `get_config()` / `set_config()` methods. |
+| dpyc-oracle | **0.2.2** | New `register_authority()` tool — commits `members/authorities/{npub}.json` via GitHub API. Updated `how_to_join()` Authority tier with concrete 7-step onboarding. |
+| tollbooth-authority | **0.3.7** | 3 new onboarding tools. `OnboardingState` machine. Vault-persisted curator npub (no restart). Oracle MCP-to-MCP registration. `report_upstream_purchase` reads npub from vault. Actor catalog 11 → 14 tools. |
+
+**Architecture:** Candidate↔Authority DM challenge, Authority→Prime DM approval, Authority→Oracle MCP-to-MCP registration. All identity proof via Schnorr-signed Nostr events.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.77
+2. Update `tollbooth-authority` to >= 0.3.7
+3. Redeploy Authority service
+4. Start a new MCP session to pick up the 3 new tool registrations
+5. New Authority curators: follow `how_to_join()` Authority tier instructions
 
 ### Oracle Delegation: Operator→Oracle Direct Routing (2026-03-04)
 

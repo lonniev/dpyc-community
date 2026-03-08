@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate members.json from individual member files in members/.
+"""Generate members/read-only-lookup-cache.json from individual member files in members/.
 
 Usage:
-  python scripts/generate_index.py           # Write members.json
-  python scripts/generate_index.py --check   # Verify members.json is up-to-date
+  python scripts/generate_index.py           # Write members/read-only-lookup-cache.json
+  python scripts/generate_index.py --check   # Verify members/read-only-lookup-cache.json is up-to-date
 """
 
 from __future__ import annotations
@@ -22,11 +22,14 @@ ROLE_DIRS = {
     "citizen": "citizens",
 }
 
+# Banned members keep their original role but live in this directory
+BANNED_DIR = "persona-non-grata"
+
 # Sort order: prime → authority → operator → citizen, then by npub
 ROLE_ORDER = {"prime_authority": 0, "authority": 1, "operator": 2, "citizen": 3}
 
 MEMBERS_DIR = REPO_ROOT / "members"
-INDEX_PATH = REPO_ROOT / "members.json"
+INDEX_PATH = REPO_ROOT / "members" / "read-only-lookup-cache.json"
 MEMBER_SCHEMA_PATH = REPO_ROOT / "schemas" / "member.schema.json"
 
 
@@ -46,7 +49,11 @@ def load_member_files() -> list[dict]:
     except ImportError:
         pass
 
-    for role, dirname in ROLE_DIRS.items():
+    # Scan role directories + persona-non-grata
+    all_dirs = [(dirname, True) for dirname in ROLE_DIRS.values()]
+    all_dirs.append((BANNED_DIR, False))  # skip role↔dir check for banned
+
+    for dirname, check_role_dir in all_dirs:
         role_dir = MEMBERS_DIR / dirname
         if not role_dir.exists():
             continue
@@ -74,14 +81,15 @@ def load_member_files() -> list[dict]:
                     f"(expected {expected_filename})"
                 )
 
-            # Validate directory matches role
-            member_role = member.get("role", "")
-            expected_dir = ROLE_DIRS.get(member_role)
-            if expected_dir and dirname != expected_dir:
-                errors.append(
-                    f"{filepath.relative_to(REPO_ROOT)}: role '{member_role}' "
-                    f"belongs in members/{expected_dir}/, not members/{dirname}/"
-                )
+            # Validate directory matches role (skip for persona-non-grata)
+            if check_role_dir:
+                member_role = member.get("role", "")
+                expected_dir = ROLE_DIRS.get(member_role)
+                if expected_dir and dirname != expected_dir:
+                    errors.append(
+                        f"{filepath.relative_to(REPO_ROOT)}: role '{member_role}' "
+                        f"belongs in members/{expected_dir}/, not members/{dirname}/"
+                    )
 
             members.append(member)
 
@@ -103,9 +111,9 @@ def sort_members(members: list[dict]) -> list[dict]:
 
 
 def build_index(members: list[dict]) -> dict:
-    """Assemble the full members.json structure."""
+    """Assemble the full members/read-only-lookup-cache.json structure."""
     return {
-        "$schema": "./schemas/members.schema.json",
+        "$schema": "../schemas/members.schema.json",
         "version": "1.0.0",
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "members": members,
@@ -127,24 +135,24 @@ def main() -> int:
     if check_mode:
         # Compare member arrays only (ignore updated_at timestamp)
         if not INDEX_PATH.exists():
-            print("FAILED: members.json does not exist", file=sys.stderr)
+            print("FAILED: members/read-only-lookup-cache.json does not exist", file=sys.stderr)
             return 1
 
         existing = json.loads(INDEX_PATH.read_text())
         if existing.get("members") != index["members"]:
             print(
-                "FAILED: members.json is out of date. "
+                "FAILED: members/read-only-lookup-cache.json is out of date. "
                 "Run 'python scripts/generate_index.py' to regenerate.",
                 file=sys.stderr,
             )
             return 1
 
-        print(f"OK: members.json is up-to-date ({len(members)} members).")
+        print(f"OK: members/read-only-lookup-cache.json is up-to-date ({len(members)} members).")
         return 0
 
     # Write mode
     INDEX_PATH.write_text(generated)
-    print(f"Generated members.json with {len(members)} members.")
+    print(f"Generated members/read-only-lookup-cache.json with {len(members)} members.")
     return 0
 
 

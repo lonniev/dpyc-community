@@ -77,6 +77,8 @@ The same element carries the same numeral in every figure where it appears.
 | 512 | Net amount (after fee) | 4 |
 | 514 | Gross amount (before fee) | 4 |
 | 516 | Signature verification | 4 |
+| 518 | Automatic upstream certification (cascading real-time certify) | 4 |
+| 520 | Upstream certificate (returned for audit transparency) | 4 |
 
 ## Nostr / Identity (600-series)
 

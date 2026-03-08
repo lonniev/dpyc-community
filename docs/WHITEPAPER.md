@@ -90,9 +90,9 @@ Prime Authority (First Curator)
   ...
 ```
 
-**Self-similar pattern**: An Authority is itself an Operator at a higher level. It purchases certification credits from its upstream Authority, then sells certified purchase orders to its downstream Operators. The same Tollbooth SDK serves both roles — the only difference is configuration.
+**Self-similar pattern**: An Authority is itself an Operator at a higher level. It purchases certification credits from its upstream Authority, then sells certified purchase orders to its downstream Operators. The same Tollbooth SDK serves both roles — the only difference is configuration. Since v0.4.0 of [tollbooth-authority](https://github.com/lonniev/tollbooth-authority), this pattern is fully automatic: when a non-Prime Authority certifies a downstream Operator, it simultaneously obtains its own upstream certificate in real-time using the same `AuthorityCertifier` client that Operators use. No manual supply management is needed at any tier.
 
-**Certification flow**: When an Operator needs to fund customer credits, it requests a certified purchase order from its sponsoring Authority. The Authority deducts a certification fee (default 2%), signs a Nostr event certificate (kind 30079, Schnorr/BIP-340), and returns it. The Operator presents this certificate to the Tollbooth SDK, which verifies the signature and credits the customer's ledger.
+**Certification flow**: When an Operator needs to fund customer credits, it requests a certified purchase order from its sponsoring Authority. The Authority deducts a certification fee (default 2%), automatically certifies upstream (if non-Prime), signs a Nostr event certificate (kind 30079, Schnorr/BIP-340), and returns it — along with the upstream certificate for audit transparency. The Operator presents the local certificate to the Tollbooth SDK, which verifies the signature and credits the customer's ledger.
 
 **Why the chain matters**: Each Authority has economic skin in the game. They pay for certification credits, so they are motivated to vet Operators, police violations, and maintain the reputation of their branch. This is a franchise model — not MLM. Value flows from actual API consumption at the edges, not from recruitment.
 
@@ -192,7 +192,7 @@ Participation in the DPYC ecosystem is tiered by commitment:
 
 **Authority** — Franchise the network. Vet and sponsor Operators. Collect certification fees. Maintain standing in the community registry. Deploy the [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) MCP service.
 
-**Prime Authority (First Curator)** — Bootstrap authority at the root of the trust chain. Mint the initial cert-sat supply. Appointed by `npub` under change control in the community registry.
+**Prime Authority (First Curator)** — Bootstrap authority at the root of the trust chain. Self-signs certification events (no upstream Authority). Appointed by `npub` under change control in the community registry.
 
 Each tier builds on the previous. A customer who wants to monetize their own tools becomes an Operator. An Operator who wants to sponsor others becomes an Authority. The ladder is open to anyone with a Nostr keypair and the willingness to deliver value.
 

@@ -558,6 +558,13 @@ management systems, or separate protocol definitions at different tiers. The
 Authority's revenue is earned through the `certify_credits` tool fee, not through
 an architecturally distinct taxation mechanism.
 
+In the preferred embodiment, the self-similar pattern extends to the certification
+client itself: the same `AuthorityCertifier` class used by an Operator to obtain
+a certificate from its Authority is also used by that Authority to obtain a
+certificate from its upstream Authority, automatically, at certification time.
+This means no tier in the chain requires manual supply management or pre-purchased
+certificate inventories — each certification request cascades upstream in real-time.
+
 #### 4.2 Certification Flow
 
 When an Operator wishes to sell credits to its consumers, it must first obtain
@@ -621,15 +628,27 @@ First Curator (self-signs)
               └── Operator A-sub-2
 ```
 
-Each Authority obtains its own certificates from its upstream Authority. The
-First Curator self-signs — this is logically consistent because the First Curator
-is the root of trust. The self-signed certificate is distinguishable (the
-`authority_npub` and `operator_npub` fields are the same) but valid.
+Each Authority obtains its own certificates from its upstream Authority. In the
+preferred embodiment, this upstream certification is performed automatically and
+in real-time: when a non-Prime Authority's `certify_credits` tool is invoked by
+a downstream Operator, the Authority simultaneously calls its upstream Authority's
+`certify_credits` tool using the same `AuthorityCertifier` client class that
+Operators use (described in Section 2.2, step 1). This creates a cascading
+chain of real-time certifications — a single downstream request triggers
+certification at every tier up to the First Curator.
+
+The First Curator self-signs — this is logically consistent because the First
+Curator is the root of trust. The self-signed certificate is distinguishable
+(the `authority_npub` and `operator_npub` fields are the same) but valid.
+The First Curator's `certify_credits` implementation detects the absence of an
+upstream Authority address and skips the upstream call.
 
 Revenue flows upward through the chain. Each certification event extracts a fee
 at each layer. The fee amount at each layer is determined by that layer's
 `certify_credits` tool pricing — which may itself be subject to constraint
-evaluation (Section 3).
+evaluation (Section 3). The upstream certificate is included in the response
+to the downstream caller for audit transparency (`upstream_certificate`,
+`upstream_jti` fields).
 
 #### 4.4 Principal-Agent Separation
 

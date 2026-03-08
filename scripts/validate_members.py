@@ -3,7 +3,7 @@
 
 Checks:
   1. Individual member files: schema, filename↔npub, directory↔role
-  2. Generated index (members.json): schema, business rules
+  2. Generated index (read-only-lookup-cache.json): schema, business rules
   3. No duplicate npubs
   4. All non-prime members have a valid upstream_authority_npub
   5. prime_authority members have upstream_authority_npub = null
@@ -29,6 +29,9 @@ ROLE_DIRS = {
     "citizen": "citizens",
 }
 
+# Banned members keep their original role but live in this directory
+BANNED_DIR = "persona-non-grata"
+
 
 def load_json(path: Path) -> dict:
     with open(path) as f:
@@ -36,7 +39,7 @@ def load_json(path: Path) -> dict:
 
 
 def validate_schema(members_data: dict, schema: dict) -> list[str]:
-    """Validate members.json against the JSON schema using jsonschema if available."""
+    """Validate read-only-lookup-cache.json against the JSON schema using jsonschema if available."""
     try:
         import jsonschema
     except ImportError:
@@ -78,7 +81,11 @@ def validate_member_files() -> list[str]:
     except ImportError:
         pass
 
-    for role, dirname in ROLE_DIRS.items():
+    # Scan role directories + persona-non-grata
+    all_dirs = [(dirname, True) for dirname in ROLE_DIRS.values()]
+    all_dirs.append((BANNED_DIR, False))  # skip role↔dir check for banned
+
+    for dirname, check_role_dir in all_dirs:
         role_dir = members_dir / dirname
         if not role_dir.exists():
             continue
@@ -103,14 +110,15 @@ def validate_member_files() -> list[str]:
             if filepath.name != expected:
                 errors.append(f"{rel}: filename must match npub (expected {expected})")
 
-            # Directory must match role
-            member_role = member.get("role", "")
-            expected_dir = ROLE_DIRS.get(member_role)
-            if expected_dir and dirname != expected_dir:
-                errors.append(
-                    f"{rel}: role '{member_role}' belongs in "
-                    f"members/{expected_dir}/, not members/{dirname}/"
-                )
+            # Directory must match role (skip for persona-non-grata)
+            if check_role_dir:
+                member_role = member.get("role", "")
+                expected_dir = ROLE_DIRS.get(member_role)
+                if expected_dir and dirname != expected_dir:
+                    errors.append(
+                        f"{rel}: role '{member_role}' belongs in "
+                        f"members/{expected_dir}/, not members/{dirname}/"
+                    )
 
     return errors
 
@@ -178,11 +186,11 @@ def validate_business_rules(members: list[dict]) -> list[str]:
 
 
 def main() -> int:
-    members_path = REPO_ROOT / "members.json"
+    members_path = REPO_ROOT / "members" / "read-only-lookup-cache.json"
     schema_path = REPO_ROOT / "schemas" / "members.schema.json"
 
     if not members_path.exists():
-        print("ERROR: members.json not found")
+        print("ERROR: read-only-lookup-cache.json not found")
         return 1
 
     if not schema_path.exists():
@@ -194,7 +202,7 @@ def main() -> int:
     # Validate individual member files
     errors.extend(validate_member_files())
 
-    # Validate the index (members.json)
+    # Validate the index (read-only-lookup-cache.json)
     members_data = load_json(members_path)
     schema = load_json(schema_path)
     errors.extend(validate_schema(members_data, schema))

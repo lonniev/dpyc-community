@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'members/**/*.json'
-      - 'members.json'
       - 'schemas/member.schema.json'
       - 'schemas/members.schema.json'
       - 'scripts/validate_members.py'
@@ -14,7 +13,6 @@ on:
     branches: [main]
     paths:
       - 'members/**/*.json'
-      - 'members.json'
       - 'schemas/member.schema.json'
       - 'schemas/members.schema.json'
       - 'scripts/validate_members.py'
@@ -39,7 +37,7 @@ jobs:
       - name: Validate individual member files
         run: python scripts/generate_index.py --check
 
-      - name: Validate members.json
+      - name: Validate lookup cache
         run: python scripts/validate_members.py
 
   regenerate-index:
@@ -56,17 +54,17 @@ jobs:
       - name: Install jsonschema
         run: pip install jsonschema
 
-      - name: Regenerate members.json
+      - name: Regenerate lookup cache
         run: python scripts/generate_index.py
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add members.json
+          git add members/read-only-lookup-cache.json
           if git diff --cached --quiet; then
-            echo "members.json is already up-to-date"
+            echo "Lookup cache is already up-to-date"
           else
-            git commit -m "[skip ci] Regenerate members.json from member files"
+            git commit -m "[skip ci] Regenerate members/read-only-lookup-cache.json"
             git push
           fi

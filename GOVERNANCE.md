@@ -53,12 +53,12 @@ Citizens are admitted through a Nostr signature challenge: the applicant signs a
 1. **Applicant** generates a Nostr keypair (e.g., `nak key generate`).
 2. **Applicant** calls the DPYC Oracle's `request_citizenship(npub, display_name)` tool, which returns a challenge nonce.
 3. **Applicant** signs the challenge message `DPYC-CITIZENSHIP:<nonce>` with their Nostr private key and calls `confirm_citizenship(npub, challenge_id, signed_event_json)`.
-4. **Oracle** verifies the Schnorr signature, confirms the signing pubkey matches the claimed npub, and commits the applicant directly to `members.json` as a Citizen with `upstream_authority_npub` set to the Prime Authority. Membership is effective immediately.
+4. **Oracle** verifies the Schnorr signature, confirms the signing pubkey matches the claimed npub, and commits the applicant directly to `members/citizens/{npub}.json` with `upstream_authority_npub` set to the Prime Authority. Membership is effective immediately.
 
 ### Sponsored Member Onboarding
 
 1. **Applicant** generates a Nostr keypair and contacts a sponsoring Authority.
-2. **Sponsoring Authority** submits a PR adding the applicant to `members.json` with:
+2. **Sponsoring Authority** submits a PR adding a file `members/{role}/{npub}.json` with:
    - `npub` — the applicant's Nostr public key
    - `role` — `operator`, `authority`, or `citizen`
    - `status` — `active`
@@ -100,7 +100,7 @@ Citizens are admitted through a Nostr signature challenge: the applicant signs a
 ### Effects of a Ban
 
 - The member's `certify_purchase` requests will be refused by all Authorities that check this registry.
-- The member's record remains in `members.json` for transparency and auditability.
+- The member's record moves to `members/persona-non-grata/{npub}.json` for transparency and auditability.
 - Downstream members of a banned Authority must find a new upstream sponsor or face service interruption.
 
 ## Appeals

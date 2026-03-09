@@ -753,6 +753,14 @@ the Nostr relay network:
    is deleted from the relay to minimize the exposure window of encrypted credential
    material on third-party infrastructure.
 
+7. **Ephemeral Agent**: When the consumer's npub is identical to the Operator's
+   npub (self-onboarding), the Secure Courier generates a one-time ephemeral
+   Nostr keypair. The welcome DM is sent from this ephemeral identity, and
+   the consumer replies to it. The ephemeral keypair is discarded after
+   credential receipt. This avoids the silent failure mode where Nostr relays
+   drop self-addressed DMs, and is consistent with NIP-17's ephemeral key
+   pattern for metadata protection.
+
 The Secure Courier ensures that API credentials never appear in the chat interface
 between the consumer and the AI assistant. They travel on a separate, encrypted
 channel — conceptually a "diplomatic pouch" — that is inaccessible to the AI

@@ -1,8 +1,33 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-07
+> Last updated: 2026-03-09
 
 ## Current Advisories
+
+### Ephemeral Agent Npub for Self-DM (2026-03-09)
+
+**Affects:** Operators whose patron npub == operator npub (self-onboarding)
+
+When an operator onboards themselves (e.g., delivering their own Schwab API credentials via Secure Courier), the `request_credential_channel` call produces a self-addressed Nostr DM (operator npub → operator npub). Nostr relays silently drop these self-addressed DMs, blocking the credential delivery flow.
+
+**Fix:** The Secure Courier now generates an ephemeral one-time keypair when it detects a self-DM scenario. The welcome DM is sent from the ephemeral identity, the operator replies to it from their Nostr client, and the credentials are decrypted with the ephemeral key. The ephemeral keypair is discarded after `receive_credentials` completes. This is consistent with NIP-17's ephemeral key pattern.
+
+**What changed:**
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.81** | `_ephemeral_agents` dict, self-DM detection in `open_channel`, `_send_dm_as` method, parameterized `_with` builder variants, `decrypt_privkey_hex` kwarg through decrypt chain, ephemeral pubkeys in subscription filter, cleanup after receive. 9 new tests. |
+| schwab-mcp | **0.7.6** | Dep bump `tollbooth-dpyc[nostr]>=0.1.81` |
+| thebrain-mcp | **1.9.12** | Dep bump `tollbooth-dpyc[nostr,qr]>=0.1.81` |
+| excalibur-mcp | **0.6.26** | Dep bump `tollbooth-dpyc[nostr]>=0.1.81` |
+| tollbooth-authority | **0.4.1** | Dep bump `tollbooth-dpyc[nostr]>=0.1.81` |
+
+**No breaking changes.** The feature is library-internal — no public API signatures changed. Consumer `server.py` files are unchanged.
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.81
+2. Update all MCP servers to latest versions
+3. Redeploy services
 
 ### Tax Incidence Fix and Legacy Royalty Removal (2026-03-07)
 

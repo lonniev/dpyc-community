@@ -180,7 +180,10 @@ to response value, and promotional modifiers — to produce a final deduction am
 an Authority certifies purchase orders for downstream Operators using cryptographic
 signatures, and each layer in the hierarchy implements the same protocol pattern. An
 Authority is structurally an Operator whose customers happen to be other Operators.
-Revenue flows through the chain via certification fees.
+Revenue flows through the chain via certification fees. The chain also accommodates
+Advocates — community utility services that provide shared infrastructure (such as
+OAuth2 callback collection) without monetization, discoverable by peer services
+through registry-based service resolution.
 
 **Fourth**, a Nostr-based identity and credential exchange system in which each
 participant is identified by a Nostr public key (npub), citizenship is verified through
@@ -250,6 +253,13 @@ access behind a credit balance check. The Operator holds a BTCPay Server store a
 a Lightning Network node (or connection to one) for receiving payments. The Operator
 is identified by a Nostr npub and is a registered member of the DPYC Honor Chain.
 
+**Advocate** — A community utility service that provides shared infrastructure to
+peer MCP servers without monetization. Examples include OAuth2 callback collectors,
+relay aggregators, and shared credential vaults. The Advocate is registered in the
+community registry with a `services[]` array that enables peer discovery via
+registry-based service name resolution. The Advocate is identified by a Nostr npub
+and is a registered member of the DPYC Honor Chain, sponsored by the First Curator.
+
 **Authority** — A certification service that signs purchase orders for downstream
 Operators. The Authority is structurally an Operator whose tools include the
 `certify_credits` tool. The Authority collects a certification fee (functionally
@@ -280,8 +290,10 @@ community governance.
 
 **Community Registry** — A JSON file (`members.json`) stored in a version-controlled
 repository on GitHub. The registry records each member's Nostr npub, role (Citizen,
-Operator, Authority, or First Curator), status (active or banned), membership date,
-upstream Authority npub, and associated services.
+Advocate, Operator, Authority, or First Curator), status (active or banned),
+membership date, upstream Authority npub, and associated services. Peer MCP servers
+use registry-based service name resolution to discover Advocate services by name
+without hardcoded URLs or environment variables.
 
 **Oracle** — A free, publicly accessible MCP service that provides onboarding
 guidance, governance document retrieval, member lookup, and citizenship verification
@@ -824,11 +836,19 @@ Each member record contains:
 
 #### 6.3 Membership Hierarchy
 
-The Honor Chain defines four membership tiers:
+The Honor Chain defines five membership tiers:
 
 **Citizen** — The entry tier. Requires only a Nostr npub. Verified through the
 signature challenge (Section 5.2). Citizens can consume API services as consumers
 and participate in governance discussions. Sponsored by the First Curator by default.
+
+**Advocate** — A community utility service tier for shared infrastructure that is
+not individually monetized. Advocates register via the Oracle with a `services[]`
+array describing their endpoints. Peer MCP servers discover Advocate services
+through registry-based name resolution (scanning all members for a matching service
+name), eliminating the need for hardcoded URLs or environment variables. Sponsored
+by the First Curator. Examples include OAuth2 callback collectors and relay
+aggregators.
 
 **Operator** — Runs one or more monetized MCP services. Requires sponsorship by
 an Authority, a BTCPay Server store, and installation of the Tollbooth middleware.
@@ -910,7 +930,9 @@ custom expressions.
 Revenue is distributed through a hierarchical trust chain in which Authorities
 certify purchase orders for downstream Operators using Schnorr digital signatures.
 Each layer in the hierarchy implements the same protocol pattern — an Authority is
-structurally an Operator whose consumers are other Operators.
+structurally an Operator whose consumers are other Operators. Community utility
+services (Advocates) provide shared infrastructure discoverable via registry-based
+service name resolution.
 
 Participants are identified by Nostr public keys (npubs). Citizenship is verified
 through cryptographic signature challenges. API credentials are exchanged through

@@ -52,6 +52,8 @@ members/
   prime/              # Prime Authority
   authorities/        # Authorities
   operators/          # Operators
+  advocates/          # Advocates (community utility services)
+  citizens/           # Citizens
   persona-non-grata/  # Banned members
   read-only-lookup-cache.json  # Generated — do not edit
 ```
@@ -71,6 +73,9 @@ Prime Authority (Lonnie VanZandt)
   |
   +-- excalibur-mcp (Operator)
   |     X (Twitter) posting service with Secure Courier credential delivery
+  |
+  +-- tollbooth-oauth2-collector (Advocate)
+  |     Community OAuth2 callback mailbox
   |
   +-- Authority A (registered DPYC member)
   |     +-- Operator A1
@@ -92,7 +97,7 @@ Value flows from **actual API consumption at the edges**, not from recruitment. 
 
 2. **Find a sponsoring Authority** — an existing Authority in the Honor Chain who will vouch for you.
 
-3. **Your Authority submits a PR** adding a file `members/{role}/{npub}.json` with your role, services, and their npub as your `upstream_authority_npub`. Citizens can also self-register via the [DPYC Oracle](https://github.com/lonniev/dpyc-oracle) using Schnorr signature verification.
+3. **Your Authority submits a PR** adding a file `members/{role}/{npub}.json` with your role, services, and their npub as your `upstream_authority_npub`. Citizens can self-register via the [DPYC Oracle](https://github.com/lonniev/dpyc-oracle) using Schnorr signature verification. **Advocates** (community utility services) register directly via the Oracle's `register_advocate` tool.
 
 4. **PR reviewed and merged** — the CI workflow validates individual member files and auto-regenerates `members/read-only-lookup-cache.json`.
 

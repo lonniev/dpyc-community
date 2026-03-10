@@ -26,6 +26,7 @@ ROLE_DIRS = {
     "prime_authority": "prime",
     "authority": "authorities",
     "operator": "operators",
+    "advocate": "advocates",
     "citizen": "citizens",
 }
 
@@ -164,7 +165,7 @@ def validate_business_rules(members: list[dict]) -> list[str]:
             )
 
         # Non-prime must have a valid upstream
-        if role in ("authority", "operator", "citizen"):
+        if role in ("authority", "operator", "advocate", "citizen"):
             if not upstream:
                 errors.append(
                     f"Member {i} ({display}): {role} must have "

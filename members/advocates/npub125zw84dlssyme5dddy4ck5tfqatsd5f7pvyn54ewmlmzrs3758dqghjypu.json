@@ -1,0 +1,16 @@
+{
+  "npub": "npub125zw84dlssyme5dddy4ck5tfqatsd5f7pvyn54ewmlmzrs3758dqghjypu",
+  "role": "advocate",
+  "status": "active",
+  "member_since": "2026-03-10",
+  "display_name": "OAuth2 Authorization Code Collector",
+  "services": [
+    {
+      "name": "tollbooth-oauth2-collector",
+      "url": "https://tollbooth-oauth2-collector.fastmcp.app",
+      "description": "Community OAuth2 callback mailbox for MCP servers behind Horizon auth proxy"
+    }
+  ],
+  "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
+  "notes": "Registered as community utility Advocate via Oracle"
+}

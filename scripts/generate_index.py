@@ -19,6 +19,7 @@ ROLE_DIRS = {
     "prime_authority": "prime",
     "authority": "authorities",
     "operator": "operators",
+    "advocate": "advocates",
     "citizen": "citizens",
 }
 
@@ -26,7 +27,7 @@ ROLE_DIRS = {
 BANNED_DIR = "persona-non-grata"
 
 # Sort order: prime → authority → operator → citizen, then by npub
-ROLE_ORDER = {"prime_authority": 0, "authority": 1, "operator": 2, "citizen": 3}
+ROLE_ORDER = {"prime_authority": 0, "authority": 1, "operator": 2, "advocate": 3, "citizen": 4}
 
 MEMBERS_DIR = REPO_ROOT / "members"
 INDEX_PATH = REPO_ROOT / "members" / "read-only-lookup-cache.json"
@@ -114,7 +115,7 @@ def build_index(members: list[dict]) -> dict:
     """Assemble the full members/read-only-lookup-cache.json structure."""
     return {
         "$schema": "../schemas/members.schema.json",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "members": members,
     }

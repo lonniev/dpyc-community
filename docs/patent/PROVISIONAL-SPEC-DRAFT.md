@@ -662,6 +662,14 @@ evaluation (Section 3). The upstream certificate is included in the response
 to the downstream caller for audit transparency (`upstream_certificate`,
 `upstream_jti` fields).
 
+A configuration-time invariant enforces economic viability: each non-Prime
+Authority's local fee rate must be greater than or equal to its upstream
+Authority's fee rate. If the local rate is lower than the upstream rate, the
+Authority would lose money on every certification — paying more upstream than
+it collects downstream. The system rejects such configurations at startup,
+before any certifications occur. Prime Authorities (which have no upstream)
+are exempt from this constraint.
+
 #### 4.4 Principal-Agent Separation
 
 The system supports separation between the economic actor (Principal) who funds

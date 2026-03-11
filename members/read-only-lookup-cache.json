@@ -87,6 +87,22 @@
       ],
       "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
       "notes": "Registered as community utility Advocate via Oracle"
+    },
+    {
+      "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-03-11",
+      "display_name": "schwab-mcp",
+      "services": [
+        {
+          "name": "schwab-mcp",
+          "url": "https://schwab-mcp.fastmcp.app/mcp",
+          "description": "Charles Schwab brokerage data via MCP with Tollbooth monetization"
+        }
+      ],
+      "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+      "notes": "Schwab MCP Server — brokerage data operator"
     }
   ]
 }

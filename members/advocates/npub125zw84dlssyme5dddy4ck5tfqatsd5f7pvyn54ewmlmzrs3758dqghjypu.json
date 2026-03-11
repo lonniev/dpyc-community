@@ -12,7 +12,7 @@
     },
     {
       "name": "tollbooth-oauth2-callback",
-      "url": "https://tollbooth-oauth2-callback-serverless.web.val.run",
+      "url": "https://tollbooth--9332e0141cea11f1af0b42dde27851f2.web.val.run",
       "description": "Serverless OAuth2 browser callback — receives GET redirects from OAuth providers"
     }
   ],

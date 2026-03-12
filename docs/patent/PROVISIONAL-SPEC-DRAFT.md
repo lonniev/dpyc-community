@@ -175,15 +175,22 @@ per-request payment negotiation entirely.
 constraints on each tool invocation — including temporal windows, finite supply caps,
 periodic refresh limits, congestion-based surge pricing, ad valorem pricing proportional
 to response value, and promotional modifiers — to produce a final deduction amount.
+The constraint engine supports runtime-configurable pricing models: named bundles of
+per-tool prices and constraint pipelines that are persisted in a database, activated
+atomically (at most one active per operator), resolved at tool-call time through a
+TTL-cached resolver, and subject to graceful degradation on database failure.
 
 **Third**, a hierarchical trust chain with self-similar royalty distribution, in which
 an Authority certifies purchase orders for downstream Operators using cryptographic
 signatures, and each layer in the hierarchy implements the same protocol pattern. An
 Authority is structurally an Operator whose customers happen to be other Operators.
-Revenue flows through the chain via certification fees. The chain also accommodates
-Advocates — community utility services that provide shared infrastructure (such as
-OAuth2 callback collection) without monetization, discoverable by peer services
-through registry-based service resolution.
+Revenue flows through the chain via certification fees. A configuration-time fee floor
+invariant ensures economic viability: each non-Prime Authority's local fee rate must
+be greater than or equal to its upstream Authority's fee rate, preventing configurations
+in which an Authority would lose money on every certification. The chain also
+accommodates Advocates — community utility services that provide shared infrastructure
+(such as OAuth2 callback collection) without monetization, discoverable by peer
+services through registry-based service resolution.
 
 **Fourth**, a Nostr-based identity and credential exchange system in which each
 participant is identified by a Nostr public key (npub), citizenship is verified through
@@ -547,6 +554,79 @@ A `CONSTRAINT_REGISTRY` maps type strings to constraint classes. Custom constrai
 classes can be registered by the Operator at startup, enabling arbitrary extensions
 without modifying the Tollbooth library.
 
+#### 3.5 Runtime-Configurable Pricing Models
+
+In the preferred embodiment, tool pricing and constraint pipelines are not limited
+to static configuration loaded at process startup. The system provides a
+runtime-configurable pricing model layer that allows an Operator to define, store,
+and activate named pricing models without restarting the service process.
+
+A **Pricing Model** is a named bundle comprising:
+
+- **Per-tool price schedule**: A list of `(tool_name, price_sats, category, intent)`
+  tuples that define the deduction cost for each tool. The `category` and `intent`
+  fields are operator-defined metadata that enable grouping and documentation of
+  pricing rationale (e.g., category "read" vs. "write", intent "query" vs. "mutation").
+- **Constraint pipeline**: An ordered list of pipeline steps, each referencing a
+  constraint type from the `CONSTRAINT_REGISTRY` along with its configuration
+  parameters. The pipeline is applied as a wildcard constraint (applying to all
+  tools uniformly) and is converted at resolution time into a `ConstraintEngine`
+  instance using the same `load_constraints()` mechanism described in Section 3.4.
+
+Pricing models are persisted in a relational database (PostgreSQL in the preferred
+embodiment) with the following schema:
+
+- `id` (UUID primary key, auto-generated)
+- `operator` (text, the Operator's Nostr npub)
+- `name` (text, human-readable model name)
+- `model_json` (JSONB, the serialized pricing model document)
+- `is_active` (boolean, at most one active model per operator, enforced by a
+  partial unique index)
+- `created_at`, `updated_at` (timestamps)
+
+The **at-most-one-active invariant** is enforced at the database level: a partial
+unique index on `(operator) WHERE is_active = true` ensures that activating a new
+model atomically deactivates the previous one. This prevents race conditions in
+concurrent activation requests.
+
+A **Pricing Resolver** provides the runtime integration point. At tool-call time,
+the resolver returns the effective cost for a tool name and, optionally, a
+`ConstraintEngine` derived from the active model's pipeline. The resolver maintains
+an in-memory cache with a configurable time-to-live (default 300 seconds). Cache
+misses trigger a single database query. Database failures degrade gracefully: the
+resolver falls back to the cached model (if any) or to a static fallback cost
+dictionary provided at initialization. This ensures that pricing remains available
+even during transient database outages.
+
+The resolver exposes a `refresh()` method that resets the cache timestamp, forcing
+the next cost lookup to query the database. This is the mechanism by which an
+external pricing management interface (such as a mobile application or
+administrative dashboard) signals that a new pricing model has been activated.
+
+The `ConstraintGate` (described in Section 3.1) supports an `attach_resolver()`
+method that wires a Pricing Resolver as a dynamic engine source. When attached,
+the gate's asynchronous evaluation path (`check_async()`) prefers the resolver's
+dynamically-loaded constraint engine over the static engine loaded from
+configuration. If the resolver fails or returns no engine, the gate falls back
+to the static engine. The synchronous evaluation path (`check()`) is unchanged —
+no breaking change to existing operator integrations.
+
+This architecture separates three concerns:
+
+1. **Model authoring**: An Operator or a pricing management interface creates and
+   updates pricing models via CRUD operations on the persistent store.
+2. **Model activation**: A single activation operation atomically switches the
+   live model, deactivating the previous one.
+3. **Model resolution**: The runtime resolver provides sub-millisecond cached
+   lookups with automatic refresh, graceful fallback, and zero-downtime model
+   transitions.
+
+The combination of per-tool cost schedules, composable constraint pipelines,
+database-enforced activation invariants, TTL-cached resolution, and graceful
+degradation enables operators to adjust pricing strategy in real-time —
+responding to market conditions, promotional campaigns, or competitive pressure —
+without service interruption.
+
 ### 4. Hierarchical Trust Chain with Self-Similar Royalty Distribution (Claim Family 3)
 
 #### 4.1 The Self-Similar Pattern
@@ -662,13 +742,33 @@ evaluation (Section 3). The upstream certificate is included in the response
 to the downstream caller for audit transparency (`upstream_certificate`,
 `upstream_jti` fields).
 
-A configuration-time invariant enforces economic viability: each non-Prime
-Authority's local fee rate must be greater than or equal to its upstream
-Authority's fee rate. If the local rate is lower than the upstream rate, the
-Authority would lose money on every certification — paying more upstream than
-it collects downstream. The system rejects such configurations at startup,
-before any certifications occur. Prime Authorities (which have no upstream)
-are exempt from this constraint.
+A configuration-time invariant — the **fee floor constraint** — enforces economic
+viability at every tier. Each non-Prime Authority's local fee rate (expressed as a
+percentage of the certified amount) must be greater than or equal to its upstream
+Authority's fee rate. If the local rate is lower than the upstream rate, the Authority
+would lose money on every certification — paying more upstream than it collects
+downstream. The system queries the upstream Authority's published fee rate at startup
+and rejects the configuration if the invariant is violated, before any certifications
+occur.
+
+Formally: let `r_local` be the local Authority's certification fee rate (as a
+percentage) and `r_upstream` be the upstream Authority's fee rate. The invariant
+requires `r_local >= r_upstream`. Additionally, the local minimum fee floor
+(`min_fee_sats`) must be greater than or equal to the upstream's minimum fee floor,
+ensuring that even for small certification amounts where the percentage-based fee
+rounds to a small value, the absolute fee collected locally is never less than the
+absolute fee owed upstream.
+
+This invariant is monotonic through the chain: if every layer satisfies
+`r_local >= r_upstream`, then for any certification cascading from the leaf Operator
+to the First Curator, each intermediate Authority collects a non-negative margin.
+The First Curator (which has no upstream) is exempt from this constraint and sets
+the fee floor for the entire chain.
+
+The fee floor constraint is enforced at the configuration layer, not at the
+protocol layer. This means the constraint is verifiable by inspection of the
+Authority's configuration before any economic activity occurs — a fail-fast
+pattern that prevents operational losses from misconfiguration.
 
 #### 4.4 Principal-Agent Separation
 
@@ -933,12 +1033,16 @@ API consumers pre-fund credit balances denominated in internal units (api_sats) 
 Lightning Network micropayments. Individual tool invocations deduct from the balance
 according to pricing rules evaluated by a composable Constraint Engine supporting
 temporal windows, supply caps, rate limits, surge pricing, promotional modifiers, and
-custom expressions.
+custom expressions. Pricing models — named bundles of per-tool costs and constraint
+pipelines — are runtime-configurable, persisted in a database, and resolved at
+tool-call time through a TTL-cached resolver with graceful fallback.
 
 Revenue is distributed through a hierarchical trust chain in which Authorities
 certify purchase orders for downstream Operators using Schnorr digital signatures.
 Each layer in the hierarchy implements the same protocol pattern — an Authority is
-structurally an Operator whose consumers are other Operators. Community utility
+structurally an Operator whose consumers are other Operators. A configuration-time
+fee floor invariant ensures that each Authority's local fee rate meets or exceeds
+its upstream rate, preventing economically unviable configurations. Community utility
 services (Advocates) provide shared infrastructure discoverable via registry-based
 service name resolution.
 
@@ -967,6 +1071,7 @@ and deployed services:
 | Community Registry | `lonniev/dpyc-community` | `members.json`, GOVERNANCE.md, tax rate, network status |
 | Reference Operator | `lonniev/thebrain-mcp` | First Tollbooth-monetized MCP service (TheBrain knowledge graph API) |
 | Reference Operator | `lonniev/excalibur-mcp` | Second Tollbooth-monetized MCP service (X/Twitter posting) |
+| Reference Operator | `lonniev/schwab-mcp` | Third Tollbooth-monetized MCP service (Charles Schwab brokerage) |
 
 The prior art GPG-signed tag `v1.0.0-prior-art` (dated February 16, 2026) on the
 `lonniev/thebrain-mcp` repository establishes the earliest cryptographic proof of
@@ -997,6 +1102,7 @@ ToolConstraint (ABC)
 ├── LoyaltyDiscountConstraint
 ├── BulkBonusConstraint
 ├── HappyHourConstraint
+├── SurgePricingConstraint
 └── JsonExpressionConstraint
 ```
 
@@ -1010,6 +1116,42 @@ ToolConstraint (ABC)
 - Satoshi discounts add: 5 sats off + 3 sats off = 8 sats off
 - Free propagates: if any modifier sets free=true, result is free
 - Bonus multipliers compound multiplicatively: 1.1x * 1.25x = 1.375x
+- Surge multipliers compound multiplicatively: 1.2x * 1.5x = 1.8x
+
+## Appendix D: Runtime Pricing Model Architecture
+
+```
+PricingModel
+├── model_id (UUID)
+├── operator (npub)
+├── name (human-readable)
+├── is_active (boolean, at-most-one-per-operator)
+├── tools: list[ToolPrice]
+│     └── (tool_name, price_sats, category, intent)
+└── pipeline: list[PipelineStep]
+      └── (id, type → CONSTRAINT_REGISTRY, params)
+
+PricingModelStore (Neon CRUD)
+├── create_model() → UUID
+├── list_models(operator) → list[PricingModel]
+├── fetch_active_model(operator) → PricingModel | None
+├── update_model(model_id, model_json)
+├── activate_model(model_id, operator)  [deactivate-then-activate]
+└── delete_model(model_id)  [refuses active models]
+
+PricingResolver (runtime cache)
+├── get_cost(tool_name) → int  [model → fallback → 0]
+├── get_constraint_engine() → ConstraintEngine | None
+└── refresh()  [force cache reset]
+
+ConstraintGate (integration)
+├── check()  [synchronous, static engine — unchanged]
+├── check_async()  [async, prefers resolver engine → fallback to static]
+└── attach_resolver(resolver)  [wire dynamic source]
+```
+
+**Database invariant:** Partial unique index `(operator) WHERE is_active = true`
+ensures at most one active pricing model per operator at the database level.
 
 ---
 

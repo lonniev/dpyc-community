@@ -7,7 +7,7 @@
   "services": [
     {
       "name": "excalibur-mcp",
-      "url": "https://excalibur.fastmcp.app/mcp",
+      "url": "https://excalibur-mcp.fastmcp.app/mcp",
       "description": "Social media posting via MCP with Tollbooth monetization"
     }
   ],

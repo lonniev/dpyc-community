@@ -55,8 +55,8 @@ The following constraint types can be used in the pricing pipeline:
 - `coupon`: `{ code: str, discount_percent: float, max_redemptions: int }`
 - `loyalty_discount`: `{ threshold_consumed_api_sats: int, discount_percent: float }`
 - `bulk_bonus`: `{ tiers: [{threshold, discount_percent}] }`
-- `happy_hour`: `{ start_hour: int, end_hour: int, discount_percent: float }`
-- `temporal_window`: `{ schedule: str, timezone: str }`
+- `happy_hour`: `{ schedule: "HH:MM-HH:MM", timezone: "UTC", days_of_week: [0,1,2,3,4], discount_percent: float, discount_sats: int, free: bool }` — `schedule` is REQUIRED
+- `temporal_window`: `{ schedule: "HH:MM-HH:MM", timezone: "UTC", days_of_week: [0,1,2,3,4] }` — `schedule` is REQUIRED
 - `finite_supply`: `{ max_invocations: int, scope: "global"|"per_patron" }`
 - `periodic_refresh`: `{ interval_seconds: int }`
 - `surge_pricing`: `{ max_capacity: int, window: int, tiers: [{threshold, multiplier}] }`

@@ -158,13 +158,16 @@ There exists a need for an API monetization system that:
    personally identifiable information, email addresses, passwords, or OAuth tokens
 5. Provides community governance mechanisms that make the network's economic value
    reside in participation rather than in proprietary code
+6. Assists API operators in designing pricing policies through AI-guided structured
+   interviews, with schema-aware validation, multi-provider adversarial review, and
+   cryptographically authenticated deployment to live endpoints
 
 ---
 
 ## Summary of the Invention
 
 The present invention provides an integrated system and method for monetizing
-tool-based APIs through five interconnected architectural components:
+tool-based APIs through six interconnected architectural components:
 
 **First**, a pre-funded balance monetization system in which API consumers purchase
 credit units ("api_sats") via Lightning Network micropayments, and individual tool
@@ -203,7 +206,15 @@ registries on a collaborative source code platform (GitHub), in which membership
 dispute resolution, tax rates, and governance rules are managed through pull requests,
 providing cryptographic auditability through the platform's Merkle-tree commit history.
 
-These five components operate as a unified system referred to herein as the "Tollbooth"
+**Sixth**, an AI-assisted pricing campaign design tool that conducts structured
+multi-stage interviews with Operators to co-design pricing models, validates proposed
+constraint pipelines against the server's schema, solicits adversarial second opinions
+from independent AI providers, and deploys approved campaigns to live MCP endpoints
+authenticated by Nostr operator proofs. The interview methodology and pricing guidance
+are managed through a community-maintained system prompt, enabling the network to refine
+campaign design practices without application updates.
+
+These six components operate as a unified system referred to herein as the "Tollbooth"
 architecture, governed by a voluntary community referred to as the "Don't Pester Your
 Customer" (DPYC) Honor Chain.
 
@@ -234,6 +245,11 @@ direct messages on the Nostr relay network.
 **FIG. 6** — Network governance data flow showing the relationship between the
 community registry, the Oracle service, and the runtime membership verification
 performed during purchase certification.
+
+**FIG. 7** — AI-assisted pricing campaign design workflow showing the six-stage
+structured interview, machine-parseable progress extraction, client-side constraint
+pipeline validation, multi-provider adversarial second opinion, and NIP-98-
+authenticated deployment to the Operator's live MCP endpoint.
 
 *(Drawings to be prepared as formal patent figures from the Mermaid source
 diagrams accompanying this specification.)*
@@ -1020,14 +1036,127 @@ This check is the enforcement mechanism that gives the registry its economic
 power: a banned member cannot obtain certificates, cannot create invoices,
 and therefore cannot sell API access through the Honor Chain.
 
+### 7. AI-Assisted Pricing Campaign Design Tool (Claim Family 6)
+
+The system described in Sections 1–6 provides runtime pricing infrastructure.
+However, the design of pricing models — selecting per-tool prices, composing
+constraint pipelines, and projecting revenue — requires domain expertise that
+most Operators lack. The present section describes a companion tool ("Pricing
+Studio") that uses AI-guided structured interviews to co-design pricing
+campaigns with the Operator, validate them against the constraint engine schema,
+and deploy them to live MCP endpoints.
+
+#### 7.1 Structured Interview Architecture
+
+The campaign design process is divided into six sequential interview stages:
+Inventory, Demand, Value, Cost, Constraints, and Synthesis (herein referred to as
+"Recommendation"). An AI consultant (implemented as a large language model with a
+community-managed system prompt) conducts a structured interview, advancing through
+stages based on information sufficiency rather than rigid turn counts.
+
+Each stage operates as an isolated conversation thread. The AI receives only that
+stage's messages plus synthesized context from prior stages via a structured
+insights object. This isolation prevents context contamination between stages and
+allows the Operator to revisit any prior stage without resending the entire
+transcript.
+
+The system prompt is fetched from a community-managed repository at session start,
+with local caching and a bundled fallback. This enables the community to refine
+interview methodology, calibration examples, and pricing guidance without
+requiring application updates.
+
+#### 7.2 Machine-Parseable Progress Tracking
+
+Each AI response includes a hidden machine-parseable progress block
+(`<!-- PROGRESS {...} -->`) containing the current stage identifier, stage number,
+and a cumulative insights object. The application parses this block to drive a
+visual stage stepper, populate insight cards, and determine when stage transitions
+occur. A separate `<!-- REVENUE {...} -->` block in the Synthesis stage provides
+structured revenue projections (TAM/SAM/SOM analysis and three-scenario forecasts)
+that the application renders as visual tables and charts.
+
+Upon Operator approval, the AI emits a `<!-- CAMPAIGN_JSON {...} -->` block
+containing the complete pricing model as structured JSON — tool prices, categories,
+intents, and constraint pipeline steps. This JSON is extracted by the application
+for validation, comparison, and deployment. All machine blocks are stripped before
+display; the Operator sees only rendered markdown tables and prose.
+
+#### 7.3 Client-Side Pipeline Validation and Repair
+
+Before a pricing model is submitted to the server, the application performs
+client-side validation against a local constraint catalog that mirrors the
+server's `CONSTRAINT_REGISTRY`. For each pipeline step, the validator:
+
+1. Verifies the constraint type is known.
+2. Checks that all required parameters are present.
+3. Backfills missing optional parameters with catalog defaults (e.g., defaulting
+   `happy_hour.schedule` to `"17:00-19:00"` or `temporal_window.timezone` to `"UTC"`).
+4. Classifies validation failures as warnings (repairable with defaults) or
+   hard errors (missing required parameter with no default).
+
+Hard errors block the save operation. Warnings are displayed to the Operator
+but allow the save to proceed. This two-tier validation catches mismatches
+between the AI's proposed parameters and the server's constraint schema — a
+category of error that arises when the community prompt's constraint documentation
+diverges from the deployed constraint engine.
+
+#### 7.4 Multi-Provider Second Opinion
+
+After the interview reaches the Synthesis stage, the Operator may request a
+"second opinion" from an independent AI provider. The application constructs a
+campaign summary (interview insights, revenue projections, proposed pricing JSON,
+and a condensed consultant transcript) and submits it to a different LLM provider
+(e.g., xAI Grok when the primary consultant is Anthropic Claude, or vice versa).
+
+The reviewer operates under a separate community-managed system prompt that
+instructs it to critique the campaign within the DPYC economic framework — not
+from conventional SaaS or enterprise pricing norms. The review is structured
+into five sections: Strengths, Risks and Weaknesses, Alternative Pricing
+Suggestions, Revenue Impact Assessment, and Final Verdict.
+
+Upon dismissal of the review, the application automatically feeds the reviewer's
+suggestions back to the primary consultant as a follow-up message, enabling the
+consultant to adjust the proposal based on the peer review. This cross-provider
+adversarial review process reduces single-model bias in pricing recommendations.
+
+#### 7.5 Campaign Lifecycle: Design, Review, Compare, Deploy
+
+The campaign design tool supports a full lifecycle:
+
+1. **Design** — AI-guided structured interview produces a pricing model JSON.
+2. **Review** — Multi-provider second opinion with structured critique.
+3. **Compare** — Side-by-side A/B/C variant comparison with revenue projections,
+   differential analysis, and winner identification.
+4. **Deploy** — The approved campaign is pushed to the Operator's live MCP endpoint
+   via a `set_pricing_model` tool call, authenticated by a NIP-98 operator proof
+   (Section 5, kind 27235 Nostr event). The server validates the pipeline against
+   its constraint registry and atomically activates the new model, deactivating
+   any prior active model.
+
+Campaigns are persisted locally as SwiftData entities with per-stage message
+storage, revenue projections, second opinion text, and the extracted pricing JSON.
+Multiple campaigns can coexist; the Operator selects which to deploy.
+
+#### 7.6 Operator Identity Proof for Deployment
+
+Deploying a pricing model is a RESTRICTED operation — only the Operator whose
+npub matches the MCP endpoint may modify its pricing. The deployment tool
+constructs a NIP-98 HTTP Auth event (Nostr kind 27235), signs it with the
+Operator's nsec (stored in the device Keychain), and embeds the signed event
+in the `set_pricing_model` tool call arguments. The server verifies the
+signature, confirms the npub matches the authenticated session, and rejects
+the operation if verification fails. This ensures that pricing models can only
+be deployed by their rightful Operator, using the same Nostr identity system
+described in Section 5.
+
 ---
 
 ## Abstract
 
 A system and method for monetizing tool-based application programming interfaces
 (APIs) through pre-funded credit balances, composable pricing constraints,
-hierarchical trust chains, decentralized cryptographic identity, and community
-governance.
+hierarchical trust chains, decentralized cryptographic identity, community
+governance, and AI-assisted pricing campaign design.
 
 API consumers pre-fund credit balances denominated in internal units (api_sats) via
 Lightning Network micropayments. Individual tool invocations deduct from the balance
@@ -1056,6 +1185,12 @@ collaborative source code platform, providing cryptographic auditability through
 Merkle-tree commit history. Economic defense resides in network participation rather
 than in proprietary code.
 
+Pricing models are designed through an AI-assisted campaign tool that conducts
+structured six-stage interviews with Operators, validates proposed constraint
+pipelines against the server's schema with automatic repair, solicits adversarial
+second opinions from independent AI providers, and deploys approved campaigns to
+live MCP endpoints authenticated by Nostr cryptographic operator proofs.
+
 ---
 
 ## Appendix A: Implementation References
@@ -1072,6 +1207,8 @@ and deployed services:
 | Reference Operator | `lonniev/thebrain-mcp` | First Tollbooth-monetized MCP service (TheBrain knowledge graph API) |
 | Reference Operator | `lonniev/excalibur-mcp` | Second Tollbooth-monetized MCP service (X/Twitter posting) |
 | Reference Operator | `lonniev/schwab-mcp` | Third Tollbooth-monetized MCP service (Charles Schwab brokerage) |
+| Campaign Design Tool | `lonniev/pricing-studio` | AI-assisted pricing campaign designer (iPad/iOS SwiftUI application, Section 7) |
+| Community Prompts | `lonniev/dpyc-community/prompts/` | Community-managed system prompts for AI consultant and peer reviewer |
 
 The prior art GPG-signed tag `v1.0.0-prior-art` (dated February 16, 2026) on the
 `lonniev/thebrain-mcp` repository establishes the earliest cryptographic proof of

@@ -1,6 +1,6 @@
 # Reference Numeral Schedule
 
-All reference numerals used across FIGS. 1-6 are listed below.
+All reference numerals used across FIGS. 1-7 are listed below.
 The same element carries the same numeral in every figure where it appears.
 
 ## System Entities (100-series)
@@ -108,3 +108,24 @@ The same element carries the same numeral in every figure where it appears.
 | 710 | Runtime registry verification | 6 |
 | 712 | Tax rate configuration | 6 |
 | 714 | Member record | 6 |
+
+## Campaign Design Tool (800-series)
+
+| Ref. | Element | Appears in FIG. |
+|------|---------|-----------------|
+| 800 | Pricing Studio application | 7 |
+| 802 | AI consultant (LLM) | 7 |
+| 804 | Community-managed system prompt | 7 |
+| 806 | Structured interview stage (1-6) | 7 |
+| 808 | Machine-parseable progress block | 7 |
+| 810 | Revenue projection block | 7 |
+| 812 | Campaign JSON extraction | 7 |
+| 814 | Client-side constraint catalog | 7 |
+| 816 | Pipeline validation and repair | 7 |
+| 818 | Second opinion provider (independent LLM) | 7 |
+| 820 | Peer review (structured critique) | 7 |
+| 822 | Cross-provider feedback injection | 7 |
+| 824 | Campaign comparison (A/B/C variants) | 7 |
+| 826 | NIP-98 operator proof (kind 27235) | 7 |
+| 828 | set_pricing_model MCP tool call | 7 |
+| 830 | Atomic model activation | 7 |

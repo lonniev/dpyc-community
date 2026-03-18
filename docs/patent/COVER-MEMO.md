@@ -21,7 +21,7 @@
 Mermaid diagrams can be rendered at https://mermaid.live or converted to
 formal patent figures by a draftsperson.
 
-## Five Claim Families
+## Six Claim Families
 
 1. **Pre-Funded Balance Monetization** — Consumers pre-fund api_sats via Lightning;
    tool invocations deduct from balance. No per-request payment negotiation.
@@ -33,6 +33,10 @@ formal patent figures by a draftsperson.
    credential exchange; signature-based citizenship verification.
 5. **Network Governance** — GitHub-native registry under version control; economic
    defense through network effects rather than proprietary code.
+6. **AI-Assisted Pricing Campaign Design** — Structured six-stage AI interview
+   co-designs pricing models with Operators; client-side pipeline validation against
+   constraint schema; multi-provider adversarial second opinion; NIP-98-authenticated
+   deployment to live MCP endpoints. Community-managed system prompts.
 
 ## Prior Art Timeline
 
@@ -55,8 +59,10 @@ Nostr identity, or network governance. The combination is novel.
 Claims 1-3 are strongest for surviving abstract-idea scrutiny — they describe specific
 technical processes with specific protocol interactions (Lightning Network BOLT-11
 invoices, Schnorr signature verification, constraint pipeline evaluation with defined
-composition rules). Claims 4-5 strengthen overall disclosure and provide additional
-inventive steps.
+composition rules). Claim 6 adds a strong machine-or-transformation hook: the AI
+interview process transforms unstructured Operator intent into validated, schema-
+conformant pricing models deployed via cryptographically authenticated MCP tool calls.
+Claims 4-5 strengthen overall disclosure and provide additional inventive steps.
 
 ## Open Source Strategy
 

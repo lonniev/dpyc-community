@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.92",
-      "minimum": "0.1.92",
+      "current": "0.1.93",
+      "minimum": "0.1.93",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.4.5",
-      "minimum": "0.4.5",
+      "current": "0.4.6",
+      "minimum": "0.4.6",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -35,5 +35,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-21",
-  "advisory": "All components updated to v1.5.0+ release versions. schwab-mcp now reports provenance in service_status. Tax incidence fix + legacy royalty removal remains in effect."
+  "advisory": "tollbooth-dpyc 0.1.93: check_balance now exposes pending_invoice_ids. tollbooth-authority 0.4.6: purchase_credits/check_payment accept operator_id targeting. All operator MCPs bumped to track latest."
 }

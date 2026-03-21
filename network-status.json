@@ -1,34 +1,39 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.78",
-      "minimum": "0.1.78",
+      "current": "0.1.92",
+      "minimum": "0.1.92",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.3.8",
-      "minimum": "0.3.8",
+      "current": "0.4.5",
+      "minimum": "0.4.5",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
-      "current": "0.2.3",
-      "minimum": "0.2.3",
+      "current": "0.2.8",
+      "minimum": "0.2.8",
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.8",
-      "minimum": "1.9.8",
+      "current": "1.9.16",
+      "minimum": "1.9.16",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.22",
-      "minimum": "0.6.22",
+      "current": "0.6.29",
+      "minimum": "0.6.29",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
+    },
+    "schwab-mcp": {
+      "current": "0.8.1",
+      "minimum": "0.8.1",
+      "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-07",
-  "advisory": "Tax incidence fix + legacy royalty removal: Invoice uses full amount_sats (not net_sats). Royalty payout side effect removed from all MCPs. Certification fee cascade is the sole taxation mechanism. economic_model() updated. All operators must update to latest versions and remove TOLLBOOTH_ROYALTY_* ENV vars."
+  "last_updated": "2026-03-21",
+  "advisory": "All components updated to v1.5.0+ release versions. schwab-mcp now reports provenance in service_status. Tax incidence fix + legacy royalty removal remains in effect."
 }

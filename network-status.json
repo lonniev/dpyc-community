@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.98",
-      "minimum": "0.1.98",
+      "current": "0.1.100",
+      "minimum": "0.1.100",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.4.6",
-      "minimum": "0.4.6",
+      "current": "0.4.7",
+      "minimum": "0.4.7",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -16,23 +16,23 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.16",
-      "minimum": "1.9.16",
+      "current": "1.9.17",
+      "minimum": "1.9.17",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.29",
-      "minimum": "0.6.29",
+      "current": "0.6.30",
+      "minimum": "0.6.30",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.2",
-      "minimum": "0.8.2",
+      "current": "0.8.3",
+      "minimum": "0.8.3",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     },
     "pricing-studio": {
-      "current": "1.6.0",
-      "minimum": "1.6.0",
+      "current": "1.6.1",
+      "minimum": "1.6.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-pricing-studio/releases"
     }
   },
@@ -40,5 +40,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-03-22",
-  "advisory": "tollbooth-dpyc 0.1.98: fix perpetual tranche migration in LRU cache — cached ledgers now swept for missing TTLs. All tranches must expire (7-day default). schwab-mcp 0.8.2, excalibur-mcp 0.6.29, tollbooth-authority 0.4.6: bumped to track tollbooth-dpyc >=0.1.98. pricing-studio 1.6.0: real-time relay subscriptions, envelope badge fix, test-call-as-npub, 8 UX improvements."
+  "advisory": "tollbooth-dpyc 0.1.100: Bitcoin Notarization tools added to OPERATOR_BASE_CATALOG — all MCPs get notarize_ledger, get_notarization_proof, list_notarizations automatically. Removed dead get_tax_rate. pricing-studio 1.6.1: notarization status + OTS crypto detail in pricing views, alias-aware display names, 30+ UX fixes. All MCPs bumped to track >=0.1.100."
 }

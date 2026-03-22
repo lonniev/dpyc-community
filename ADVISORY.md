@@ -4,6 +4,40 @@
 
 ## Current Advisories
 
+### tollbooth-dpyc 0.1.100: Bitcoin Notarization in Operator Catalog (2026-03-22)
+
+**Affects:** All operators in the DPYC ecosystem
+
+Three new tools are now part of `OPERATOR_BASE_CATALOG` — every operator MCP gets Bitcoin Notarization automatically without any code changes:
+
+| Tool | Role | Cost | Description |
+|------|------|------|-------------|
+| `notarize_ledger` | Operator | Restricted | Build SHA-256 Merkle tree of all patron balances, submit root to OpenTimestamps calendars |
+| `get_notarization_proof` | Patron | 1 sat | Get a verifiable Merkle inclusion proof for your balance in a notarized snapshot |
+| `list_notarizations` | Anyone | Free | List recent Bitcoin notarization records |
+
+**Also in this release:**
+- **Removed**: `get_tax_rate` tool — fee info is already in the pricing model, certificates, and Oracle's `economic_model`
+- **Renamed**: "anchoring" terminology → "notarization" throughout (tools, docs, responses)
+- **Renamed**: "Authority Default Pricing" → "Default Pricing" (tollbooth-authority)
+
+**Pricing Studio v1.6.1** shows notarization status on every operator/authority pricing view with a seal icon. Tapping reveals the full OTS cryptographic proof detail (Merkle root hash, calendar count, Bitcoin confirmation status).
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.100** | Notarization tools in base catalog, remove get_tax_rate |
+| tollbooth-authority | **0.4.7** | Dep bump, "Default Pricing" rename |
+| excalibur-mcp | **0.6.30** | Dep bump — gets notarization tools automatically |
+| schwab-mcp | **0.8.3** | Dep bump — gets notarization tools automatically |
+| thebrain-mcp | **1.9.17** | Dep bump, perpetual tranche fix |
+| pricing-studio | **1.6.1** | Notarization UI, alias display names, 30+ UX fixes |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.100
+2. Update all downstream MCPs to latest versions
+3. Redeploy services — notarization tools appear automatically
+4. Set `TOLLBOOTH_OTS_ENABLED=true` to activate notarization scheduling
+
 ### tollbooth-dpyc 0.1.98: Perpetual Tranche Cache Migration (2026-03-22)
 
 **Affects:** All operators running tollbooth-dpyc

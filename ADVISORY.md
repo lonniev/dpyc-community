@@ -1,8 +1,54 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-09
+> Last updated: 2026-03-22
 
 ## Current Advisories
+
+### tollbooth-dpyc 0.1.98: Perpetual Tranche Cache Migration (2026-03-22)
+
+**Affects:** All operators running tollbooth-dpyc
+
+The v0.1.97 fix that added 7-day default TTL to all tranches had a gap: the migration in `Tranche.from_dict()` only ran on vault hydration (cache miss). Ledgers cached in memory before deployment retained perpetual tranches indefinitely.
+
+**Root cause:** `LedgerCache.get()` returns cached entries without re-hydrating from vault, so `from_dict()` migration never ran on in-memory ledgers.
+
+**Fix:** v0.1.98 adds `_migrate_perpetual_tranches()` to `LedgerCache.get()` — cached entries are swept for any tranches with `expires_at=None` and assigned a 7-day TTL. Migrated entries are marked dirty for flush-back to vault.
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| tollbooth-dpyc | **0.1.98** | Cache-level perpetual tranche migration on every `get()` |
+| tollbooth-dpyc | **0.1.97** | Default 7-day TTL on `credit_deposit`, vault-level migration in `from_dict()` |
+| schwab-mcp | **0.8.2** | Dep bump `tollbooth-dpyc[nostr]>=0.1.98` |
+| excalibur-mcp | **0.6.29** | Dep bump `tollbooth-dpyc[nostr]>=0.1.98` |
+| tollbooth-authority | **0.4.6** | Dep bump `tollbooth-dpyc[nostr]>=0.1.98`, generic fee handling |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.98
+2. Update all downstream MCPs to latest versions
+3. Redeploy services — cached perpetual tranches will be migrated automatically on next access
+
+### Pricing Studio v1.6.0: Relay Subscriptions, Badge Fix, Test Call (2026-03-22)
+
+**Affects:** Pricing Studio iPad app users
+
+Major release with three new features and eight UX improvements.
+
+**New features:**
+- **Real-time relay subscriptions** — Persistent WebSocket connections with Nostr REQ subscriptions replace 10-second polling. DMs arrive in <2 seconds. Automatic reconnection with exponential backoff. Polling falls back to 60s catch-up when subscriptions are active.
+- **Envelope badge fix** — Three bugs conspired to prevent badges from appearing: eager markRead on identity switch, method-based observation defeating @Observable, dictionary subscript mutation. All three fixed.
+- **Test Call as Npub** — Long-press any tool name in the pricing view to dry-run a tool call. Pick an npub identity, check affordability (balance vs cost), and optionally execute.
+
+**UX improvements:**
+- Message layout: sender left, receiver right, names fixed in header
+- Badge clears immediately on conversation select
+- Sent DM pending state clears on relay accept
+- Chat tab uses cached conversations when subscriptions active
+- Build number from git commit count
+- Traffic log filters subscription events
+- Authority balance shows "???" when unreadable
+- Infographic title: "PatronName with OperatorName Statement"
+
+**No action required** — deploy via TestFlight or `make wifi-install`.
 
 ### Ephemeral Agent Npub for Self-DM (2026-03-09)
 

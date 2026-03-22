@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.93",
-      "minimum": "0.1.93",
+      "current": "0.1.98",
+      "minimum": "0.1.98",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -26,14 +26,19 @@
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.1",
-      "minimum": "0.8.1",
+      "current": "0.8.2",
+      "minimum": "0.8.2",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
+    },
+    "pricing-studio": {
+      "current": "1.6.0",
+      "minimum": "1.6.0",
+      "changelog_url": "https://github.com/lonniev/tollbooth-pricing-studio/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-21",
-  "advisory": "tollbooth-dpyc 0.1.93: check_balance now exposes pending_invoice_ids. tollbooth-authority 0.4.6: purchase_credits/check_payment accept operator_id targeting. All operator MCPs bumped to track latest."
+  "last_updated": "2026-03-22",
+  "advisory": "tollbooth-dpyc 0.1.98: fix perpetual tranche migration in LRU cache — cached ledgers now swept for missing TTLs. All tranches must expire (7-day default). schwab-mcp 0.8.2, excalibur-mcp 0.6.29, tollbooth-authority 0.4.6: bumped to track tollbooth-dpyc >=0.1.98. pricing-studio 1.6.0: real-time relay subscriptions, envelope badge fix, test-call-as-npub, 8 UX improvements."
 }

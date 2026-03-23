@@ -6,8 +6,8 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.4.7",
-      "minimum": "0.4.7",
+      "current": "0.4.8",
+      "minimum": "0.4.8",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -16,8 +16,8 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.17",
-      "minimum": "1.9.17",
+      "current": "1.9.18",
+      "minimum": "1.9.18",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
@@ -26,19 +26,19 @@
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.3",
-      "minimum": "0.8.3",
+      "current": "0.8.4",
+      "minimum": "0.8.4",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     },
     "pricing-studio": {
-      "current": "1.6.1",
-      "minimum": "1.6.1",
+      "current": "1.6.2",
+      "minimum": "1.6.2",
       "changelog_url": "https://github.com/lonniev/tollbooth-pricing-studio/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-22",
-  "advisory": "tollbooth-dpyc 0.1.100: Bitcoin Notarization tools added to OPERATOR_BASE_CATALOG — all MCPs get notarize_ledger, get_notarization_proof, list_notarizations automatically. Removed dead get_tax_rate. pricing-studio 1.6.1: notarization status + OTS crypto detail in pricing views, alias-aware display names, 30+ UX fixes. All MCPs bumped to track >=0.1.100."
+  "last_updated": "2026-03-23",
+  "advisory": "tollbooth-dpyc 0.1.100: Bitcoin Notarization tools in OPERATOR_BASE_CATALOG. pricing-studio 1.6.2: OS notifications for DMs, persistent WebSocket subscriptions confirmed working, relay timeout tuning, configurable poll interval, 50+ UX fixes. All MCPs at latest."
 }

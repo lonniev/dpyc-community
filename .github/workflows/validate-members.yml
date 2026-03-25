@@ -47,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ORACLE_PUSH_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:

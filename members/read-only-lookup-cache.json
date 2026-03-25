@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-03-25T22:51:30Z",
+  "updated_at": "2026-03-25T23:49:46Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -76,7 +76,7 @@
       "services": [
         {
           "name": "Tollbooth Sample",
-          "url": "",
+          "url": "https://tollbooth-sample.fastmcp.app/mcp",
           "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
         }
       ],

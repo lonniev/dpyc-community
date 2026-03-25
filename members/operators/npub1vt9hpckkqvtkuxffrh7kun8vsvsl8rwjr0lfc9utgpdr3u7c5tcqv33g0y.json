@@ -7,7 +7,7 @@
   "services": [
     {
       "name": "Tollbooth Sample",
-      "url": "",
+      "url": "https://tollbooth-sample.fastmcp.app/mcp",
       "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
     }
   ],

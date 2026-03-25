@@ -3,10 +3,10 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-03-25",
-  "display_name": "npub1vt9hpckkqvt...",
+  "display_name": "Tollbooth Sample",
   "services": [
     {
-      "name": "npub1vt9hpckkqvt...",
+      "name": "Tollbooth Sample",
       "url": "",
       "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
     }

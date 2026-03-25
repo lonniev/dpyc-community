@@ -1,0 +1,16 @@
+{
+  "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-03-25",
+  "display_name": "npub1vt9hpckkqvt...",
+  "services": [
+    {
+      "name": "npub1vt9hpckkqvt...",
+      "url": "",
+      "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
+    }
+  ],
+  "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+  "notes": "Registered via Authority-mediated operator registration protocol"
+}

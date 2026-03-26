@@ -430,6 +430,20 @@ Authority during registration (see Section 4.5). This two-layer isolation — sc
 separation and key-based encryption — ensures that neither the Authority, the
 database infrastructure provider, nor any other Operator can read the ledger data.
 
+The in-memory LRU cache interacts with the container lifecycle of the hosting
+environment to produce favorable runtime characteristics. In the preferred
+embodiment, the hosting platform (Horizon / FastMCP Cloud) keeps containers warm
+for at least 10 minutes of idle time. During this warm window, every tool call
+hits only in-memory state — no network round trips are required for ledger lookup,
+constraint evaluation, or identity resolution. Empirical measurements confirm
+sub-100ms per-tool-call overhead within a warm session (including network round
+trip to the container), with warm burst latency averaging 80ms and graceful
+degradation to 181ms after 3 minutes of idle and 219ms after 10 minutes of idle.
+The bootstrap sequence (retrieving the Neon database URL from the Authority,
+initializing the vault, hydrating the LRU cache) runs once per cold start and is
+cached for the process lifetime. Cold starts occur only on initial deployment or
+after extended idle periods (empirically 15-30+ minutes).
+
 The ledger is associated with the consumer's identity (derived from OAuth
 authentication in the preferred embodiment, or from a Nostr npub in the decentralized
 embodiment). Ledger data is never exposed to the consumer in full — only summary
@@ -453,6 +467,48 @@ removed from the consumer's available balance. This design choice serves three p
 
 The expiration period is configurable per Operator. The preferred embodiment uses
 a 30-day default.
+
+#### 2.6 Runtime Performance Characteristics — Per-Session vs. Per-Request
+
+The pre-funded balance model converts the payment protocol from a per-request
+(cold) interaction to a per-session (warm) interaction. In prior art systems
+(L402, x402), every API call is potentially a payment event: the server must issue
+an HTTP 402 redirect, the client must generate or retrieve a Lightning invoice or
+stablecoin payment, the payment network must confirm settlement, and the client
+must retry the original request with proof of payment. Each of these steps
+introduces network round trips and cryptographic verification overhead.
+
+In the present invention, the payment ceremony occurs exactly once per session:
+the consumer purchases credits (Section 2.2), and the bootstrap sequence
+initializes the in-memory ledger cache. Thereafter, N tool calls execute at
+in-memory speed. The critical path for each tool invocation within a warm session
+consists of: (1) an in-memory balance lookup from the LRU cache, (2) constraint
+pipeline evaluation against in-memory state, (3) identity resolution from the
+cached session context, and (4) a balance deduction with write-behind persistence.
+None of these steps require a network round trip.
+
+Empirical measurements on the preferred hosting platform (Horizon / FastMCP Cloud)
+demonstrate the following per-tool-call latencies (including the full network round
+trip from the AI client to the container and back):
+
+| Condition | Measured Latency |
+|---|---|
+| Warm burst (consecutive calls) | ~80ms average |
+| After 3 minutes idle | ~181ms |
+| After 10 minutes idle | ~219ms |
+| Per-tool-call overhead within warm session | <100ms |
+
+The hosting platform maintains container warmth for at least 10 minutes of idle
+time. Within this window, all in-process state — the bootstrap result, the
+courier service for credential exchange, and the ledger LRU cache — persists
+across tool calls without reinitialization. This validates the optimistic caching
+design: hot-path tool calls are pure in-memory operations with zero network
+overhead for state resolution.
+
+This architecture provides a structural latency advantage over per-request payment
+protocols. Where L402 or x402 would impose payment negotiation overhead on every
+API call, the Tollbooth system amortizes the single payment event across an
+arbitrarily long session of tool invocations, each completing in under 100ms.
 
 ### 3. Composable Constraint Engine (Claim Family 2)
 

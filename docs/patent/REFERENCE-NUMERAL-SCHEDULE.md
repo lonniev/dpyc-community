@@ -94,7 +94,7 @@ The same element carries the same numeral in every figure where it appears.
 | 614 | Poison nonce | 5 |
 | 616 | Citizenship challenge | 5 |
 | 618 | Signature verification (citizenship) | 5 |
-| 620 | Passphrase encryption | 5 |
+| 620 | Vault encryption (AES-256-GCM, nsec-derived key) | 4, 5 |
 
 ## Governance (700-series)
 
@@ -129,3 +129,19 @@ The same element carries the same numeral in every figure where it appears.
 | 826 | NIP-98 operator proof (kind 27235) | 7 |
 | 828 | set_pricing_model MCP tool call | 7 |
 | 830 | Atomic model activation | 7 |
+
+## Tenant Isolation / Persistence Security (900-series)
+
+| Ref. | Element | Appears in FIG. |
+|------|---------|-----------------|
+| 900 | Operator tenant schema | 4 |
+| 902 | Schema name derivation (SHA-256 of npub) | 4 |
+| 904 | Schema-qualified connection URL | 4 |
+| 906 | HKDF-SHA256 key derivation | 4 |
+| 908 | AES-256-GCM encryption/decryption | 4 |
+| 910 | Bootstrap protocol (nsec → config discovery) | 4 |
+| 912 | Authority `get_operator_config` tool | 4 |
+| 914 | `bootstrap_config` table (npub-keyed provisioned config) | 4 |
+| 916 | Transparent plaintext-to-encrypted migration | 4 |
+| 918 | Onboarding status introspection tool | 4 |
+| 920 | Operator deregistration (schema lifecycle) | 4 |

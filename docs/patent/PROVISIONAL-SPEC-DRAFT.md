@@ -193,7 +193,13 @@ be greater than or equal to its upstream Authority's fee rate, preventing config
 in which an Authority would lose money on every certification. The chain also
 accommodates Advocates — community utility services that provide shared infrastructure
 (such as OAuth2 callback collection) without monetization, discoverable by peer
-services through registry-based service resolution.
+services through registry-based service resolution. The Authority provisions each
+Operator's persistence layer as an isolated database schema, and the Operator encrypts
+all stored data with a key derived from its own private key — ensuring that neither the
+Authority, the infrastructure provider, nor any other Operator can read another
+Operator's data. A bootstrap protocol enables an Operator to discover its full
+configuration from a single private key, eliminating deployment-time environment
+variable proliferation.
 
 **Fourth**, a Nostr-based identity and credential exchange system in which each
 participant is identified by a Nostr public key (npub), citizenship is verified through
@@ -410,9 +416,19 @@ When a consumer invokes a tool, the Tollbooth middleware:
 
 The consumer's ledger (balance, tranches, usage log, invoice history) is persisted
 in an encrypted vault. In the preferred embodiment, the vault is implemented as a
-server-side key-value store (NeonVault) that survives process restarts and serverless
+server-side key-value store (NeonVault) backed by serverless PostgreSQL (Neon),
+accessed via SQL-over-HTTP API, that survives process restarts and serverless
 cold starts. An in-memory LRU cache provides sub-millisecond read performance, with
-write-behind flushing to the persistent store on a configurable interval.
+write-behind flushing to the persistent store on a configurable interval. Optimistic
+concurrency control via a monotonically incrementing `version` column prevents
+lost-update anomalies under concurrent writes.
+
+All ledger data is encrypted at rest using AES-256-GCM with a key derived from
+the Operator's Nostr private key via HKDF-SHA256 (see Section 4.6). The Operator's
+persistence tenant is isolated at the database schema level, provisioned by the
+Authority during registration (see Section 4.5). This two-layer isolation — schema
+separation and key-based encryption — ensures that neither the Authority, the
+database infrastructure provider, nor any other Operator can read the ledger data.
 
 The ledger is associated with the consumer's identity (derived from OAuth
 authentication in the preferred embodiment, or from a Nostr npub in the decentralized
@@ -801,6 +817,132 @@ Agent's npub. The Constraint Engine can evaluate policies based on either identi
 enabling Principals to set per-Agent limits (maximum spending, time restrictions,
 tool access restrictions) through constraint configuration.
 
+#### 4.5 Operator Tenant Isolation
+
+When an Authority registers a new Operator (Section 4.2), the Authority provisions
+a dedicated persistence tenant for that Operator within the Authority's own
+database infrastructure. In the preferred embodiment, using PostgreSQL (via the
+Neon serverless platform), each Operator receives its own database schema.
+
+The schema name is derived deterministically from the Operator's npub:
+
+1. Compute SHA-256 of the Operator's full npub string
+2. Take the first 16 hexadecimal characters of the hash digest
+3. Prefix with `op_` to form the schema name (e.g., `op_a3f8c1e2b9d04756`)
+
+This produces a collision-resistant, PostgreSQL-safe identifier. The Authority
+creates the schema and provisions standard tables within it: a ledger table
+(consumer credit balances with optimistic concurrency via a version column),
+a ledger journal (append-only transaction log), a credentials table (encrypted
+credential blobs keyed by service and npub), and an anchors table (Bitcoin
+notarization records).
+
+The Operator's database connection URL includes a `search_path` parameter
+set to its schema name, restricting all queries to the Operator's own tables.
+The Operator has no visibility into other Operators' schemas or the Authority's
+own administrative tables.
+
+This schema-per-operator model provides:
+
+- **Data isolation**: One Operator cannot read or modify another Operator's
+  consumer ledgers, credentials, or transaction history.
+- **Independent lifecycle**: An Operator's schema can be provisioned on
+  registration and dropped on deregistration without affecting any other
+  Operator's data.
+- **Shared infrastructure**: All Operators share the same physical database
+  instance, avoiding the cost and operational complexity of per-operator
+  database provisioning while maintaining strict logical separation.
+- **Deterministic addressing**: The schema name is computable from the npub
+  alone, requiring no lookup tables or additional state.
+
+The Authority stores the Operator's provisioned configuration (schema name,
+schema-qualified connection URL) in a `bootstrap_config` table keyed by
+`(npub, key)`, accessible to the Operator via the `get_operator_config` tool
+(Section 4.7).
+
+#### 4.6 Vault Encryption
+
+All ledger data stored in the Operator's tenant is encrypted at the application
+layer using a key derived from the Operator's private key (nsec). This ensures
+that the Authority, the database infrastructure provider, and any administrator
+with database access see only ciphertext.
+
+Key derivation follows HKDF (RFC 5869) with SHA-256:
+
+1. **Extract**: HMAC-SHA256 with a fixed salt (`tollbooth-vault-v1`) and the
+   Operator's nsec bytes as input keying material, producing a pseudorandom key.
+2. **Expand**: A single HKDF-Expand round with info string `vault-ledger-encryption`
+   produces a 32-byte AES-256 key.
+
+Encryption uses AES-256-GCM:
+
+1. A random 12-byte nonce is generated per write operation.
+2. The plaintext (serialized JSON ledger data) is encrypted with AES-256-GCM,
+   producing ciphertext and a 16-byte authentication tag.
+3. The stored value is base64-encoded `nonce || ciphertext || tag`.
+
+Because the nonce is random per write, identical plaintext produces different
+ciphertext on each store operation, preventing ciphertext comparison attacks.
+The GCM authentication tag provides integrity verification — any tampering
+(bit-flip, truncation, substitution) is detected on decryption.
+
+The encryption is transparent to higher-layer code: the vault's `store_ledger`
+method encrypts before writing, and `fetch_ledger` decrypts after reading.
+A heuristic distinguishes legacy plaintext records (JSON beginning with `{`
+or `[`) from encrypted blobs, enabling transparent migration: the first write
+to a plaintext record silently upgrades it to encrypted format without data
+loss or service interruption.
+
+The key isolation property is critical: because the encryption key is derived
+from the Operator's nsec, and each Operator holds a distinct nsec, no two
+Operators share an encryption key. Even if a database administrator or
+infrastructure compromise exposed the raw table contents, the data from
+Operator A is unreadable without Operator A's nsec, and vice versa.
+
+#### 4.7 Operator Bootstrap Protocol
+
+An Operator can discover its complete configuration — persistence layer,
+encryption keys, Authority identity — from a single secret: its Nostr private
+key (nsec). This eliminates the traditional requirement for environment variable
+proliferation (database URLs, API keys, Authority endpoints) at deployment time.
+
+The bootstrap sequence:
+
+1. **Identity derivation**: The Operator derives its npub and public key hex
+   from the nsec using standard secp256k1 key derivation.
+2. **Authority discovery**: The Operator queries the community registry
+   (Section 6.2) for its own member record, which contains the
+   `upstream_authority_npub` field. It then resolves the Authority's MCP
+   endpoint URL from the Authority's member record.
+3. **Configuration retrieval**: The Operator calls the Authority's
+   `get_operator_config` tool, providing its npub. The Authority returns
+   the operator's provisioned configuration (schema-qualified Neon connection
+   URL, schema name, and any additional key-value pairs).
+4. **Vault initialization**: The Operator constructs its `NeonVault` with the
+   retrieved connection URL and its own nsec as the encryption key source.
+5. **Secret discovery**: The Operator introspects its own settings to determine
+   which fields remain unconfigured. Authority-provisioned values (connection
+   URLs) are now present. Operator-specific secrets (such as upstream API
+   credentials for the services the Operator proxies) may still be absent.
+6. **Credential delivery**: Missing secrets are delivered via the Secure Courier
+   protocol (Section 5.3). The Operator exposes a `get_onboarding_status` tool
+   that reports which configuration fields are present and which are missing,
+   along with the remediation path for each (Authority-provisioned, Secure
+   Courier delivery, or deployment-time identity configuration).
+
+The bootstrap is optimistic: it first attempts `get_operator_config` (fast
+path for already-registered Operators). If the Operator is not yet registered,
+it calls `register_operator` on the Authority, which provisions the tenant
+(Section 4.5), then retries the configuration retrieval.
+
+The bootstrap result is cached for the process lifetime. Subsequent tool
+invocations use the cached vault without repeating the discovery sequence.
+
+This design achieves a deployment model where a new Operator instance requires
+exactly one environment variable (`TOLLBOOTH_NOSTR_OPERATOR_NSEC`) to join the
+network. All other configuration is discovered dynamically through the trust
+chain.
+
 ### 5. Nostr-Based Identity and Credential Exchange (Claim Family 4)
 
 #### 5.1 Identity Primitive
@@ -875,10 +1017,11 @@ the Nostr relay network:
    npub, decrypts the NIP-44 payload, validates the credential format against
    a service-specific template, and stores the credentials in an encrypted vault.
 
-4. **Vault Storage**: Credentials are encrypted with a consumer-provided passphrase
-   using a key derivation function and stored in the server-side vault. The
-   passphrase is never stored — the consumer must provide it at each session
-   activation.
+4. **Vault Storage**: Credentials are encrypted using the same HKDF-SHA256-derived
+   AES-256-GCM key used for ledger encryption (Section 4.6) and stored in the
+   server-side credential vault. The encryption key is derived from the Operator's
+   nsec, which is never stored in the vault — it exists only in the Operator's
+   runtime memory, derived from the deployment-time environment variable.
 
 5. **Anti-Replay**: Each credential delivery includes a "poison nonce" — a random
    value embedded in the welcome message that must appear in the reply. This
@@ -1171,9 +1314,12 @@ certify purchase orders for downstream Operators using Schnorr digital signature
 Each layer in the hierarchy implements the same protocol pattern — an Authority is
 structurally an Operator whose consumers are other Operators. A configuration-time
 fee floor invariant ensures that each Authority's local fee rate meets or exceeds
-its upstream rate, preventing economically unviable configurations. Community utility
-services (Advocates) provide shared infrastructure discoverable via registry-based
-service name resolution.
+its upstream rate, preventing economically unviable configurations. Authorities
+provision isolated database schemas for each Operator; Operators encrypt all
+persisted data with keys derived from their own private keys via HKDF-SHA256.
+A bootstrap protocol enables Operators to discover their full configuration from
+a single private key. Community utility services (Advocates) provide shared
+infrastructure discoverable via registry-based service name resolution.
 
 Participants are identified by Nostr public keys (npubs). Citizenship is verified
 through cryptographic signature challenges. API credentials are exchanged through
@@ -1207,6 +1353,7 @@ and deployed services:
 | Reference Operator | `lonniev/thebrain-mcp` | First Tollbooth-monetized MCP service (TheBrain knowledge graph API) |
 | Reference Operator | `lonniev/excalibur-mcp` | Second Tollbooth-monetized MCP service (X/Twitter posting) |
 | Reference Operator | `lonniev/schwab-mcp` | Third Tollbooth-monetized MCP service (Charles Schwab brokerage) |
+| Reference Operator | `lonniev/tollbooth-sample` | Educational reference Operator (weather data, Open-Meteo) with onboarding template |
 | Campaign Design Tool | `lonniev/pricing-studio` | AI-assisted pricing campaign designer (iPad/iOS SwiftUI application, Section 7) |
 | Community Prompts | `lonniev/dpyc-community/prompts/` | Community-managed system prompts for AI consultant and peer reviewer |
 
@@ -1222,7 +1369,8 @@ the system's existence. The repository was made publicly accessible on February 
 | secp256k1 Schnorr signatures | Certificate signing, Nostr event signing, citizenship verification | BIP-340, NIP-01 |
 | SHA-256 | Certificate claim hashing, Merkle tree (git) | FIPS 180-4 |
 | XChaCha20-Poly1305 | NIP-44 payload encryption (Secure Courier) | RFC 8439 (extended nonce variant) |
-| HKDF-SHA256 | NIP-44 key derivation from ECDH shared secret | RFC 5869 |
+| HKDF-SHA256 | NIP-44 key derivation from ECDH shared secret; vault encryption key derivation from operator nsec | RFC 5869 |
+| AES-256-GCM | Vault ledger encryption (random nonce per write, authenticated) | NIST SP 800-38D |
 | NIP-17 gift wrapping | Metadata-private message delivery | Nostr NIP-17 |
 | bech32 encoding | Nostr npub/nsec representation | BIP-173, NIP-19 |
 | Lightning Network BOLT-11 | Invoice generation and settlement | BOLT #11 |

@@ -1,8 +1,71 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-22
+> Last updated: 2026-03-25
 
 ## Current Advisories
+
+### Operator Lifecycle, Onboarding Status, and CI Hardening (2026-03-25)
+
+**Affects:** All operators, Authority curators, and Pricing Studio users
+
+This release introduces full operator lifecycle management (register, update, deregister) across the stack, a new onboarding status introspection tool, and CI/CD improvements to dpyc-community.
+
+**dpyc-community — CI & branch protection**
+- `regenerate-index` CI step now runs even when `validate` fails (`always()`) — prevents stale cache on validation-only failures
+- Added `workflow_dispatch` trigger for manual CI runs
+- `ORACLE_PUSH_TOKEN` used for cache regeneration push through branch protection
+- Migrated from classic branch protection to rulesets with admin bypass
+
+**tollbooth-dpyc 0.1.102 — onboarding introspection**
+- New `get_onboarding_status` tool in `OPERATOR_BASE_CATALOG` — introspects operator Settings to report configured vs missing fields
+- Classifies fields as: authority-provisioned, secret (Secure Courier), identity, or tuning
+- New `tools/onboarding.py` module
+
+**dpyc-oracle — operator registry management**
+- `update_operator` tool — modify existing operator's `service_url` or `display_name`
+- `deregister_operator` tool — Authority removes operator from registry
+- `register_operator` now validates `service_url` is non-empty
+
+**tollbooth-authority — MCP-to-MCP forwarding**
+- `update_operator` and `deregister_operator` forwarded to Oracle via MCP-to-MCP
+- `register_operator` accepts and forwards `service_url`
+
+**tollbooth-sample — onboarding reference implementation**
+- `get_onboarding_status` tool wired up
+- BTCPay credential template for Secure Courier onboarding
+- Bumped `tollbooth-dpyc` dependency to `>=0.1.102`
+- MCP instructions describe full onboarding flow
+
+**pricing-studio — operator lifecycle UI**
+- Full operator lifecycle: register, update registration, deregister from app
+- Edit Registration sheet (service URL + display name → Oracle update)
+- Disconnect from Authority (long-press → deregister)
+- Onboarding status view: live checklist from `get_onboarding_status`
+- Refresh Config + Deliver Secrets action buttons
+- `OnboardingStatusSheet` accessible from sidebar context menu
+- Error state shows onboarding checklist inline
+- MCP URL shown everywhere (sidebar, add, edit, all states)
+- URL change in Edit Operator forces re-registration
+- Resizable traffic log panel
+- "Unable to Load" replaces misleading "Connection Error"
+- Fixed "Personal Brain" preview data leak in stats sheet
+- Consolidated operator actions into single overflow menu
+- Add Operator sheet includes MCP Endpoint URL field
+
+| Component | Version | Key Changes |
+|-----------|---------|-------------|
+| dpyc-community | — | CI `always()` fix, `workflow_dispatch`, `ORACLE_PUSH_TOKEN`, rulesets |
+| tollbooth-dpyc | **0.1.102** | `get_onboarding_status` in base catalog, `tools/onboarding.py` |
+| dpyc-oracle | — | `update_operator`, `deregister_operator`, `service_url` validation |
+| tollbooth-authority | — | Forward `update_operator`, `deregister_operator` to Oracle |
+| tollbooth-sample | — | Onboarding status, BTCPay template, dep bump |
+| pricing-studio | — | Full operator lifecycle UI, onboarding checklist, 14 UX improvements |
+
+**Action required:**
+1. Update `tollbooth-dpyc` to >= 0.1.102
+2. Update downstream MCPs to latest versions
+3. Redeploy dpyc-oracle, tollbooth-authority, and operator services
+4. Pricing Studio users: update via TestFlight or `make wifi-install`
 
 ### tollbooth-dpyc 0.1.100: Bitcoin Notarization in Operator Catalog (2026-03-22)
 

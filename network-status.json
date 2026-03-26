@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.1.100",
-      "minimum": "0.1.100",
+      "current": "0.1.102",
+      "minimum": "0.1.102",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -44,6 +44,6 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-03-24",
-  "advisory": "pricing-studio 1.7.1: NIP-44 ChaCha20 fix (ChaChaPoly counter=1 → raw ChaCha20 counter=0), relay strategy simplified to subscribe-all/publish-all. All backend MCPs stable."
+  "last_updated": "2026-03-25",
+  "advisory": "Operator lifecycle (register/update/deregister) across Oracle, Authority, and Pricing Studio. get_onboarding_status in tollbooth-dpyc 0.1.102 base catalog. CI hardened with always(), workflow_dispatch, ORACLE_PUSH_TOKEN, and rulesets."
 }

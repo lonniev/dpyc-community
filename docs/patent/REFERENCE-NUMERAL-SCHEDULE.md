@@ -159,3 +159,5 @@ The same element carries the same numeral in every figure where it appears.
 | 916 | Transparent plaintext-to-encrypted migration | 4 |
 | 918 | Template-driven onboarding status computation | 4 |
 | 920 | Operator deregistration (schema lifecycle) | 4 |
+| 922 | Patron credential partition (service, npub) key | 4, 5 |
+| 924 | Cross-restart patron session restoration | 4 |

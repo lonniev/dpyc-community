@@ -199,7 +199,13 @@ all stored data with a key derived from its own private key — ensuring that ne
 Authority, the infrastructure provider, nor any other Operator can read another
 Operator's data. A bootstrap protocol enables an Operator to discover its full
 configuration from a single private key, eliminating deployment-time environment
-variable proliferation.
+variable proliferation. Within each Operator's encrypted schema, credentials are
+further partitioned by (service, npub) — the Operator's own credentials occupy one
+partition while each patron's credentials (OAuth tokens, API keys, bearer hashes)
+occupy independent partitions keyed by the patron's npub. This enables a single
+Operator to serve multiple concurrent patrons, each with their own independently
+encrypted credential set, with credential restoration surviving process restarts
+without re-authentication.
 
 **Fourth**, a Nostr-based identity and credential exchange system in which each
 participant is identified by a Nostr public key (npub), citizenship is verified through

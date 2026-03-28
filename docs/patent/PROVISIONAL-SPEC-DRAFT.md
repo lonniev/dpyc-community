@@ -279,7 +279,7 @@ identified by a Nostr npub.
 **Operator** — A service provider that exposes one or more tools through the Model
 Context Protocol (MCP). The Operator runs the Tollbooth middleware, which gates tool
 access behind a credit balance check. The Operator holds a BTCPay Server store and
-a Lightning Network node (or connection to one) for receiving payments. The Operator
+a Lightning Network node (or connection to one) for receiving payments. In the preferred embodiment, BTCPay Server is the payment processor. The OperatorRuntime abstracts payment processing behind an `ensure_btcpay()` method that constructs a payment client from vault-stored credentials, enabling future substitution of alternative Lightning-capable payment processors without changes to the credit purchase flow. The Operator
 is identified by a Nostr npub and is a registered member of the DPYC Honor Chain.
 
 **Advocate** — A community utility service that provides shared infrastructure to
@@ -301,15 +301,15 @@ the community registry under version control. There is exactly one First Curator
 at any time.
 
 **api_sats** — The internal unit of account for credit balances. api_sats are
-purchased with real Bitcoin satoshis via Lightning Network invoices. The exchange
-rate between real satoshis and api_sats is determined by a configurable multiplier
-(the "VIP multiplier") that allows Operators to offer volume incentives. api_sats
-have no value outside the Operator's service and are not redeemable for Bitcoin.
+purchased with real Bitcoin satoshis via Lightning Network invoices. In the preferred embodiment, the exchange rate is 1:1 (one satoshi equals one api_sat). Volume incentives and promotional multipliers are implemented through the Constraint Engine (Section 3) rather than a fixed exchange-rate multiplier. api_sats have no value outside the Operator's service and are not redeemable for Bitcoin.
 
-**Tollbooth** — The middleware library that an Operator integrates into their MCP
-server. Tollbooth handles credit balance management, per-tool cost deduction,
-constraint evaluation, Lightning invoice generation via BTCPay Server, certificate
-verification, and ledger persistence.
+**Tollbooth** — The middleware library (distributed as a Python wheel, `tollbooth-dpyc`) that an Operator integrates into their MCP server. The library provides an `OperatorRuntime` class that the Operator instantiates once. The runtime's `register_standard_tools()` method registers 25+ standard tools (credit purchase, balance check, constraint evaluation, credential exchange, onboarding status, pricing management, Oracle delegation, and more). The Operator writes only domain-specific tools.
+
+**Credential Template** — A declarative specification of the secrets an Operator or patron must provide. The `operator_credential_template` defines secrets needed to operate the service (payment processor credentials, upstream API keys), delivered once at registration time via the Secure Courier protocol. The `patron_credential_template` defines per-patron secrets (API keys for proxied services), delivered via Secure Courier or, for OAuth2-integrated services, acquired through a browser-based authorization flow.
+
+**Credential Card (ncred)** — A portable, encrypted credential token (encoded with the `ncred1` bech32 prefix) that a patron can redeem directly at an Operator's service without relay polling. After successful credential delivery via the Secure Courier protocol (Section 5.3), the Operator constructs an ncred card and delivers it to the patron as a Nostr DM.
+
+**Identity Credential** — A Nostr event of kind 30080, signed by the Operator, issued to a patron upon successful credential receipt. The identity credential serves as a portable, cryptographically verifiable attestation that the patron has an established relationship with the Operator's service.
 
 **Honor Chain** — The voluntary community of Operators and Authorities, organized
 as a network society. Members agree to common principles including the use of Bitcoin
@@ -376,8 +376,7 @@ The credit purchase flow proceeds as follows:
    Lightning-compatible wallet. BTCPay Server confirms settlement.
 
 5. **Balance Crediting**: Upon confirmed settlement, the Tollbooth middleware credits
-   the consumer's ledger with api_sats equal to the paid amount multiplied by the
-   Operator's configured VIP multiplier. Credits are granted idempotently — calling
+   the consumer's ledger with api_sats equal to the paid amount (1:1 ratio). Volume incentives, if any, are applied through the Constraint Engine's campaign system (e.g., bulk_bonus constraints) rather than a credit-time multiplier. Credits are granted idempotently — calling
    `check_payment` multiple times for the same invoice ID results in credits being
    granted exactly once.
 
@@ -444,9 +443,7 @@ initializing the vault, hydrating the LRU cache) runs once per cold start and is
 cached for the process lifetime. Cold starts occur only on initial deployment or
 after extended idle periods (empirically 15-30+ minutes).
 
-The ledger is associated with the consumer's identity (derived from OAuth
-authentication in the preferred embodiment, or from a Nostr npub in the decentralized
-embodiment). Ledger data is never exposed to the consumer in full — only summary
+The ledger is associated with the consumer's Nostr npub. Every patron-facing tool requires an explicit npub parameter; there is no silent fallback to the Operator's own identity. This explicit-identity requirement is a security invariant of the system. Ledger data is never exposed to the consumer in full — only summary
 views (current balance, usage statistics, invoice history) are returned through
 read-only tools.
 
@@ -467,6 +464,8 @@ removed from the consumer's available balance. This design choice serves three p
 
 The expiration period is configurable per Operator. The preferred embodiment uses
 a 30-day default.
+
+When the Pricing Resolver finds no stored pricing model but the Operator's registered tools carry base costs, the system auto-generates a default pricing model from the tool cost annotations. This ensures every Operator has a valid pricing model from first deployment without requiring manual configuration.
 
 #### 2.6 Runtime Performance Characteristics — Per-Session vs. Per-Request
 
@@ -510,6 +509,10 @@ protocols. Where L402 or x402 would impose payment negotiation overhead on every
 API call, the Tollbooth system amortizes the single payment event across an
 arbitrarily long session of tool invocations, each completing in under 100ms.
 
+#### 2.7 Demand Tracking
+
+The OperatorRuntime provides demand tracking primitives — `get_global_demand()` and `fire_and_forget_demand_increment()` — that record aggregate invocation counts per hourly window. These primitives feed the SurgePricingConstraint (Section 3.2), enabling real-time congestion-based price adjustments without external analytics infrastructure.
+
 ### 3. Composable Constraint Engine (Claim Family 2)
 
 #### 3.1 Architecture
@@ -546,7 +549,7 @@ The engine comprises:
 
 #### 3.2 Baked-In Constraint Classes
 
-The preferred embodiment includes eight constraint classes implemented as
+The preferred embodiment includes eleven constraint classes implemented as
 native code (Python) for performance and reliability:
 
 1. **TemporalWindowConstraint**: Gates tool access to specified wall-clock hours
@@ -572,7 +575,7 @@ native code (Python) for performance and reliability:
 
 5. **FreeTrialConstraint**: Grants the first N invocations of a tool at zero cost.
    Never denies — after the trial is consumed, returns a neutral result and the
-   base price applies. Per-consumer tracking.
+   base price applies. Per-consumer tracking. The FreeTrialConstraint replaces earlier hardcoded seed balance grants. Rather than crediting new patrons with a fixed api_sat balance at registration time, the Operator configures a FreeTrialConstraint that grants the first N invocations free. This approach is more flexible — configurable per campaign, per tool, with explicit invocation tracking — and eliminates the need for hardcoded balance initialization logic.
 
 6. **LoyaltyDiscountConstraint**: Applies a discount when the consumer's total
    historical consumption (total_consumed_api_sats) exceeds a configurable threshold.
@@ -587,9 +590,15 @@ native code (Python) for performance and reliability:
    Unlike TemporalWindowConstraint, HappyHourConstraint never denies access — it
    returns a discount during the specified window and a neutral result outside it.
 
+9. **SurgePricingConstraint**: Applies a price multiplier proportional to current demand intensity. The constraint queries the OperatorRuntime's demand tracking system (`get_global_demand()`) and applies a configurable surge multiplier when demand exceeds threshold levels. SurgePricing never denies a request — it only adjusts price.
+
+10. **ExpressionConstraint**: A safe tree-based expression evaluator that operates on the ConstraintContext's fields (ledger balance, patron identity, environment state) using and/or/not/field/op/value syntax. Enables custom pricing logic without code changes.
+
+11. **JsonExpressionConstraint**: An alias for ExpressionConstraint with explicit JSON tree input format.
+
 #### 3.3 Extensible Expression Constraint
 
-For operators requiring custom pricing logic beyond the eight baked-in classes, the
+For operators requiring custom pricing logic beyond the eleven baked-in classes, the
 system provides a `JsonExpressionConstraint` that evaluates safe expressions
 specified in JSON configuration.
 
@@ -641,6 +650,8 @@ startup. Example:
 A `CONSTRAINT_REGISTRY` maps type strings to constraint classes. Custom constraint
 classes can be registered by the Operator at startup, enabling arbitrary extensions
 without modifying the Tollbooth library.
+
+The Constraint Engine exposes two standard MCP tools, registered by `register_standard_tools()`: `check_price` (returns the effective price for a named tool given the current patron's context and active constraints) and `list_constraint_types` (enumerates all registered constraint types with their parameter schemas). These tools enable patrons and pricing management interfaces to inspect pricing in real time.
 
 #### 3.5 Runtime-Configurable Pricing Models
 
@@ -970,21 +981,12 @@ The bootstrap sequence:
    (Section 6.2) for its own member record, which contains the
    `upstream_authority_npub` field. It then resolves the Authority's MCP
    endpoint URL from the Authority's member record.
-3. **Configuration retrieval**: The Operator calls the Authority's
-   `get_operator_config` tool, providing its npub. The Authority returns
-   the operator's provisioned configuration (schema-qualified Neon connection
-   URL, schema name, and any additional key-value pairs).
+3. **Configuration retrieval**: The Authority delivers the Operator's provisioned configuration (schema-qualified Neon connection URL) via a NIP-04 encrypted direct message on the Nostr relay network at registration time. The Operator's bootstrap process polls configured relays for this encrypted configuration message. As a fallback, the Operator can also retrieve the configuration by calling the Authority's `get_operator_config` tool. Both paths deliver the same configuration; the DM delivery ensures the Operator receives its configuration even before its first tool call to the Authority.
 4. **Vault initialization**: The Operator constructs its `NeonVault` with the
    retrieved connection URL and its own nsec as the encryption key source.
-5. **Secret discovery**: The Operator introspects its own settings to determine
-   which fields remain unconfigured. Authority-provisioned values (connection
-   URLs) are now present. Operator-specific secrets (such as upstream API
-   credentials for the services the Operator proxies) may still be absent.
+5. **Onboarding Status Computation**: The Operator computes its onboarding status from three sources: (a) identity readiness (nsec present in environment), (b) authority readiness (bootstrap configuration received from Authority), and (c) operator secret readiness (all fields defined in the `operator_credential_template` are present in the encrypted vault). The `get_onboarding_status` standard tool reports which of these categories are satisfied and provides human-readable remediation paths for any that are missing. This computation is template-driven — the credential template IS the schema — eliminating the need for per-operator Settings class introspection.
 6. **Credential delivery**: Missing secrets are delivered via the Secure Courier
-   protocol (Section 5.3). The Operator exposes a `get_onboarding_status` tool
-   that reports which configuration fields are present and which are missing,
-   along with the remediation path for each (Authority-provisioned, Secure
-   Courier delivery, or deployment-time identity configuration).
+   protocol (Section 5.3).
 
 The bootstrap is optimistic: it first attempts `get_operator_config` (fast
 path for already-registered Operators). If the Operator is not yet registered,
@@ -1096,10 +1098,22 @@ the Nostr relay network:
    drop self-addressed DMs, and is consistent with NIP-17's ephemeral key
    pattern for metadata protection.
 
+8. **Credential Card Issuance**: Upon successful credential receipt and vault storage, the Operator constructs a credential card (`ncred1...` encoded token) and delivers it to the patron as a Nostr DM. The ncred card is a portable, self-contained token that the patron can present directly to the Operator to re-authenticate in future sessions without repeating the Secure Courier relay flow.
+
+The bootstrap configuration delivery (Section 4.7) uses NIP-04 encryption (symmetric shared secret from Diffie-Hellman key exchange) for the registration-time Neon URL delivery. The Secure Courier credential exchange uses the more modern NIP-44 encryption with NIP-17 gift-wrapped DM format, providing stronger forward secrecy and reduced metadata leakage.
+
 The Secure Courier ensures that API credentials never appear in the chat interface
 between the consumer and the AI assistant. They travel on a separate, encrypted
 channel — conceptually a "diplomatic pouch" — that is inaccessible to the AI
 model, the chat platform, or any intermediary.
+
+#### 5.4 Identity Credentials (Kind 30080)
+
+Upon successful credential receipt, the Operator signs a Nostr event of kind 30080 attesting to the patron's relationship with the Operator's service. This identity credential is a replaceable, parameterized event (per NIP-33) that can be verified by any party with access to Nostr relays. It serves as a portable attestation of patron status, usable for cross-Operator trust decisions without exposing the underlying API credentials.
+
+#### 5.5 OAuth2 Authorization Flow (Alternative Credential Acquisition)
+
+For services that proxy OAuth2-protected APIs (e.g., financial brokerage services), the `patron_credential_template` may specify an OAuth2 authorization flow as an alternative to Secure Courier delivery. The Operator exposes `begin_oauth` and `check_oauth_status` tools. The patron completes a browser-based authorization code grant, and the resulting access and refresh tokens are stored in the Operator's encrypted vault. The Secure Courier path and the OAuth2 path are alternative credential acquisition strategies, selected by the `patron_credential_template` configuration. In both cases, the resulting credentials are stored in the same encrypted vault and accessed through the same runtime methods.
 
 ### 6. Network Governance as Economic Defense (Claim Family 5)
 
@@ -1381,6 +1395,7 @@ Participants are identified by Nostr public keys (npubs). Citizenship is verifie
 through cryptographic signature challenges. API credentials are exchanged through
 encrypted direct messages (NIP-44, NIP-17) on the Nostr relay network, eliminating
 the need for email, passwords, OAuth tokens, or personally identifiable information.
+Portable credential cards (ncred) and operator-signed identity credentials (Nostr kind 30080) provide redeemable, verifiable attestations of patron relationships.
 
 The system is governed through a version-controlled community registry on a
 collaborative source code platform, providing cryptographic auditability through
@@ -1444,7 +1459,8 @@ ToolConstraint (ABC)
 ├── BulkBonusConstraint
 ├── HappyHourConstraint
 ├── SurgePricingConstraint
-└── JsonExpressionConstraint
+├── ExpressionConstraint
+└── JsonExpressionConstraint (alias for ExpressionConstraint)
 ```
 
 **ConstraintEngine evaluation modes:**

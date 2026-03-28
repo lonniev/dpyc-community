@@ -15,6 +15,8 @@ The same element carries the same numeral in every figure where it appears.
 | 110 | Community registry (members.json) | 1, 4, 6 |
 | 112 | Oracle service | 1, 5, 6 |
 | 114 | Governance document | 1, 6 |
+| 116 | OperatorRuntime (core protocol engine) | 1, 2, 3, 4 |
+| 118 | register_standard_tools() | 1 |
 
 ## Settlement Layer (200-series)
 
@@ -32,7 +34,7 @@ The same element carries the same numeral in every figure where it appears.
 | 300 | Consumer credit ledger | 2, 3 |
 | 302 | Credit tranche | 2 |
 | 304 | api_sats credit units | 2 |
-| 306 | VIP multiplier | 2 |
+| 306 | Credit unit parity (1:1 sat-to-api_sat ratio) | 2 |
 | 308 | FIFO deduction | 2, 3 |
 | 310 | Tranche expiration (demurrage) | 2 |
 | 312 | Purchase credits request | 2, 4 |
@@ -63,6 +65,12 @@ The same element carries the same numeral in every figure where it appears.
 | 432 | JSON expression constraint | 3 |
 | 434 | Final price calculation | 3 |
 | 436 | Price modifier accumulator | 3 |
+| 438 | Surge pricing constraint | 3 |
+| 440 | Expression constraint | 3 |
+| 442 | Demand tracking (get_global_demand) | 3 |
+| 444 | Auto-seed default pricing model | 3 |
+| 446 | check_price standard tool | 3 |
+| 448 | list_constraint_types standard tool | 3 |
 
 ## Trust Chain / Certificates (500-series)
 
@@ -95,6 +103,12 @@ The same element carries the same numeral in every figure where it appears.
 | 616 | Citizenship challenge | 5 |
 | 618 | Signature verification (citizenship) | 5 |
 | 620 | Vault encryption (AES-256-GCM, nsec-derived key) | 4, 5 |
+| 622 | Credential card (ncred1... token) | 5 |
+| 624 | Identity credential (Nostr kind 30080) | 5 |
+| 626 | NIP-04 bootstrap DM (Authority → Operator) | 4 |
+| 628 | OAuth2 authorization flow (patron alternative) | 5 |
+| 630 | Operator credential template | 4, 5 |
+| 632 | Patron credential template | 5 |
 
 ## Governance (700-series)
 
@@ -143,5 +157,5 @@ The same element carries the same numeral in every figure where it appears.
 | 912 | Authority `get_operator_config` tool | 4 |
 | 914 | `bootstrap_config` table (npub-keyed provisioned config) | 4 |
 | 916 | Transparent plaintext-to-encrypted migration | 4 |
-| 918 | Onboarding status introspection tool | 4 |
+| 918 | Template-driven onboarding status computation | 4 |
 | 920 | Operator deregistration (schema lifecycle) | 4 |

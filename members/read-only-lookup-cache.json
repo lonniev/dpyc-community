@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-03-30T00:24:04Z",
+  "updated_at": "2026-03-30T02:35:20Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -56,10 +56,10 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-03-01",
-      "display_name": "excalibur-mcp",
+      "display_name": "Excalibur MCP",
       "services": [
         {
-          "name": "excalibur-mcp",
+          "name": "Excalibur MCP",
           "url": "https://excalibur-mcp.fastmcp.app/mcp",
           "description": "Social media posting via MCP with Tollbooth monetization"
         }

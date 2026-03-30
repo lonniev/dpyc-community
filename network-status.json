@@ -6,8 +6,8 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.4.9",
-      "minimum": "0.4.9",
+      "current": "0.4.10",
+      "minimum": "0.4.10",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {

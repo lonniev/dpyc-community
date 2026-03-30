@@ -39,6 +39,11 @@
       "current": "0.2.1",
       "minimum": "0.2.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-oauth2-collector/releases"
+    },
+    "tollbooth-shortlinks": {
+      "current": "0.1.0",
+      "minimum": "0.1.0",
+      "changelog_url": "https://github.com/lonniev/tollbooth-shortlinks/releases"
     }
   },
   "protocols": [

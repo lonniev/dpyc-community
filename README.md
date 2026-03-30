@@ -121,6 +121,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and fee collection |
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | First Tollbooth Operator — TheBrain MCP Server |
 | [excalibur-mcp](https://github.com/lonniev/excalibur-mcp) | X (Twitter) posting MCP service with Secure Courier credential delivery |
+| [tollbooth-shortlinks](https://github.com/lonniev/tollbooth-shortlinks) | Community utility — ephemeral short URLs for OAuth flows |
 
 ## Built On
 

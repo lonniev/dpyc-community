@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-03-28T12:38:40Z",
+  "updated_at": "2026-03-30T00:23:41Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -115,6 +115,22 @@
           "name": "tollbooth-oauth2-callback",
           "url": "https://tollbooth--9332e0141cea11f1af0b42dde27851f2.web.val.run",
           "description": "Serverless OAuth2 browser callback — receives GET redirects from OAuth providers"
+        }
+      ],
+      "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
+      "notes": "Registered as community utility Advocate via Oracle"
+    },
+    {
+      "npub": "npub1ds30lhxws60mmp8xru258vfakr2sqtn3etszwu9s95k0t8vkx9lsfqwjg9",
+      "role": "advocate",
+      "status": "active",
+      "member_since": "2026-03-30",
+      "display_name": "Tollbooth Shortlinks",
+      "services": [
+        {
+          "name": "tollbooth-shortlinks",
+          "url": "https://tollbooth-shortlinks.fastmcp.app/mcp",
+          "description": "Community utility — ephemeral, human-friendly short URLs for OAuth flows and long URLs. 24-hour TTL, no tracking, no interstitials."
         }
       ],
       "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",

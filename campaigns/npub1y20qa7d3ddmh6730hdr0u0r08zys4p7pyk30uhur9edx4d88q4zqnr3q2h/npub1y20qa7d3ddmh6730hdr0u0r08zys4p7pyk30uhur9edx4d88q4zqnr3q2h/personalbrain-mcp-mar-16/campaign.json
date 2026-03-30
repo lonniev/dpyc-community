@@ -1,0 +1,93 @@
+{
+  "created_at": "2026-03-16T21:44:11Z",
+  "interview_progress": {
+    "insights": {
+      "campaign_draft": "approved",
+      "constraints_considered": [
+        "free_trial",
+        "loyalty_discount",
+        "bulk_bonus",
+        "happy_hour",
+        "surge_pricing",
+        "finite_supply"
+      ],
+      "cost_summary": "Low infrastructure cost floors across all tiers — pricing is purely a value conversation",
+      "demand_summary": "Human-paced professional researchers making hundreds of calls per day across write, read, and heavy query operations",
+      "philosophy": "balanced",
+      "tools_categories": 4,
+      "tools_identified": 31,
+      "value_summary": "High value — enables knowledge synthesis worth thousands to millions in professional outcomes"
+    },
+    "stage": "recommendation",
+    "stage_number": 6
+  },
+  "is_deployed": true,
+  "name": "PersonalBrain MCP — Mar 16",
+  "operator_display_name": "PersonalBrain MCP",
+  "operator_npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
+  "proposal": {
+    "generatedAt": 795391816.527527,
+    "pipelineJSON": "{\"name\":\"PersonalBrain MCP Pricing Campaign\",\"tools\":[{\"tool_name\":\"brain_whoami\",\"price_sats\":1,\"category\":\"identity\",\"intent\":\"Identity lookup — negligible cost and value\"},{\"tool_name\":\"brain_list_brains\",\"price_sats\":1,\"category\":\"navigation\",\"intent\":\"Navigation read — low cost and value\"},{\"tool_name\":\"brain_get_brain\",\"price_sats\":1,\"category\":\"navigation\",\"intent\":\"Simple navigation read\"},{\"tool_name\":\"brain_set_active_brain\",\"price_sats\":2,\"category\":\"navigation\",\"intent\":\"State-changing navigation — slightly elevated\"},{\"tool_name\":\"brain_get_brain_stats\",\"price_sats\":2,\"category\":\"analytics\",\"intent\":\"Computed aggregation — modest cost\"},{\"tool_name\":\"brain_create_thought\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core write operation\"},{\"tool_name\":\"brain_get_thought\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple key lookup read\"},{\"tool_name\":\"brain_get_thought_by_name\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple name lookup read\"},{\"tool_name\":\"brain_update_thought\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core write operation\"},{\"tool_name\":\"brain_delete_thought\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Destructive write operation\"},{\"tool_name\":\"brain_search_thoughts\",\"price_sats\":3,\"category\":\"compute\",\"intent\":\"Index scan — moderate compute cost\"},{\"tool_name\":\"brain_get_thought_graph\",\"price_sats\":3,\"category\":\"compute\",\"intent\":\"Graph traversal — moderate compute cost\"},{\"tool_name\":\"brain_get_thought_graph_paginated\",\"price_sats\":10,\"category\":\"heavy\",\"intent\":\"Heavy large-payload graph traversal\"},{\"tool_name\":\"brain_get_types\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Static cached lookup\"},{\"tool_name\":\"brain_get_tags\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Static cached lookup\"},{\"tool_name\":\"brain_create_link\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core relationship write\"},{\"tool_name\":\"brain_update_link\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core relationship write\"},{\"tool_name\":\"brain_get_link\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple read\"},{\"tool_name\":\"brain_delete_link\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Destructive write\"},{\"tool_name\":\"brain_add_file_attachment\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Write with storage\"},{\"tool_name\":\"brain_add_url_attachment\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Write with storage\"},{\"tool_name\":\"brain_get_attachment\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple read\"},{\"tool_name\":\"brain_get_attachment_content\",\"price_sats\":2,\"category\":\"read\",\"intent\":\"Content retrieval — slightly heavier\"},{\"tool_name\":\"brain_delete_attachment\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Destructive write\"},{\"tool_name\":\"brain_list_attachments\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple read\"},{\"tool_name\":\"brain_get_note\",\"price_sats\":1,\"category\":\"read\",\"intent\":\"Simple read\"},{\"tool_name\":\"brain_create_or_update_note\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core write operation\"},{\"tool_name\":\"brain_append_to_note\",\"price_sats\":5,\"category\":\"write\",\"intent\":\"Core write operation\"},{\"tool_name\":\"brain_get_modifications\",\"price_sats\":2,\"category\":\"analytics\",\"intent\":\"Audit log scan\"},{\"tool_name\":\"brain_brain_query\",\"price_sats\":10,\"category\":\"heavy\",\"intent\":\"Heavy compute query — multi-REST fan-out with query optimization\"}],\"pipeline\":[{\"type\":\"free_trial\",\"params\":{\"first_n_free\":1000}},{\"type\":\"loyalty_discount\",\"params\":{\"threshold_consumed_api_sats\":675000,\"discount_percent\":20}}]}",
+    "projections": {
+      "avgPriceSats": 5,
+      "projections": [
+        {
+          "callsPerUserPerMonth": 4000,
+          "monthlyUsers": 25,
+          "revenueSats": 500000,
+          "revenueUsd": 370,
+          "scenario": "conservative"
+        },
+        {
+          "callsPerUserPerMonth": 6000,
+          "monthlyUsers": 150,
+          "revenueSats": 4500000,
+          "revenueUsd": 3330,
+          "scenario": "moderate"
+        },
+        {
+          "callsPerUserPerMonth": 8000,
+          "monthlyUsers": 400,
+          "revenueSats": 16000000,
+          "revenueUsd": 11840,
+          "scenario": "optimistic"
+        }
+      ],
+      "sam": "10,000-30,000 paying subscribers with technical MCP readiness",
+      "som": "500-1,500 reachable year-one MCP adopters plus potential enterprise team deployments",
+      "tam": "500,000 ever-active PersonalBrain users globally",
+      "toolCount": 31
+    }
+  },
+  "revenue_projections": {
+    "avg_price_sats": 5,
+    "projections": [
+      {
+        "calls_per_user_per_month": 4000,
+        "monthly_users": 25,
+        "revenue_sats": 500000,
+        "revenue_usd": 370,
+        "scenario": "conservative"
+      },
+      {
+        "calls_per_user_per_month": 6000,
+        "monthly_users": 150,
+        "revenue_sats": 4500000,
+        "revenue_usd": 3330,
+        "scenario": "moderate"
+      },
+      {
+        "calls_per_user_per_month": 8000,
+        "monthly_users": 400,
+        "revenue_sats": 16000000,
+        "revenue_usd": 11840,
+        "scenario": "optimistic"
+      }
+    ],
+    "sam": "10,000-30,000 paying subscribers with technical MCP readiness",
+    "som": "500-1,500 reachable year-one MCP adopters plus potential enterprise team deployments",
+    "tam": "500,000 ever-active PersonalBrain users globally",
+    "tool_count": 31
+  },
+  "updated_at": "2026-03-29T15:08:38Z"
+}

@@ -3,10 +3,10 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-03-01",
-  "display_name": "excalibur-mcp",
+  "display_name": "Excalibur MCP",
   "services": [
     {
-      "name": "excalibur-mcp",
+      "name": "Excalibur MCP",
       "url": "https://excalibur-mcp.fastmcp.app/mcp",
       "description": "Social media posting via MCP with Tollbooth monetization"
     }

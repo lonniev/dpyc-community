@@ -9,14 +9,20 @@ into their own services.
 
 ## Structure
 
-Each campaign is a directory containing:
+Campaigns are organized by author and target operator:
 
 ```
 campaigns/
-  acme-weather-freemium/
-    campaign.json       # Machine-importable — load into Pricing Studio
-    campaign.md         # Human-readable summary with rationale
+  {author_npub}/
+    {operator_npub}/
+      {campaign-slug}/
+        campaign.json       # Machine-importable — load into Pricing Studio
+        campaign.md         # Human-readable summary with rationale
 ```
+
+- **author_npub** — the person who designed the campaign
+- **operator_npub** — the operator the campaign was designed for
+- **campaign-slug** — a URL-safe name derived from the campaign title
 
 ### campaign.json
 
@@ -31,11 +37,18 @@ constraints it uses, why, and what the projected economics look like.
 Read this to understand whether the strategy fits your service before
 importing.
 
-## Contributing
+## Borrowing Campaigns
 
-Export a campaign from Pricing Studio using the Share button, then submit
-a pull request adding your campaign directory here. Include both the JSON
-and Markdown exports.
+A campaign designed for one operator may inspire another. The tool prices
+and constraint pipeline are operator-specific (different tools, different
+economics), so a direct import won't work. A future "Reconcile" feature
+in Pricing Studio will assist with adapting a campaign from one operator's
+tool catalog to another's.
+
+## Publishing
+
+Use the Oracle's `publish_campaign` tool or the Share button in Pricing
+Studio. Both produce the JSON and Markdown exports.
 
 ## License
 

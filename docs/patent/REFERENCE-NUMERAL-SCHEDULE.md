@@ -17,6 +17,10 @@ The same element carries the same numeral in every figure where it appears.
 | 114 | Governance document | 1, 6 |
 | 116 | OperatorRuntime (core protocol engine) | 1, 2, 3, 4 |
 | 118 | register_standard_tools() | 1 |
+| 120 | paid_tool decorator (debit/rollback/demand/warning lifecycle) | 1, 2 |
+| 122 | SessionCache[T] (generic TTL in-memory session cache) | 1 |
+| 124 | PatronSessionCache[T] (vault-backed session cache with auto-restore) | 1, 5 |
+| 126 | Advocate shortlink service (ephemeral URL compression) | 1, 5 |
 
 ## Settlement Layer (200-series)
 
@@ -161,3 +165,6 @@ The same element carries the same numeral in every figure where it appears.
 | 920 | Operator deregistration (schema lifecycle) | 4 |
 | 922 | Patron credential partition (service, npub) key | 4, 5 |
 | 924 | Cross-restart patron session restoration | 4 |
+| 926 | Bitcoin notarization (OpenTimestamps, default enabled) | 4 |
+| 928 | Merkle tree over patron ledger balances | 4 |
+| 930 | OTS calendar submission and receipt storage | 4 |

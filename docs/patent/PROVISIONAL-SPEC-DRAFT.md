@@ -394,27 +394,44 @@ The credit purchase flow proceeds as follows:
 
 #### 2.3 Per-Tool Deduction
 
-Each tool exposed by the Operator is annotated with a cost in api_sats using a
-decorator pattern:
+Each tool exposed by the Operator is annotated with a cost in api_sats via a
+cost table, and wrapped with a `paid_tool` decorator that encapsulates the
+entire payment lifecycle:
 
 ```python
-@paid_tool(cost_api_sats=2)
-async def search_thoughts(query_text: str) -> dict:
+TOOL_COSTS = {"search_thoughts": ToolTier.READ}  # 1 api_sat
+
+runtime = OperatorRuntime(tool_costs=TOOL_COSTS, ...)
+
+@tool
+@runtime.paid_tool("search_thoughts")
+async def search_thoughts(query_text: str, npub: str = "") -> dict:
     """Full-text search across thought names and content."""
-    ...
+    return await brain.search(query_text)
 ```
 
-When a consumer invokes a tool, the Tollbooth middleware:
+The decorator eliminates per-tool payment boilerplate: the function body contains
+only domain logic. The Operator writes no debit, rollback, or balance-warning
+code. When a consumer invokes a tool, the decorator and underlying middleware:
 
-1. Evaluates the Constraint Engine (Section 3) to determine the effective cost,
+1. Validates the consumer's cryptographic identity (npub). There is no silent
+   fallback to the Operator's own identity; an empty or malformed npub is
+   rejected immediately.
+2. Evaluates the Constraint Engine (Section 3) to determine the effective cost,
    which may differ from the base cost due to active constraints.
-2. Checks whether the consumer's available balance (sum of non-expired tranches)
+3. Checks whether the consumer's available balance (sum of non-expired tranches)
    is sufficient.
-3. If sufficient, deducts the effective cost from the oldest non-expired tranche
+4. If sufficient, deducts the effective cost from the oldest non-expired tranche
    (FIFO) and permits the tool invocation to proceed.
-4. If insufficient, returns an error indicating the required balance and providing
+5. If insufficient, returns an error indicating the required balance and providing
    a direct path to purchase additional credits. The tool invocation does not proceed.
-5. Records the deduction in the consumer's daily usage log, including the tool name,
+6. On successful execution, increments the demand counter for the tool (feeding
+   the SurgePricingConstraint, Section 3.2) and injects a low-balance warning
+   into the result if the consumer's remaining balance is below a configurable
+   threshold.
+7. On execution failure (exception), automatically rolls back the debit — the
+   consumer is not charged for failed invocations.
+8. Records the deduction in the consumer's daily usage log, including the tool name,
    cost, and timestamp.
 
 #### 2.4 Ledger Persistence
@@ -434,6 +451,16 @@ persistence tenant is isolated at the database schema level, provisioned by the
 Authority during registration (see Section 4.5). This two-layer isolation — schema
 separation and key-based encryption — ensures that neither the Authority, the
 database infrastructure provider, nor any other Operator can read the ledger data.
+
+For multi-tenant Operators that maintain per-consumer domain sessions (e.g., OAuth
+tokens, API clients), the system provides a two-tier session management architecture:
+a generic in-memory session cache (`SessionCache[T]`) with configurable TTL expiry,
+and a patron session cache (`PatronSessionCache[T]`) that wraps the in-memory cache
+with automatic persistence to the encrypted vault. On cold start, the patron session
+cache transparently restores sessions from the vault using an Operator-supplied
+restore callback that constructs the domain-specific session object from stored
+credentials. The Operator need not implement cache expiry, vault persistence, or
+cold-start restoration logic; these concerns are handled by the shared runtime.
 
 The in-memory LRU cache interacts with the container lifecycle of the hosting
 environment to produce favorable runtime characteristics. In the preferred
@@ -517,7 +544,7 @@ arbitrarily long session of tool invocations, each completing in under 100ms.
 
 #### 2.7 Demand Tracking
 
-The OperatorRuntime provides demand tracking primitives — `get_global_demand()` and `fire_and_forget_demand_increment()` — that record aggregate invocation counts per hourly window. These primitives feed the SurgePricingConstraint (Section 3.2), enabling real-time congestion-based price adjustments without external analytics infrastructure.
+The OperatorRuntime provides demand tracking primitives — `get_global_demand()` and `fire_and_forget_demand_increment()` — that record aggregate invocation counts per hourly window. These primitives feed the SurgePricingConstraint (Section 3.2), enabling real-time congestion-based price adjustments without external analytics infrastructure. Demand increment is performed automatically by the `paid_tool` decorator on each successful invocation; Operators do not call it explicitly.
 
 ### 3. Composable Constraint Engine (Claim Family 2)
 
@@ -908,7 +935,14 @@ creates the schema and provisions standard tables within it: a ledger table
 (consumer credit balances with optimistic concurrency via a version column),
 a ledger journal (append-only transaction log), a credentials table (encrypted
 credential blobs keyed by service and npub), and an anchors table (Bitcoin
-notarization records).
+notarization records). Bitcoin notarization via OpenTimestamps is enabled by
+default for all Operators; notarization tools (notarize_ledger,
+get_notarization_proof, list_notarizations) are registered automatically in the
+standard tool set. The notarization subsystem builds a Merkle tree over all
+patron ledger balances, submits the root hash to multiple OpenTimestamps
+calendar servers, and stores the resulting receipts alongside the tree's leaf
+hashes for independent patron verification. Operators may disable notarization
+if the operational overhead is undesirable.
 
 The Operator's database connection URL includes a `search_path` parameter
 set to its schema name, restricting all queries to the Operator's own tables.
@@ -1121,6 +1155,8 @@ Upon successful credential receipt, the Operator signs a Nostr event of kind 300
 
 For services that proxy OAuth2-protected APIs (e.g., financial brokerage services), the `patron_credential_template` may specify an OAuth2 authorization flow as an alternative to Secure Courier delivery. The Operator exposes `begin_oauth` and `check_oauth_status` tools. The patron completes a browser-based authorization code grant, and the resulting access and refresh tokens are stored in the Operator's encrypted vault. The Secure Courier path and the OAuth2 path are alternative credential acquisition strategies, selected by the `patron_credential_template` configuration. In both cases, the resulting credentials are stored in the same encrypted vault and accessed through the same runtime methods.
 
+OAuth2 authorization URLs are often hundreds of characters long and difficult for patrons to copy from an AI chat interface. The system provides an Advocate service (Section 6.3) for ephemeral URL shortening: the Operator creates a memorable short slug (e.g., `brave-otter-finds-gold`) that resolves to the full authorization URL. The short URL expires after 24 hours and is stored in a shared database with no tracking or interstitial pages. This URL compression is best-effort; the Operator falls back to the raw URL if the shortening service is unavailable.
+
 ### 6. Network Governance as Economic Defense (Claim Family 5)
 
 #### 6.1 Design Philosophy
@@ -1190,8 +1226,9 @@ not individually monetized. Advocates register via the Oracle with a `services[]
 array describing their endpoints. Peer MCP servers discover Advocate services
 through registry-based name resolution (scanning all members for a matching service
 name), eliminating the need for hardcoded URLs or environment variables. Sponsored
-by the First Curator. Examples include OAuth2 callback collectors and relay
-aggregators.
+by the First Curator. Examples include OAuth2 callback collectors, ephemeral URL
+shortening services (for compressing long OAuth authorization URLs into
+human-friendly phrases), and relay aggregators.
 
 **Operator** — Runs one or more monetized MCP services. Requires sponsorship by
 an Authority, a BTCPay Server store, and installation of the Tollbooth middleware.

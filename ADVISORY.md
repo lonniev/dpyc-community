@@ -1,8 +1,45 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-03-25
+> Last updated: 2026-04-11
 
 ## Current Advisories
+
+### Ad Valorem Pricing + Authority on OperatorRuntime (2026-04-11)
+
+**Affects:** All operators, Authority, all downstream MCPs
+
+The wheel now supports ad valorem (percentage-based) pricing for any tool.
+The Authority has been refactored onto OperatorRuntime — it is now a standard
+operator with `purchase_mode="direct"` (trust root, no upstream certificate).
+
+**tollbooth-dpyc 0.4.0 — ad valorem `paid_tool`**
+- `ToolIdentity` gains pricing hint fields (`pricing_hint_type`, `pricing_hint_value`, `pricing_hint_param`, `pricing_hint_min`) for auto-seeding percent-based pricing models on first boot
+- `debit_or_deny` (renamed from `debit_or_error`) uses `ToolPricing.compute(**tool_kwargs)` — supports both flat and percentage pricing through the same gate
+- `paid_tool` wrapper passes call arguments as `tool_kwargs` so percent-priced tools compute fees from call parameters (e.g., `amount_sats`)
+- `check_price` supports ad valorem preview via `tool_kwargs` JSON parameter
+- `_build_initial_pricing_model` reads pricing hints from `ToolIdentity`
+- New `purchase_mode="certified"|"direct"` on `OperatorRuntime` — "direct" uses `direct_purchase_tool` for trust-root operators
+
+**tollbooth-authority 0.5.0 — refactored onto OperatorRuntime**
+- 12 hand-written tools replaced by `register_standard_tools`
+- `certify_credits` is a `@runtime.paid_tool` with ad valorem pricing (2% of `amount_sats`, min 10 sats) — no manual billing code
+- Pricing model auto-seeds on first boot with correct UUIDs and percent pricing
+- Deprecated stubs deleted: `activate_dpyc`, `report_upstream_purchase`
+- All manual singletons removed — OperatorRuntime manages lifecycle
+- `server.py`: 1887 lines reduced to ~700 lines
+
+**Breaking changes:**
+- `debit_or_error` renamed to `debit_or_deny` — any operator calling this directly must update
+- `tollbooth-dpyc>=0.4.0` required by all MCPs
+
+**All MCPs pinned >=0.4.0:**
+- excalibur-mcp v0.6.33
+- schwab-mcp v0.8.7
+- taxsort-mcp v0.22.1
+- tollbooth-sample v0.1.9
+- tollbooth-authority v0.5.0
+
+---
 
 ### Operator Lifecycle, Onboarding Status, and CI Hardening (2026-03-25)
 

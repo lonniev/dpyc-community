@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.2.16",
-      "minimum": "0.2.16",
+      "current": "0.4.0",
+      "minimum": "0.4.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.4.12",
-      "minimum": "0.4.12",
+      "current": "0.5.0",
+      "minimum": "0.5.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -21,18 +21,18 @@
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.32",
-      "minimum": "0.6.32",
+      "current": "0.6.33",
+      "minimum": "0.6.33",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.6",
-      "minimum": "0.8.6",
+      "current": "0.8.7",
+      "minimum": "0.8.7",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     },
     "taxsort-mcp": {
-      "current": "0.22.0",
-      "minimum": "0.22.0",
+      "current": "0.22.1",
+      "minimum": "0.22.1",
       "changelog_url": "https://github.com/lonniev/taxsort-mcp/releases"
     },
     "pricing-studio": {
@@ -49,11 +49,16 @@
       "current": "0.1.0",
       "minimum": "0.1.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-shortlinks/releases"
+    },
+    "tollbooth-sample": {
+      "current": "0.1.9",
+      "minimum": "0.1.9",
+      "changelog_url": "https://github.com/lonniev/tollbooth-sample/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-04-09",
-  "advisory": "v0.2.16: Closed-door billing gate (unknown tools denied, Neon down = deny, proof forwarding, code-declared category is immutable floor). Horizon OAuth removed from Authority and Oracle. All MCPs pinned >=0.2.16. Pricing Studio: no placeholder fabrication, dedup fix."
+  "last_updated": "2026-04-11",
+  "advisory": "v0.4.0: Ad valorem paid_tool — any operator can price tools as percentage-of-amount. Authority refactored onto OperatorRuntime (purchase_mode=direct). Pricing models auto-seed with UUIDs and percent hints on first boot. debit_or_error renamed to debit_or_deny. All MCPs pinned >=0.4.0."
 }

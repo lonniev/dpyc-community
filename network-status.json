@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.4.0",
-      "minimum": "0.4.0",
+      "current": "0.4.6",
+      "minimum": "0.4.6",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.5.0",
-      "minimum": "0.5.0",
+      "current": "0.5.6",
+      "minimum": "0.5.6",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -16,23 +16,23 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.20",
-      "minimum": "1.9.20",
+      "current": "1.9.21",
+      "minimum": "1.9.21",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.33",
-      "minimum": "0.6.33",
+      "current": "0.6.34",
+      "minimum": "0.6.34",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.7",
-      "minimum": "0.8.7",
+      "current": "0.8.8",
+      "minimum": "0.8.8",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     },
     "taxsort-mcp": {
-      "current": "0.22.1",
-      "minimum": "0.22.1",
+      "current": "0.23.2",
+      "minimum": "0.23.2",
       "changelog_url": "https://github.com/lonniev/taxsort-mcp/releases"
     },
     "pricing-studio": {
@@ -51,8 +51,8 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-shortlinks/releases"
     },
     "tollbooth-sample": {
-      "current": "0.1.9",
-      "minimum": "0.1.9",
+      "current": "0.1.10",
+      "minimum": "0.1.10",
       "changelog_url": "https://github.com/lonniev/tollbooth-sample/releases"
     }
   },
@@ -60,5 +60,5 @@
     "dpyp-01-base-certificate"
   ],
   "last_updated": "2026-04-11",
-  "advisory": "v0.4.0: Ad valorem paid_tool — any operator can price tools as percentage-of-amount. Authority refactored onto OperatorRuntime (purchase_mode=direct). Pricing models auto-seed with UUIDs and percent hints on first boot. debit_or_error renamed to debit_or_deny. All MCPs pinned >=0.4.0."
+  "advisory": "v0.4.6: force_relay forwarding in SecureCourierService, btcpay_host URL validation, active_tranches excludes expired. All MCPs pinned >=0.4.6."
 }

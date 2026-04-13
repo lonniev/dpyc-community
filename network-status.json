@@ -1,13 +1,13 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.4.6",
-      "minimum": "0.4.6",
+      "current": "0.6.2",
+      "minimum": "0.6.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
-      "current": "0.5.6",
-      "minimum": "0.5.6",
+      "current": "0.6.0",
+      "minimum": "0.6.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
     "dpyc-oracle": {
@@ -16,23 +16,23 @@
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
     "thebrain-mcp": {
-      "current": "1.9.21",
-      "minimum": "1.9.21",
+      "current": "1.10.0",
+      "minimum": "1.10.0",
       "changelog_url": "https://github.com/lonniev/thebrain-mcp/releases"
     },
     "excalibur-mcp": {
-      "current": "0.6.34",
-      "minimum": "0.6.34",
+      "current": "0.8.0",
+      "minimum": "0.8.0",
       "changelog_url": "https://github.com/lonniev/excalibur-mcp/releases"
     },
     "schwab-mcp": {
-      "current": "0.8.8",
-      "minimum": "0.8.8",
+      "current": "0.10.0",
+      "minimum": "0.10.0",
       "changelog_url": "https://github.com/lonniev/schwab-mcp/releases"
     },
     "taxsort-mcp": {
-      "current": "0.23.2",
-      "minimum": "0.23.2",
+      "current": "0.26.0",
+      "minimum": "0.26.0",
       "changelog_url": "https://github.com/lonniev/taxsort-mcp/releases"
     },
     "pricing-studio": {
@@ -51,14 +51,14 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-shortlinks/releases"
     },
     "tollbooth-sample": {
-      "current": "0.1.10",
-      "minimum": "0.1.10",
+      "current": "0.2.0",
+      "minimum": "0.2.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-sample/releases"
     }
   },
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-04-11",
-  "advisory": "v0.4.6: force_relay forwarding in SecureCourierService, btcpay_host URL validation, active_tranches excludes expired. All MCPs pinned >=0.4.6."
+  "last_updated": "2026-04-13",
+  "advisory": "v0.6.0 security refactor: unified proof parameter across all tools — every npub param is now paired with a proof param. operator_proof.py deleted; proof validation consolidated into OperatorRuntime. All MCPs pinned >=0.6.0."
 }

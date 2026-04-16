@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPYC Honor Chain — OTS Audit Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #f0883e;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --blue: #58a6ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .stat-card .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stat-card .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.25rem;
+  }
+  .stat-card .sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  .operator-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .operator-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(240, 136, 62, 0.05);
+  }
+  .operator-header .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .operator-header .npub {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge.confirmed { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .badge.submitted { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .badge.stale { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .badge.never { background: rgba(139, 148, 158, 0.15); color: var(--text-muted); }
+  .timeline {
+    padding: 0.5rem 1rem;
+  }
+  .timeline-entry {
+    display: grid;
+    grid-template-columns: 140px 70px 80px 1fr 90px;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+  .timeline-entry:last-child { border-bottom: none; }
+  .timeline-entry .ts {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .timeline-entry .leaves {
+    font-variant-numeric: tabular-nums;
+  }
+  .timeline-entry .calendars {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+  }
+  .timeline-entry .root {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 0.65rem;
+    color: var(--blue);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .merkle-viz {
+    padding: 1rem;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: pre;
+    line-height: 1.4;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 0.35rem; }
+  .legend .dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  }
+  .dot.green { background: var(--green); }
+  .dot.yellow { background: var(--yellow); }
+  .dot.red { background: var(--red); }
+  .dot.gray { background: var(--text-muted); }
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  footer a { color: var(--blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .info-box {
+    background: rgba(88, 166, 255, 0.08);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .info-box strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DPYC Honor Chain — OTS Audit Dashboard</h1>
+  <p>Open Timestamps notarization status across the Tollbooth operator network</p>
+</header>
+
+<div class="info-box">
+  <strong>How this works:</strong> Each Tollbooth operator periodically snapshots all patron balances
+  into a SHA-256 Merkle tree and submits the root hash to
+  <a href="https://opentimestamps.org" style="color:var(--blue)">OpenTimestamps</a> calendar servers.
+  Those calendars anchor the hash into a Bitcoin block, creating an immutable proof
+  that the ledger state existed at that moment. This page shows the notarization
+  activity across the DPYC Honor Chain.
+</div>
+
+<div class="legend">
+  <span><span class="dot green"></span> Confirmed (anchored in Bitcoin)</span>
+  <span><span class="dot yellow"></span> Submitted (awaiting confirmation)</span>
+  <span><span class="dot red"></span> Stale (no notarization in 7+ days)</span>
+  <span><span class="dot gray"></span> Never notarized</span>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="label">Operators</div>
+    <div class="value">6</div>
+    <div class="sub">registered in Honor Chain</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Notarizations</div>
+    <div class="value">23</div>
+    <div class="sub">total across all operators</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Confirmed</div>
+    <div class="value" style="color:var(--green)">19</div>
+    <div class="sub">anchored in Bitcoin blocks</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Coverage</div>
+    <div class="value">83%</div>
+    <div class="sub">operators notarized this week</div>
+  </div>
+</div>
+
+<!-- Per-Operator Sections -->
+<h2>Operator Notarization Timeline</h2>
+
+<!-- TheBrain MCP -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">TheBrain MCP</div>
+      <div class="npub">npub1y20qa7d3ddmh67...c5tcqv33g0y</div>
+    </div>
+    <span class="badge confirmed">Confirmed</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry">
+      <span class="ts">2026-04-15 09:12</span>
+      <span class="leaves">12 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">a3f8c1d2e4b5...7890abcdef12</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-14 14:30</span>
+      <span class="leaves">11 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">b2e9d0c1f3a4...6789012345ab</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-13 08:45</span>
+      <span class="leaves">10 leaves</span>
+      <span class="calendars">3/4 cal</span>
+      <span class="root">c1d8e9f0a2b3...5678901234cd</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+  </div>
+  <div class="merkle-viz">         ┌──────────┐
+         │ root     │  a3f8c1d2...
+         │ hash     │  ← submitted to OTS calendars
+         └────┬─────┘    ← anchored in Bitcoin block #892,451
+              │
+        ┌─────┴─────┐
+        │           │
+     ┌──┴──┐     ┌──┴──┐
+     │ H01 │     │ H23 │    4 internal nodes
+     └──┬──┘     └──┬──┘
+      ┌─┴─┐      ┌─┴─┐
+      L0  L1     L2  L3     ...12 patron leaves</div>
+</div>
+
+<!-- Schwab MCP -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">Schwab MCP</div>
+      <div class="npub">npub15e3ver3pskqsuq...enaas86ll75</div>
+    </div>
+    <span class="badge submitted">Submitted</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry">
+      <span class="ts">2026-04-15 11:03</span>
+      <span class="leaves">5 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">d4e5f6a7b8c9...0123456789ef</span>
+      <span class="badge submitted">submitted</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-12 16:22</span>
+      <span class="leaves">4 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">e5f6a7b8c9d0...1234567890ab</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+  </div>
+</div>
+
+<!-- eXcalibur MCP -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">eXcalibur MCP</div>
+      <div class="npub">npub19gqrkwsssnz5dl...yzugse3f7a2</div>
+    </div>
+    <span class="badge confirmed">Confirmed</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry">
+      <span class="ts">2026-04-14 22:15</span>
+      <span class="leaves">8 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">f6a7b8c9d0e1...2345678901bc</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+  </div>
+</div>
+
+<!-- TaxSort MCP -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">TaxSort MCP</div>
+      <div class="npub">npub1sz60evcudpnaa9...9c6s6mhv7z</div>
+    </div>
+    <span class="badge stale">Stale</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry">
+      <span class="ts">2026-04-07 03:41</span>
+      <span class="leaves">3 leaves</span>
+      <span class="calendars">2/4 cal</span>
+      <span class="root">a7b8c9d0e1f2...3456789012cd</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tollbooth Sample -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">Tollbooth Sample</div>
+      <div class="npub">npub1vt9hpckkqvtkux...c5tcqv33g0y</div>
+    </div>
+    <span class="badge never">Never</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry" style="color:var(--text-muted); justify-content: center; grid-template-columns: 1fr;">
+      <span>No notarizations recorded</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tollbooth Authority -->
+<div class="operator-section">
+  <div class="operator-header">
+    <div>
+      <div class="name">Tollbooth Authority</div>
+      <div class="npub">npub1fuhq0clgzhhkuh...xy9c6s6mhv7z</div>
+    </div>
+    <span class="badge confirmed">Confirmed</span>
+  </div>
+  <div class="timeline">
+    <div class="timeline-entry">
+      <span class="ts">2026-04-15 06:00</span>
+      <span class="leaves">6 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">b8c9d0e1f2a3...4567890123de</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-14 06:00</span>
+      <span class="leaves">6 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">c9d0e1f2a3b4...5678901234ef</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-13 06:00</span>
+      <span class="leaves">6 leaves</span>
+      <span class="calendars">4/4 cal</span>
+      <span class="root">d0e1f2a3b4c5...6789012345ab</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+    <div class="timeline-entry">
+      <span class="ts">2026-04-12 06:00</span>
+      <span class="leaves">5 leaves</span>
+      <span class="calendars">3/4 cal</span>
+      <span class="root">e1f2a3b4c5d6...7890123456bc</span>
+      <span class="badge confirmed">confirmed</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>
+    Data sourced from <code>list_notarizations</code> MCP tool across registered operators.
+    Root hashes are anchored via <a href="https://opentimestamps.org">OpenTimestamps</a> into the Bitcoin blockchain.
+  </p>
+  <p style="margin-top:0.5rem">
+    <a href="https://github.com/lonniev/dpyc-community">dpyc-community</a> &middot;
+    <a href="https://github.com/lonniev/tollbooth-dpyc">tollbooth-dpyc</a> &middot;
+    <a href="https://github.com/lonniev/tollbooth-authority">tollbooth-authority</a>
+  </p>
+  <p style="margin-top:0.5rem; font-size:0.65rem; color:var(--text-muted)">
+    Last updated: 2026-04-15T16:00:00Z &middot; Mock data — live feed coming soon
+  </p>
+</footer>
+
+</body>
+</html>

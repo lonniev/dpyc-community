@@ -217,202 +217,10 @@
   <span><span class="dot gray"></span> Never notarized</span>
 </div>
 
-<!-- Summary Stats -->
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="label">Operators</div>
-    <div class="value">6</div>
-    <div class="sub">registered operators</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Notarizations</div>
-    <div class="value">23</div>
-    <div class="sub">total across all operators</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Confirmed</div>
-    <div class="value" style="color:var(--green)">19</div>
-    <div class="sub">anchored in Bitcoin blocks</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Coverage</div>
-    <div class="value">83%</div>
-    <div class="sub">operators notarized this week</div>
-  </div>
-</div>
-
-<!-- Per-Operator Sections -->
+<!-- Dynamic content rendered by JavaScript -->
+<div id="stats-row" class="stats-row"></div>
 <h2>Operator Notarization Timeline</h2>
-
-<!-- TheBrain MCP -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">TheBrain MCP</div>
-      <div class="npub">npub1y20qa7d3ddmh67...c5tcqv33g0y</div>
-    </div>
-    <span class="badge confirmed">Confirmed</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry">
-      <span class="ts">2026-04-15 09:12</span>
-      <span class="leaves">12 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">a3f8c1d2e4b5...7890abcdef12</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-14 14:30</span>
-      <span class="leaves">11 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">b2e9d0c1f3a4...6789012345ab</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-13 08:45</span>
-      <span class="leaves">10 leaves</span>
-      <span class="calendars">3/4 cal</span>
-      <span class="root">c1d8e9f0a2b3...5678901234cd</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-  </div>
-  <div class="merkle-viz">         ┌──────────┐
-         │ root     │  a3f8c1d2...
-         │ hash     │  ← submitted to OTS calendars
-         └────┬─────┘    ← anchored in Bitcoin block #892,451
-              │
-        ┌─────┴─────┐
-        │           │
-     ┌──┴──┐     ┌──┴──┐
-     │ H01 │     │ H23 │    4 internal nodes
-     └──┬──┘     └──┬──┘
-      ┌─┴─┐      ┌─┴─┐
-      L0  L1     L2  L3     ...12 patron leaves</div>
-</div>
-
-<!-- Schwab MCP -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">Schwab MCP</div>
-      <div class="npub">npub15e3ver3pskqsuq...enaas86ll75</div>
-    </div>
-    <span class="badge submitted">Submitted</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry">
-      <span class="ts">2026-04-15 11:03</span>
-      <span class="leaves">5 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">d4e5f6a7b8c9...0123456789ef</span>
-      <span class="badge submitted">submitted</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-12 16:22</span>
-      <span class="leaves">4 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">e5f6a7b8c9d0...1234567890ab</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-  </div>
-</div>
-
-<!-- eXcalibur MCP -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">eXcalibur MCP</div>
-      <div class="npub">npub19gqrkwsssnz5dl...yzugse3f7a2</div>
-    </div>
-    <span class="badge confirmed">Confirmed</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry">
-      <span class="ts">2026-04-14 22:15</span>
-      <span class="leaves">8 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">f6a7b8c9d0e1...2345678901bc</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-  </div>
-</div>
-
-<!-- TaxSort MCP -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">TaxSort MCP</div>
-      <div class="npub">npub1sz60evcudpnaa9...9c6s6mhv7z</div>
-    </div>
-    <span class="badge stale">Stale</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry">
-      <span class="ts">2026-04-07 03:41</span>
-      <span class="leaves">3 leaves</span>
-      <span class="calendars">2/4 cal</span>
-      <span class="root">a7b8c9d0e1f2...3456789012cd</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-  </div>
-</div>
-
-<!-- Tollbooth Sample -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">Tollbooth Sample</div>
-      <div class="npub">npub1vt9hpckkqvtkux...c5tcqv33g0y</div>
-    </div>
-    <span class="badge never">Never</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry" style="color:var(--text-muted); justify-content: center; grid-template-columns: 1fr;">
-      <span>No notarizations recorded</span>
-    </div>
-  </div>
-</div>
-
-<!-- Tollbooth Authority -->
-<div class="operator-section">
-  <div class="operator-header">
-    <div>
-      <div class="name">Tollbooth Authority</div>
-      <div class="npub">npub1fuhq0clgzhhkuh...xy9c6s6mhv7z</div>
-    </div>
-    <span class="badge confirmed">Confirmed</span>
-  </div>
-  <div class="timeline">
-    <div class="timeline-entry">
-      <span class="ts">2026-04-15 06:00</span>
-      <span class="leaves">6 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">b8c9d0e1f2a3...4567890123de</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-14 06:00</span>
-      <span class="leaves">6 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">c9d0e1f2a3b4...5678901234ef</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-13 06:00</span>
-      <span class="leaves">6 leaves</span>
-      <span class="calendars">4/4 cal</span>
-      <span class="root">d0e1f2a3b4c5...6789012345ab</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-    <div class="timeline-entry">
-      <span class="ts">2026-04-12 06:00</span>
-      <span class="leaves">5 leaves</span>
-      <span class="calendars">3/4 cal</span>
-      <span class="root">e1f2a3b4c5d6...7890123456bc</span>
-      <span class="badge confirmed">confirmed</span>
-    </div>
-  </div>
-</div>
+<div id="operators"></div>
 
 <footer>
   <p>
@@ -424,10 +232,124 @@
     <a href="https://github.com/lonniev/tollbooth-dpyc">tollbooth-dpyc</a> &middot;
     <a href="https://github.com/lonniev/tollbooth-authority">tollbooth-authority</a>
   </p>
-  <p style="margin-top:0.5rem; font-size:0.65rem; color:var(--text-muted)">
-    Last updated: 2026-04-15T16:00:00Z &middot; Mock data — live feed coming soon
+  <p id="last-updated" style="margin-top:0.5rem; font-size:0.65rem; color:var(--text-muted)">
+    Loading...
   </p>
 </footer>
+
+<script>
+(async function() {
+  const el = (tag, attrs, ...children) => {
+    const e = document.createElement(tag);
+    if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+      if (k === 'class') e.className = v;
+      else if (k === 'style') e.style.cssText = v;
+      else e.setAttribute(k, v);
+    });
+    children.forEach(c => {
+      if (typeof c === 'string') e.appendChild(document.createTextNode(c));
+      else if (c) e.appendChild(c);
+    });
+    return e;
+  };
+
+  function truncNpub(npub) {
+    if (!npub || npub.length < 30) return npub;
+    return npub.slice(0, 20) + '...' + npub.slice(-6);
+  }
+
+  function truncHash(h) {
+    if (!h || h.length < 20) return h || '';
+    return h.slice(0, 12) + '...' + h.slice(-8);
+  }
+
+  function fmtTs(iso) {
+    if (!iso) return '';
+    return iso.replace('T', ' ').slice(0, 16);
+  }
+
+  function badgeClass(status) {
+    if (status === 'confirmed') return 'confirmed';
+    if (status === 'submitted') return 'submitted';
+    if (status === 'stale') return 'stale';
+    return 'never';
+  }
+
+  function renderStats(summary) {
+    const row = document.getElementById('stats-row');
+    row.innerHTML = '';
+    const cards = [
+      ['Operators', summary.operators, 'registered operators', ''],
+      ['Notarizations', summary.total_notarizations, 'total across all operators', ''],
+      ['Confirmed', summary.confirmed, 'anchored in Bitcoin blocks', 'color:var(--green)'],
+      ['Coverage', summary.coverage_percent + '%', 'operators notarized this week', ''],
+    ];
+    cards.forEach(([label, value, sub, style]) => {
+      const card = el('div', {class:'stat-card'},
+        el('div', {class:'label'}, label),
+        el('div', {class:'value', style}, String(value)),
+        el('div', {class:'sub'}, sub)
+      );
+      row.appendChild(card);
+    });
+  }
+
+  function renderOperator(op) {
+    const section = el('div', {class:'operator-section'});
+
+    const header = el('div', {class:'operator-header'},
+      el('div', null,
+        el('div', {class:'name'}, op.display_name),
+        el('div', {class:'npub'}, truncNpub(op.npub))
+      ),
+      el('span', {class:'badge ' + badgeClass(op.status)}, op.status)
+    );
+    section.appendChild(header);
+
+    const timeline = el('div', {class:'timeline'});
+    if (!op.notarizations || op.notarizations.length === 0) {
+      const empty = el('div', {class:'timeline-entry', style:'color:var(--text-muted); justify-content:center; grid-template-columns:1fr'},
+        el('span', null, op.error ? 'Unreachable: ' + op.error.slice(0, 80) : 'No notarizations recorded')
+      );
+      timeline.appendChild(empty);
+    } else {
+      op.notarizations.forEach(n => {
+        const entry = el('div', {class:'timeline-entry'},
+          el('span', {class:'ts'}, fmtTs(n.created_at)),
+          el('span', {class:'leaves'}, (n.leaf_count || '?') + ' leaves'),
+          el('span', {class:'calendars'}, (n.receipt_count || '?') + ' cal'),
+          el('span', {class:'root'}, truncHash(n.root_hash)),
+          el('span', {class:'badge ' + badgeClass(n.status)}, n.status || 'unknown')
+        );
+        timeline.appendChild(entry);
+      });
+    }
+    section.appendChild(timeline);
+    return section;
+  }
+
+  try {
+    const resp = await fetch('ots-status.json');
+    if (!resp.ok) throw new Error('Not found');
+    const data = await resp.json();
+
+    renderStats(data.summary);
+
+    const container = document.getElementById('operators');
+    (data.operators || []).forEach(op => container.appendChild(renderOperator(op)));
+
+    document.getElementById('last-updated').textContent =
+      'Last updated: ' + fmtTs(data.collected_at) + ' UTC';
+  } catch(e) {
+    document.getElementById('stats-row').innerHTML =
+      '<div class="stat-card" style="grid-column:1/-1;text-align:center">' +
+      '<div class="label">Awaiting first data collection</div>' +
+      '<div class="sub">The hourly GitHub Action will populate this dashboard once ots-status.json is generated.</div>' +
+      '</div>';
+    document.getElementById('last-updated').textContent = 'No data yet — awaiting first GHA run';
+  }
+})();
+</script>
 
 </body>
 </html>

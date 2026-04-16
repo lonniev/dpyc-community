@@ -1,4 +1,4 @@
-# DPYC™ Honor Chain
+# DPYC™ Community
 
 ![DPYC Logo](https://raw.githubusercontent.com/lonniev/dpyc-community/main/assets/dpyc-logo.png)
 

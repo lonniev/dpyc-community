@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPYC — Don't Pester Your Customer</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #f0883e;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero img {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .hero .tagline {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Content */
+  .content {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* Value Props */
+  .value-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin: 2rem 0;
+  }
+  .value-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+  .value-card .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .value-card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  .value-card p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Sections */
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  p { margin-bottom: 1rem; }
+
+  /* Architecture */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+    color: var(--text-muted);
+    margin: 1.5rem 0;
+  }
+
+  /* Comparison Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td:first-child { font-weight: 500; }
+
+  /* Links Grid */
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .link-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: border-color 0.2s;
+  }
+  .link-card:hover { border-color: var(--accent); }
+  .link-card .title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  .link-card .desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Security badges */
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+  .sec-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+  }
+  .sec-badge .icon { font-size: 1.3rem; }
+  .sec-badge .label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .sec-badge .tech {
+    font-size: 0.65rem;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    color: var(--accent);
+    margin-top: 0.15rem;
+  }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+    padding: 3rem 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .cta h2 { border: none; margin-bottom: 0.5rem; }
+  .cta p { color: var(--text-muted); font-size: 0.9rem; }
+  .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+    padding: 0.65rem 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+  }
+  .cta-button:hover { opacity: 0.9; text-decoration: none; }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="https://raw.githubusercontent.com/lonniev/dpyc-community/main/assets/dpyc-logo.png" alt="DPYC Logo">
+  <h1>Don't Pester Your Customer</h1>
+  <p class="tagline">
+    API monetization via Bitcoin Lightning micropayments.
+    No KYC. No OAuth. No payment popups. Just sats in, service out.
+  </p>
+</div>
+
+<div class="content">
+
+  <div class="value-grid">
+    <div class="value-card">
+      <div class="icon">&#9889;</div>
+      <h3>Pre-Funded Balances</h3>
+      <p>Patrons deposit sats once via Lightning. Every subsequent API call draws from the balance with zero payment friction.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">&#128273;</div>
+      <h3>Identity is a Keypair</h3>
+      <p>Your Nostr npub is your ID everywhere. No email, no password, no OAuth dance. Authentication is a Schnorr signature.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">&#129504;</div>
+      <h3>Built for AI Agents</h3>
+      <p>MCP tool calls are never interrupted by payment ceremonies. Agents fund once and work uninterrupted.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">&#127970;</div>
+      <h3>Honor Chain Governance</h3>
+      <p>Operators and Authorities form a voluntary franchise network. Value flows from real API consumption, not recruitment.</p>
+    </div>
+  </div>
+
+  <h2>How It Works</h2>
+
+  <div class="arch-diagram">  Patron                 Operator MCP              Authority
+  ──────                 ────────────              ─────────
+    │                         │                         │
+    │  1. purchase_credits    │                         │
+    │ ───────────────────────►│  certify_credits        │
+    │                         │ ───────────────────────►│
+    │                         │  Schnorr-signed cert    │
+    │                         │◄───────────────────────│
+    │  Lightning invoice      │                         │
+    │◄───────────────────────│                         │
+    │                         │                         │
+    │  2. Pay via Lightning   │                         │
+    │ ════════════════════════╡                         │
+    │                         │                         │
+    │  3. Use paid tools      │                         │
+    │ ───────────────────────►│                         │
+    │  Complete answer        │                         │
+    │◄───────────────────────│                         │
+    │  (balance decremented)  │                         │</div>
+
+  <h2>Security Architecture</h2>
+
+  <p>Every layer of the Tollbooth stack is built on one cryptographic primitive: a secp256k1 keypair.</p>
+
+  <div class="security-grid">
+    <div class="sec-badge">
+      <div class="icon">&#128272;</div>
+      <div class="label">Identity</div>
+      <div class="tech">Nostr npub/nsec</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#128274;</div>
+      <div class="label">Credential Exchange</div>
+      <div class="tech">NIP-44v2 ChaCha20</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#9997;&#65039;</div>
+      <div class="label">Authentication</div>
+      <div class="tech">Schnorr / BIP-340</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#128737;&#65039;</div>
+      <div class="label">Vault Encryption</div>
+      <div class="tech">AES-256-GCM + HKDF</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#128203;</div>
+      <div class="label">Proof of Possession</div>
+      <div class="tech">Channel-bound DPoP</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#127959;&#65039;</div>
+      <div class="label">Tenant Isolation</div>
+      <div class="tech">Postgres role per operator</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#9939;&#65039;</div>
+      <div class="label">Audit Trail</div>
+      <div class="tech">OTS + Bitcoin anchoring</div>
+    </div>
+    <div class="sec-badge">
+      <div class="icon">&#9889;</div>
+      <div class="label">Payments</div>
+      <div class="tech">Bitcoin Lightning</div>
+    </div>
+  </div>
+
+  <h2>Tollbooth vs. Alternatives</h2>
+
+  <table>
+    <tr>
+      <th></th>
+      <th>Tollbooth (MCP)</th>
+      <th>x402 / L402 (REST)</th>
+      <th>Traditional API Keys</th>
+    </tr>
+    <tr>
+      <td>What's metered</td>
+      <td>Complete tool responses</td>
+      <td>Individual REST endpoints</td>
+      <td>Request count / bandwidth</td>
+    </tr>
+    <tr>
+      <td>Round-trips per call</td>
+      <td>1 (pre-funded)</td>
+      <td>6+ (challenge/pay/retry)</td>
+      <td>1 (but billing is monthly)</td>
+    </tr>
+    <tr>
+      <td>Identity</td>
+      <td>Nostr npub (no KYC)</td>
+      <td>Varies</td>
+      <td>Email + password + API key</td>
+    </tr>
+    <tr>
+      <td>Payment</td>
+      <td>Bitcoin Lightning (instant)</td>
+      <td>Bitcoin Lightning (per-request)</td>
+      <td>Credit card (monthly)</td>
+    </tr>
+    <tr>
+      <td>Agent experience</td>
+      <td>Seamless</td>
+      <td>Payment redirects</td>
+      <td>Key management</td>
+    </tr>
+    <tr>
+      <td>Credential storage</td>
+      <td>Encrypted vault (nsec-derived)</td>
+      <td>Varies</td>
+      <td>.env files</td>
+    </tr>
+  </table>
+
+  <h2>The Honor Chain</h2>
+
+  <p>
+    The DPYC Honor Chain is a voluntary community organized as a
+    <a href="https://thenetworkstate.com/">Network Society</a>.
+    Members agree to use Bitcoin for commerce, avoid storing customer PII,
+    identify their upstream Authority, and accept community governance.
+  </p>
+
+  <p>
+    Membership tiers: <strong>Citizen</strong> (consumer) &#8594;
+    <strong>Advocate</strong> (utility service) &#8594;
+    <strong>Operator</strong> (runs an MCP service) &#8594;
+    <strong>Authority</strong> (certifies operators) &#8594;
+    <strong>First Curator</strong> (root of trust).
+  </p>
+
+  <div class="arch-diagram">  First Curator (Prime Authority)
+    │
+    ├── Authority A
+    │     ├── Operator: TheBrain MCP
+    │     ├── Operator: Schwab MCP
+    │     ├── Operator: eXcalibur MCP
+    │     └── Operator: TaxSort MCP
+    │
+    ├── Authority B
+    │     ├── Operator B1
+    │     └── Operator B2
+    │
+    └── Advocate: OAuth2 Collector</div>
+
+  <h2>Transparency</h2>
+
+  <div class="links-grid">
+    <a class="link-card" href="ots-dashboard.html">
+      <div class="title">OTS Audit Dashboard</div>
+      <div class="desc">Open Timestamps notarization status across the operator network. Merkle roots anchored in Bitcoin.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/dpyc-community/blob/main/GOVERNANCE.md">
+      <div class="title">Governance</div>
+      <div class="desc">Rules, ban procedures, fee schedules, and community decision-making.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/dpyc-community/blob/main/CREED.md">
+      <div class="title">The DPYC Creed</div>
+      <div class="desc">Founding declaration of values for the Honor Chain.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/dpyc-community/tree/main/members">
+      <div class="title">Member Registry</div>
+      <div class="desc">Public, git-tracked membership records for every operator, authority, and citizen.</div>
+    </a>
+  </div>
+
+  <h2>Open Source</h2>
+
+  <div class="links-grid">
+    <a class="link-card" href="https://github.com/lonniev/tollbooth-dpyc">
+      <div class="title">tollbooth-dpyc</div>
+      <div class="desc">The Python wheel. Credit ledger, Lightning billing, Secure Courier, proof of possession.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/tollbooth-authority">
+      <div class="title">tollbooth-authority</div>
+      <div class="desc">Certification service. Schnorr-signed purchase order certificates, tax collection, role isolation.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/tollbooth-sample">
+      <div class="title">tollbooth-sample</div>
+      <div class="desc">Reference implementation. Start here to build your own Tollbooth-metered MCP operator.</div>
+    </a>
+    <a class="link-card" href="https://github.com/lonniev/dpyc-community">
+      <div class="title">dpyc-community</div>
+      <div class="desc">This registry. Membership, governance, schemas, and the OTS audit dashboard.</div>
+    </a>
+  </div>
+
+</div>
+
+<div class="cta">
+  <h2>Ready to join?</h2>
+  <p>Generate a Nostr keypair, find a sponsoring Authority, and start building.</p>
+  <a class="cta-button" href="https://github.com/lonniev/dpyc-community/blob/main/README.md#how-to-join">Get Started</a>
+</div>
+
+<footer>
+  <p>
+    DPYC&#8482; and Tollbooth DPYC&#8482; are trademarks of Lonnie VanZandt.
+    Licensed under <a href="https://github.com/lonniev/dpyc-community/blob/main/LICENSE">Apache 2.0</a>.
+  </p>
+</footer>
+
+</body>
+</html>

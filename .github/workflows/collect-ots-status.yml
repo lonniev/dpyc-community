@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ORACLE_PUSH_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
@@ -24,32 +26,14 @@ jobs:
       - name: Collect OTS status
         run: python scripts/collect-ots-status.py
 
-      - name: Commit to gh-pages branch
+      - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Copy artifacts
-          cp docs/ots-status.json /tmp/ots-status.json
-          cp docs/ots-dashboard.html /tmp/ots-dashboard.html
-          cp docs/index.html /tmp/index.html
-
-          # Switch to gh-pages (create if needed)
-          git fetch origin gh-pages || true
-          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
-
-          # Clean and copy
-          git rm -rf . 2>/dev/null || true
-          mkdir -p docs
-          cp /tmp/ots-status.json docs/ots-status.json
-          cp /tmp/ots-dashboard.html docs/ots-dashboard.html
-          cp /tmp/index.html docs/index.html
-
-          # Also put files at root for GitHub Pages
-          cp /tmp/ots-status.json ots-status.json
-          cp /tmp/ots-dashboard.html ots-dashboard.html
-          cp /tmp/index.html index.html
-
-          git add -A
-          git diff --cached --quiet || git commit -m "update OTS status"
-          git push origin gh-pages
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ots-status.json
+          if git diff --cached --quiet; then
+            echo "OTS status unchanged"
+          else
+            git commit -m "[skip ci] Update OTS status"
+            git push
+          fi

@@ -30,25 +30,23 @@ MAX_AGE_DAYS = 30
 TIMEOUT = 15.0
 
 
+def _parse_sse_json(text: str) -> dict:
+    """Extract the JSON-RPC response from an SSE text/event-stream body."""
+    for line in text.splitlines():
+        if line.startswith("data: "):
+            return json.loads(line[6:])
+    return {}
+
+
 async def call_list_notarizations(endpoint: str) -> list[dict]:
     """Call list_notarizations via MCP Streamable-HTTP."""
     url = endpoint.rstrip("/")
-    body = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "tools/call",
-        "params": {
-            "name": "list_notarizations",
-            "arguments": {"limit": MAX_ENTRIES_PER_OPERATOR},
-        },
-    }
-    # MCP Streamable-HTTP: POST with Accept for JSON
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream",
     }
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        # First: initialize session
+        # Initialize session
         init_body = {
             "jsonrpc": "2.0",
             "id": 0,
@@ -61,14 +59,45 @@ async def call_list_notarizations(endpoint: str) -> list[dict]:
         }
         init_resp = await client.post(url, json=init_body, headers=headers)
         session_id = init_resp.headers.get("mcp-session-id", "")
-
         if session_id:
             headers["mcp-session-id"] = session_id
 
+        # Discover the slug-prefixed tool name
+        list_body = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
+        list_resp = await client.post(url, json=list_body, headers=headers)
+        ct_list = list_resp.headers.get("content-type", "")
+        if "text/event-stream" in ct_list:
+            list_data = _parse_sse_json(list_resp.text)
+        else:
+            list_data = list_resp.json()
+        tools = list_data.get("result", {}).get("tools", [])
+        tool_name = next(
+            (t["name"] for t in tools if t["name"].endswith("_list_notarizations")),
+            None,
+        )
+        if not tool_name:
+            return []  # OTS not enabled on this operator
+
+        # Call list_notarizations
+        body = {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+                "name": tool_name,
+                "arguments": {"limit": MAX_ENTRIES_PER_OPERATOR},
+            },
+        }
         resp = await client.post(url, json=body, headers=headers)
         resp.raise_for_status()
 
-        data = resp.json()
+        # Response may be JSON or SSE — handle both
+        ct = resp.headers.get("content-type", "")
+        if "text/event-stream" in ct:
+            data = _parse_sse_json(resp.text)
+        else:
+            data = resp.json()
+
         # MCP response: {"result": {"content": [{"type": "text", "text": "..."}]}}
         content = data.get("result", {}).get("content", [])
         if content and content[0].get("type") == "text":

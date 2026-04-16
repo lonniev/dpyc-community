@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-04-16T01:59:28.818135+00:00",
+  "collected_at": "2026-04-16T02:05:01.894270+00:00",
   "summary": {
     "operators": 6,
     "total_notarizations": 0,
@@ -12,48 +12,48 @@
       "display_name": "Lonnie-Authority",
       "role": "authority",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
       "display_name": "npub1sz60evcudpn...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     }
   ]
 }

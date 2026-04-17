@@ -32,6 +32,12 @@
       "automergeStrategy": "squash"
     },
     {
+      "description": "Ignore Python 3.14 — coincurve/cffi not compatible yet",
+      "matchPackageNames": ["python"],
+      "allowedVersions": "<3.14",
+      "enabled": true
+    },
+    {
       "description": "Group all non-SDK Python dependency bumps into one PR",
       "matchManagers": ["pip_requirements", "pep621"],
       "excludePackageNames": ["tollbooth-dpyc"],

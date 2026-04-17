@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-04-17T05:14:11.773322+00:00",
+  "collected_at": "2026-04-17T06:01:19.913289+00:00",
   "summary": {
     "operators": 6,
     "total_notarizations": 0,
@@ -12,8 +12,8 @@
       "display_name": "Lonnie-Authority",
       "role": "authority",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",

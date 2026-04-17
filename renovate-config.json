@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate preset for DPYC ecosystem repos",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": ["dependencies"],
+  "schedule": ["every weekday"],
+  "packageRules": [
+    {
+      "description": "Auto-merge tollbooth-dpyc patch/minor bumps if CI passes",
+      "matchPackageNames": ["tollbooth-dpyc"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "Major tollbooth-dpyc bumps require manual review",
+      "matchPackageNames": ["tollbooth-dpyc"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Group all non-SDK Python dependency bumps into one PR",
+      "matchManagers": ["pip_requirements", "pep621"],
+      "excludePackageNames": ["tollbooth-dpyc"],
+      "groupName": "python dependencies"
+    }
+  ],
+  "pip_requirements": {
+    "fileMatch": ["requirements.*\\.txt$"]
+  },
+  "pep621": {
+    "fileMatch": ["pyproject\\.toml$"]
+  }
+}

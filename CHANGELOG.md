@@ -1,0 +1,99 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [1.1.0] — 2026-03-04
+
+- docs: update README for file-per-member directory structure
+- Merge pull request #45 from lonniev/feat/file-per-member
+- feat: refactor members.json into file-per-member directory tree
+- Merge pull request #44 from lonniev/feat/trademark-foundation
+- feat: add common-law trademark notices (DPYC™, Tollbooth DPYC™, Don't Pester Your Customer™)
+- Merge pull request #43 from lonniev/chore/v0.1.69-network-status
+- chore: bump network-status for tollbooth-dpyc 0.1.69, thebrain-mcp 1.9.6
+- docs: Oracle delegation advisory and version bumps
+- Merge pull request #42 from lonniev/feat/oracle-registry
+- feat: register dpyc-oracle service under Prime Authority
+- Merge pull request #41 from lonniev/feat/update-network-status
+- docs: update network-status and advisory for auto-certify release
+- Merge pull request #40 from lonniev/feat/authority-service-url
+- feat: add Authority service endpoint to registry
+- Merge pull request #39 from lonniev/lonniev-patch-1
+- Add new member entry for Lonnie VanZandt (Twitter)
+- Merge pull request #38 from lonniev/docs/release-notes-v0.1.58-v0.3.2
+- docs: release notes for unified commerce terminology (v0.1.58 / v0.3.2)
+- Merge pull request #37 from lonniev/docs/unified-commerce-model
+- docs: replace tax terminology with certification fee
+- Merge pull request #36 from lonniev/chore/release-notes-0.1.57
+- chore: release notes for tollbooth-dpyc 0.1.57
+- advisory: tollbooth-dpyc 0.1.55 tempered greedy @@@ regex (#35)
+- advisory: tollbooth-dpyc 0.1.54 / thebrain-mcp 1.9.1 hotfixes (#34)
+- advisory: thebrain-mcp 1.9.0 Secure Courier + NeonCredentialVault (#33)
+- Merge pull request #32 from lonniev/release/tollbooth-dpyc-0.1.52
+- docs: tollbooth-dpyc 0.1.52 — LNURL-pay resolution for Lightning payouts
+- NSEC-Only Identity advisory + version bump all components
+- Merge pull request #29 from lonniev/feat/authority-separation
+- Merge pull request #30 from lonniev/worktree-patent-docs
+- Add provisional patent specification draft and cover memo
+- Register Lonnie-Authority and excalibur-mcp, update operator upstream refs
+- Merge pull request #28 from lonniev/worktree-patent-docs
+- Add USPTO-compliant patent figures and reference schedule
+- Merge pull request #27 from lonniev/fix/advisory-feb28-versions
+- Add advisory for tollbooth-dpyc 0.1.47 + excalibur-mcp 0.6.2
+- Merge pull request #26 from lonniev/feat/whitepaper-and-landscape
+- Add Tollbooth whitepaper, competitive landscape analysis, and README links
+- Merge pull request #25 from lonniev/feat/readme-update
+- Resolve merge conflict — keep both Economic Model and DPYP-01 link
+- Add excalibur-mcp to Honor Chain and link certificate protocol
+- Merge pull request #24 from lonniev/feat/economics-svg
+- Merge pull request #23 from lonniev/feat/logo-url
+- Add 5-Authority network economics SVG and README section
+- Add DPYC logo reference to README for Oracle discoverability
+- Merge pull request #22 from lonniev/advisory/nip44-encrypted-audit
+- Advisory: NIP-44 encrypted audit events for patron privacy
+- Merge pull request #21 from lonniev/advisory/nostr-only-certificates
+- Advisory: Nostr-only certificates — JWT/Ed25519 removed
+- Merge pull request #20 from lonniev/advisory/security-hardening-v0.1.25
+- Update network advisory for security audit remediation
+- Merge pull request #19 from lonniev/fix/ssl-cert-verification
+- Fix SSL certificate verification bypass in publish_dpyp.py
+- Merge pull request #18 from lonniev/chore/authority-0.2.0-advisory
+- Update advisory for tollbooth-authority 0.2.0 and tollbooth-dpyc 0.1.24
+- Merge pull request #17 from lonniev/chore/ots-0.1.23-advisory
+- Update advisory for tollbooth-dpyc 0.1.23 (OTS Bitcoin anchoring)
+- Advisory: tollbooth-dpyc 0.1.22 serverless flush strategy
+- Add NeonVault advisory: 5-8x faster vault persistence via Neon Postgres
+- Merge pull request #15 from lonniev/feat/bump-dpyc-0.1.17
+- Bump tollbooth-dpyc current to 0.1.17 (account_statement_tool)
+- Merge pull request #14 from lonniev/feat/tranche-credit-expiration-advisory
+- Advisory: tollbooth-dpyc 0.1.16 tranche-based credit expiration
+- Merge pull request #13 from lonniev/feat/advisory-update
+- Update advisory: service_status endpoints and citizenship onboarding
+- Merge pull request #12 from lonniev/feat/citizen-tier
+- Update governance: citizenship is instant, no PR review needed
+- Add citizen tier to schema, validation, and governance
+- Merge pull request #11 from lonniev/update/release-report-0.1.15
+- Update release report: tollbooth-dpyc 0.1.15, minimum 0.1.14
+- Add network-status.json and ADVISORY.md for version discovery (#10)
+- Add "Why Tollbooth?" section positioning value vs x402/L402 (#9)
+- Merge pull request #8 from lonniev/fix/readme-operator-npub
+- Fix stale operator npub in README Honor Chain diagram
+- Fix publish script: pynostr 0.7 API + websocket-client
+- Merge pull request #7 from lonniev/feat/dpyp-01-spec
+- Add DPYP-01 base certificate spec and NIP-78 publish script
+- Merge pull request #6 from lonniev/feat/dpyc-creed
+- Merge pull request #5 from lonniev/fix/readme-self-link-and-npub
+- Merge pull request #4 from lonniev/fix/stale-governance-npub
+- Add DPYC Creed — founding declaration of values
+- Add self-link, fix stale npub, convert to absolute URLs
+- Fix stale Prime Authority npub in GOVERNANCE.md
+- Merge pull request #3 from lonniev/feat/logo-assets
+- Add DPYC logo assets
+- Merge pull request #2 from lonniev/fix/rotate-operator-npub
+- Rotate Operator (thebrain-mcp) npub after lost private key
+- Merge pull request #1 from lonniev/fix/rotate-authority-npub
+- Rotate Prime Authority npub after lost private key
+- Found the DPYC Honor Chain — membership registry, governance, and CI
+- Initial commit
+

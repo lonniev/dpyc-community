@@ -5,20 +5,22 @@
     "config:recommended"
   ],
   "labels": ["dependencies"],
-  "schedule": ["every weekday"],
+  "schedule": ["at any time"],
   "packageRules": [
     {
-      "description": "Auto-merge tollbooth-dpyc patch/minor bumps if CI passes",
+      "description": "Pin tollbooth-dpyc to exact version; auto-merge patch/minor if CI passes",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["patch", "minor"],
+      "rangeStrategy": "pin",
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
     },
     {
-      "description": "Major tollbooth-dpyc bumps require manual review",
+      "description": "Pin tollbooth-dpyc major bumps — require manual review",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["major"],
+      "rangeStrategy": "pin",
       "automerge": false
     },
     {

@@ -24,6 +24,14 @@
       "automerge": false
     },
     {
+      "description": "Auto-merge GitHub Actions minor/patch bumps",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
       "description": "Group all non-SDK Python dependency bumps into one PR",
       "matchManagers": ["pip_requirements", "pep621"],
       "excludePackageNames": ["tollbooth-dpyc"],

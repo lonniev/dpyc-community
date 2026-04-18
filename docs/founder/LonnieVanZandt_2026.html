@@ -1,673 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lonnie VanZandt — CV</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lonnie VanZandt — CV April 2026</title>
 <style>
-  :root {
-    --bg:        #0e0f11;
-    --bg-raised: #14161a;
-    --bg-card:   #1a1d23;
-    --border:    #2a2e38;
-    --border-hi: #3d4455;
-    --ink:       #e8e4dc;
-    --ink-mid:   #a09880;
-    --ink-dim:   #5c5849;
-    --gold:      #c8a96e;
-    --gold-dim:  #7a6440;
-    --teal:      #4a9e8e;
-    --teal-dim:  #234e47;
-    --red:       #c06050;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-    --serif: 'Playfair Display', Georgia, serif;
-    --col-left: 190px;
-    --gap: 28px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 10.5pt;
-    font-weight: 300;
-    line-height: 1.7;
-    padding: 56px 72px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  /* ── HEADER ─────────────────────────────────────── */
-  header {
-    margin-bottom: 40px;
-    position: relative;
-  }
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-hi);
-  }
-
-  h1 {
-    font-family: var(--serif);
-    font-size: 36pt;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.05;
-    color: var(--ink);
-  }
-
-  .name-accent {
-    display: block;
-    font-family: var(--mono);
-    font-size: 7.5pt;
-    font-weight: 400;
-    letter-spacing: 3.5px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    font-family: var(--sans);
-    font-size: 9.5pt;
-    font-weight: 300;
-    color: var(--ink-mid);
-    margin-top: 7px;
-    letter-spacing: 0.3px;
-    line-height: 1.6;
-  }
-
-  .contact {
-    text-align: right;
-    font-family: var(--mono);
-    font-size: 8pt;
-    font-weight: 300;
-    color: var(--ink-dim);
-    line-height: 2;
-    flex-shrink: 0;
-  }
-
-  .contact a {
-    color: var(--ink-dim);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .contact a:hover { color: var(--gold); }
-
-  /* ── SECTION ─────────────────────────────────────── */
-  section { margin-top: 32px; }
-
-  .section-rule {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .section-rule h2 {
-    font-family: var(--mono);
-    font-size: 7pt;
-    font-weight: 500;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--teal);
-    white-space: nowrap;
-  }
-
-  .section-rule::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ── ENTRY ───────────────────────────────────────── */
-  .entry {
-    display: grid;
-    grid-template-columns: var(--col-left) 1fr;
-    gap: 0 var(--gap);
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-  .entry-meta { padding-top: 2px; }
-
-  .entry-dates {
-    font-family: var(--mono);
-    font-size: 7.5pt;
-    font-weight: 300;
-    color: var(--ink-dim);
-    line-height: 1.6;
-  }
-
-  .entry-org {
-    font-family: var(--sans);
-    font-size: 8.5pt;
-    font-weight: 400;
-    color: var(--gold-dim);
-    margin-top: 4px;
-    line-height: 1.5;
-  }
-
-  .entry-title {
-    font-family: var(--serif);
-    font-size: 13pt;
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--ink);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-family: var(--mono);
-    font-size: 6.5pt;
-    font-weight: 500;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: 2px;
-    position: relative;
-    top: -1px;
-  }
-
-  .tag-current  { background: var(--teal-dim);  color: var(--teal); }
-  .tag-founder  { background: #3a2a10;           color: var(--gold); }
-  .tag-open-src { background: #1a2a1a;           color: #6ab06a;    }
-
-  .entry-body {
-    font-size: 10pt;
-    font-weight: 300;
-    color: #b8b0a0;
-    line-height: 1.7;
-  }
-
-  .entry-body ul { list-style: none; padding: 0; }
-
-  .entry-body ul li {
-    padding-left: 16px;
-    position: relative;
-    margin-bottom: 4px;
-  }
-
-  .entry-body ul li::before {
-    content: '›';
-    position: absolute;
-    left: 0;
-    color: var(--border-hi);
-    font-size: 11pt;
-    line-height: 1.5;
-  }
-
-  .entry-body strong { color: var(--ink); font-weight: 500; }
-  .entry-body code {
-    font-family: var(--mono);
-    font-size: 8.5pt;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: var(--gold);
-  }
-
-  /* ── SUMMARY ──────────────────────────────────────── */
-  .summary-block {
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 11.5pt;
-    line-height: 1.8;
-    color: var(--ink-mid);
-    border-left: 2px solid var(--gold);
-    padding-left: 20px;
-    background: var(--bg-raised);
-    padding: 18px 20px;
-    border-left: 2px solid var(--gold);
-    border-radius: 0 4px 4px 0;
-  }
-
-  /* ── CRED GRID ────────────────────────────────────── */
-  .cred-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 32px;
-    font-size: 10pt;
-    font-weight: 300;
-    color: #b8b0a0;
-  }
-
-  .cred-item {
-    padding-left: 16px;
-    position: relative;
-  }
-
-  .cred-item::before {
-    content: '›';
-    position: absolute;
-    left: 0;
-    color: var(--border-hi);
-  }
-
-  /* ── SKILLS TABLE ─────────────────────────────────── */
-  .skills-grid {
-    display: grid;
-    grid-template-columns: var(--col-left) 1fr;
-    gap: 8px var(--gap);
-    font-size: 10pt;
-  }
-
-  .skills-label {
-    font-family: var(--mono);
-    font-size: 7.5pt;
-    font-weight: 400;
-    color: var(--teal);
-    padding-top: 2px;
-    letter-spacing: 0.5px;
-  }
-
-  .skills-value {
-    font-weight: 300;
-    color: #b8b0a0;
-  }
-
-  /* ── EDUCATION ────────────────────────────────────── */
-  .edu-row {
-    display: grid;
-    grid-template-columns: var(--col-left) 1fr;
-    gap: 0 var(--gap);
-    margin-bottom: 12px;
-    font-size: 10pt;
-    font-weight: 300;
-    color: #b8b0a0;
-  }
-
-  .edu-row strong { color: var(--ink); font-weight: 500; }
-  .edu-row em { color: var(--gold-dim); }
-  .edu-dates {
-    font-family: var(--mono);
-    font-size: 7.5pt;
-    color: var(--ink-dim);
-    padding-top: 2px;
-  }
-
-  /* ── AFFIL LIST ───────────────────────────────────── */
-  .affil-list { list-style: none; padding: 0; }
-  .affil-list li {
-    padding-left: 16px;
-    position: relative;
-    font-size: 10pt;
-    font-weight: 300;
-    color: #b8b0a0;
-    margin-bottom: 4px;
-  }
-  .affil-list li::before {
-    content: '›';
-    position: absolute;
-    left: 0;
-    color: var(--border-hi);
-  }
-
-  /* ── FOOTER ───────────────────────────────────────── */
-  footer {
-    margin-top: 48px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--mono);
-    font-size: 7pt;
-    font-weight: 300;
-    color: var(--ink-dim);
-    letter-spacing: 0.5px;
-  }
-
-  /* ── PRINT ────────────────────────────────────────── */
-  @media print {
-    body { background: #000; padding: 32px 48px; }
-    .entry { page-break-inside: avoid; }
-  }
-
-  @media (max-width: 680px) {
-    body { padding: 32px 24px; }
-    .header-top { flex-direction: column; }
-    .contact { text-align: left; }
-    .entry { grid-template-columns: 1fr; }
-    .entry-meta { margin-bottom: 6px; }
-    .cred-grid { grid-template-columns: 1fr; }
-    .skills-grid { grid-template-columns: 1fr; gap: 4px; }
-    .skills-label { padding-top: 10px; }
-    .edu-row { grid-template-columns: 1fr; }
-  }
+body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 2em auto; padding: 0 1em; line-height: 1.6; color: #1a1a1a; }
+h1 { border-bottom: 2px solid #333; padding-bottom: 0.3em; }
+h2 { color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 0.2em; margin-top: 2em; }
+h3 { color: #34495e; }
+blockquote { border-left: 3px solid #3498db; margin-left: 0; padding: 0.5em 1em; background: #f8f9fa; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+th, td { border: 1px solid #ddd; padding: 0.5em 0.75em; text-align: left; }
+th { background: #f0f0f0; }
+code { background: #f4f4f4; padding: 0.15em 0.3em; border-radius: 3px; font-size: 0.9em; }
+a { color: #2980b9; }
+hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+@media print { body { max-width: none; } }
 </style>
 </head>
 <body>
-
-<!-- ══ HEADER ══════════════════════════════════════════ -->
-<header>
-  <div class="header-top">
-    <div>
-      <span class="name-accent">Curriculum Vitae</span>
-      <h1>Lonnie VanZandt</h1>
-      <p class="subtitle">
-        Enterprise Architect · Systems Engineer · Founder, DPYC Network State<br>
-        Vergennes / Panton, Vermont
-      </p>
-    </div>
-    <div class="contact">
-      <a href="mailto:lonniev@gmail.com">lonniev@gmail.com</a><br>
-      <a href="https://linkedin.com/in/lonnievanzandt" target="_blank">linkedin.com/in/lonnievanzandt</a><br>
-      <a href="https://github.com/lonniev" target="_blank">github.com/lonniev</a><br>
-      <a href="https://stablecoin.myshopify.com" target="_blank">stablecoin.myshopify.com</a>
-    </div>
-  </div>
-</header>
-
-<!-- ══ SUMMARY ═════════════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Profile</h2></div>
-  <p class="summary-block">
-    A diligent, persistent, and personable professional with over 35 years of experience in software and systems engineering,
-    enterprise architecture, and model-based systems engineering (MBSE). In 2026, founded the DPYC™ ("Don't Pester Your Customer")
-    Network State — a decentralized API monetization protocol grounded in Bitcoin Lightning, Nostr identity, and Austrian
-    hard-money economics. Author of multiple open MCP servers monetized via the Tollbooth DPYC™ protocol.
-    OMG-certified modeler, Neo4j-certified professional, and published contributor to international standards bodies.
-  </p>
-</section>
-
-<!-- ══ EXPERIENCE ══════════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Professional Experience</h2></div>
-
-  <!-- Intercax -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">2020 – Present</div>
-      <div class="entry-org">Intercax LLC<br>Atlanta, GA (Remote)</div>
-    </div>
-    <div>
-      <div class="entry-title">Chief Solutions Officer <span class="tag tag-current">Current</span></div>
-      <div class="entry-body">
-        <ul>
-          <li>Responsible for customer success, Cybersecurity, DevSecOps, Applications Engineering, and Quality Assurance.</li>
-          <li>Leads applications engineering support for customers evaluating and deploying Syndeia, Intercax's digital thread platform spanning aerospace, defense, automotive, healthcare, and energy sectors.</li>
-          <li>Performs research, development, and proposal preparation; publishes and presents materials promoting collaborative digital engineering.</li>
-          <li>Assists clients in understanding, adopting, and becoming proficient with Syndeia and MBSE toolchains.</li>
-          <li>Deep applied expertise with OSLC, Jazz DNG and GCM, Windchill; data transformation using HTTP/REST, XML, XMI, JSON, OWL, RDF, LDP, and structured/unstructured data.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- DPYC Founder -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">2026 – Present</div>
-      <div class="entry-org">DPYC Network State<br>Panton, Vermont</div>
-    </div>
-    <div>
-      <div class="entry-title">Founder &amp; Prime Authority <span class="tag tag-founder">Founder</span></div>
-      <div class="entry-body">
-        <ul>
-          <li>Conceived, designed, and launched DPYC™ ("Don't Pester Your Customer") — a decentralized API monetization protocol built on Bitcoin Lightning, Nostr identity (npubs), and the Model Context Protocol (MCP).</li>
-          <li>Holds trademark on DPYC™, Tollbooth DPYC™, and Don't Pester Your Customer™.</li>
-          <li>Serves as Prime Authority (First Curator) of the DPYC Honor Chain governance structure; oversees Authority certification, Operator registration, and community governance via the <code>lonniev/dpyc-community</code> GitHub registry.</li>
-          <li>Architected the Tollbooth DPYC™ protocol: pre-funded Lightning balances eliminate per-request payment negotiation; kind-30079 Nostr-signed certificates enforce metered API access.</li>
-          <li>Designed a fractal, self-similar multi-Authority hierarchy enabling arbitrarily deep trust chains without specialized processing.</li>
-          <li>Applied Austrian hard-money economics (Menger, Mises, Hayek) as the philosophical foundation for honest, transparent demurrage-based API credit systems.</li>
-          <li>Operates a BTCPay Server Lightning node on AWS EC2 as the sole payment infrastructure for the network.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Good Brew -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">2026 – Present</div>
-      <div class="entry-org">Good Brew<br>stablecoin.myshopify.com</div>
-    </div>
-    <div>
-      <div class="entry-title">Store Owner &amp; Administrator</div>
-      <div class="entry-body">
-        <ul>
-          <li>Founded and operates Good Brew, a Shopify print-on-demand merchandise store for DPYC Network State branded goods via Gelato.</li>
-          <li>Responsible for all Shopify store administration, product catalog management, Gelato Print on Demand integration, and Stripe payment processing.</li>
-          <li>DPYC logo designed in-house; SVG assets maintained in the <code>dpyc-community</code> repository.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- MCP Servers -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">2026 – Present</div>
-      <div class="entry-org">Open Source / DPYC Ecosystem<br>github.com/lonniev</div>
-    </div>
-    <div>
-      <div class="entry-title">Author — Monetized MCP Servers <span class="tag tag-open-src">Open Source</span></div>
-      <div class="entry-body">
-        <ul>
-          <li><strong>thebrain-mcp</strong> — FastMCP Python server monetizing AI-agent access to a TheBrain knowledge graph (~9,280+ thoughts) via the Tollbooth DPYC protocol; hosted on Prefect Horizon.</li>
-          <li><strong>schwab-mcp</strong> — Multi-patron metered gateway to the Charles Schwab brokerage API; full OAuth2 dance in-MCP via <code>schwab_begin_oauth</code> / <code>schwab_check_oauth_status</code>; Tollbooth credit billing per call.</li>
-          <li><strong>excalibur-mcp</strong> — X/Twitter posting MCP server with Tollbooth billing and Secure Courier NIP-17 credential delivery; supports Unicode-rich-text formatting via Nostr-signed flows.</li>
-          <li>All servers implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.</li>
-          <li>Python developer for the <strong>tollbooth-dpyc</strong> wheel — the shared library underlying all Tollbooth-compliant MCP servers.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pricing Studio -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">2026 – Present</div>
-      <div class="entry-org">DPYC Ecosystem<br>iOS / SwiftUI</div>
-    </div>
-    <div>
-      <div class="entry-title">Swift / iOS Developer — Pricing Studio</div>
-      <div class="entry-body">
-        <ul>
-          <li>Designing and developing Pricing Studio, a native iOS application enabling DPYC Authority operators to configure, visualize, and publish Tollbooth pricing models.</li>
-          <li>Implements the Constraint Engine for rate-bps floors, ceilings, and per-tool pricing rules surfaced through a SwiftUI interface.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sodius -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 2015 – 2020</div>
-      <div class="entry-org">Sodius</div>
-    </div>
-    <div>
-      <div class="entry-title">Enterprise Architect / Solutions Engineer</div>
-      <div class="entry-body">
-        <ul>
-          <li>Deep expertise in OSLC-based integration across major MBSE and PLM toolchains.</li>
-          <li>Designed and delivered ETL pipelines across HTTP/REST, XML, XMI, JSON, CSV, OWL/RDF/Turtle, and LDP for engineering data interoperability.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- CACI -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 2012 – 2015</div>
-      <div class="entry-org">CACI International</div>
-    </div>
-    <div>
-      <div class="entry-title">Business Analyst T5 / Research &amp; Development</div>
-      <div class="entry-body">
-        <ul>
-          <li>Research, development, and business development supporting government and defense programs.</li>
-          <li>Applied systems engineering and enterprise architecture in defense analysis contexts.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- NoMagic -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 2008 – 2012</div>
-      <div class="entry-org">No Magic, Inc.</div>
-    </div>
-    <div>
-      <div class="entry-title">Chief Architect</div>
-      <div class="entry-body">
-        <ul>
-          <li>Chief Architect for No Magic, makers of MagicDraw and Cameo Systems Modeler — industry-leading SysML/UML modeling tools.</li>
-          <li>Led architectural direction for enterprise MBSE tooling and integrations.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Northrop Grumman -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 2005 – 2008</div>
-      <div class="entry-org">Northrop Grumman</div>
-    </div>
-    <div>
-      <div class="entry-title">Research, Development &amp; Business Development</div>
-      <div class="entry-body">
-        <ul>
-          <li>Applied research and business development in systems engineering and advanced modeling tools for defense programs.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Artisan / QNX / Timesys / Esterel -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 1998 – 2005</div>
-      <div class="entry-org">Artisan · Esterel<br>QNX Software Systems<br>Timesys Linux</div>
-    </div>
-    <div>
-      <div class="entry-title">Systems / Software Engineering Roles</div>
-      <div class="entry-body">
-        <ul>
-          <li>Series of engineering positions at embedded systems, real-time OS, and model-driven engineering firms.</li>
-          <li>Expertise in real-time operating systems (QNX), embedded Linux (Timesys), synchronous reactive programming (Esterel), and early UML-based CASE tooling (Artisan).</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- AT&T Bell Labs / Lucent / LGS -->
-  <div class="entry">
-    <div class="entry-meta">
-      <div class="entry-dates">c. 1988 – 1998</div>
-      <div class="entry-org">AT&amp;T Bell Labs<br>Lucent Technologies<br>LGS Innovations</div>
-    </div>
-    <div>
-      <div class="entry-title">Member of Technical Staff / Software Engineer</div>
-      <div class="entry-body">
-        <ul>
-          <li>Over a decade of software and systems engineering in telecommunications R&amp;D at AT&amp;T Bell Labs, Lucent Technologies, and LGS Innovations.</li>
-          <li>Contributed to cellular technology platforms; recognized by peers for staying ahead of rapidly evolving standards and for sustained technical excellence across embedded and communications software domains.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-</section>
-
-<!-- ══ EDUCATION ════════════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Education</h2></div>
-
-  <div class="edu-row">
-    <div class="edu-dates">1986 – 1988</div>
-    <div><strong>M.S., Computer Engineering</strong><br><em>University of Illinois, Urbana-Champaign</em></div>
-  </div>
-  <div class="edu-row">
-    <div class="edu-dates">1982 – 1986 <span style="color:var(--ink-dim);font-size:7pt">(est.)</span></div>
-    <div><strong>B.S., Electrical &amp; Computer Engineering</strong><br><em>University of Illinois, Urbana-Champaign</em></div>
-  </div>
-</section>
-
-<!-- ══ CERTIFICATIONS ═══════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Certifications &amp; Standards Contributions</h2></div>
-  <div class="cred-grid">
-    <div class="cred-item">OMG-Certified Business Process Modeler (OCBP)</div>
-    <div class="cred-item">Neo4j-Certified Professional</div>
-    <div class="cred-item">Contributing Author — OMG UML Certification Exam</div>
-    <div class="cred-item">Contributing Author — OMG BPMN Certification Exam</div>
-    <div class="cred-item">Co-Chair — OMG Unified Profile for DoDAF and MODAF (UPDM)</div>
-    <div class="cred-item">Co-Chair — INCOSE Model Lifecycle Management Working Group</div>
-    <div class="cred-item">Technical Program Director — Colorado Front Range INCOSE Chapter</div>
-    <div class="cred-item">Trademark Holder — DPYC™, Tollbooth DPYC™, Don't Pester Your Customer™</div>
-  </div>
-</section>
-
-<!-- ══ SKILLS ════════════════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Technical Skills</h2></div>
-  <div class="skills-grid">
-    <div class="skills-label">Architecture</div>
-    <div class="skills-value">Enterprise Architecture, MBSE, SysML v1/v2, UML, BPMN, DoDAF/MODAF, Digital Threads, OSLC, MCP Protocol</div>
-
-    <div class="skills-label">Languages</div>
-    <div class="skills-value">Python, Swift / SwiftUI (iOS), JavaScript / TypeScript, Groovy, Java; HTTP/REST, GraphQL, SPARQL</div>
-
-    <div class="skills-label">Data &amp; Formats</div>
-    <div class="skills-value">JSON, XML, XMI, RDF/OWL, Turtle, LDP, CSV, Neo4j (Cypher), Cassandra, Neon (Postgres)</div>
-
-    <div class="skills-label">Blockchain / Identity</div>
-    <div class="skills-value">Bitcoin Lightning (BTCPay Server), Nostr (npubs, NIP-17, kind-30079), Schnorr signatures, OpenTimestamps</div>
-
-    <div class="skills-label">Platforms &amp; Infra</div>
-    <div class="skills-value">AWS EC2, Prefect Horizon, Shopify, Gelato Print on Demand, Stripe, GitHub Actions, Docker, Kubernetes</div>
-
-    <div class="skills-label">MBSE Tools</div>
-    <div class="skills-value">Syndeia, MagicDraw / Cameo, TheBrain, Windchill, Jazz DNG/GCM, ParaMagic, DOORS</div>
-
-    <div class="skills-label">Open Source</div>
-    <div class="skills-value">thebrain-mcp, schwab-mcp, excalibur-mcp, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle</div>
-  </div>
-</section>
-
-<!-- ══ AFFILIATIONS ═════════════════════════════════════ -->
-<section>
-  <div class="section-rule"><h2>Affiliations &amp; Community</h2></div>
-  <ul class="affil-list">
-    <li>Member, INCOSE (International Council on Systems Engineering)</li>
-    <li>Active contributor to OMG working groups (SysML v2 API &amp; Services, UPDM)</li>
-    <li>Presenter at MBSE Symposia, INCOSE chapter events, and Intercax Digital Thread Conference series</li>
-    <li>Founder and curator of the DPYC Network State open-source community (<code>lonniev/dpyc-community</code> on GitHub)</li>
-    <li>500+ connections on LinkedIn; peer-recommended across telecom, defense, and systems engineering disciplines</li>
-  </ul>
-</section>
-
-<footer>
-  <span>Lonnie VanZandt · Curriculum Vitae</span>
-  <span>205 Ridgeline Road, Panton, VT 05491 · lonniev@gmail.com</span>
-  <span>March 2026</span>
-</footer>
-
+<h1>Lonnie VanZandt</h1>
+<p><strong>Curriculum Vitae — April 2026</strong></p>
+<blockquote>
+<p><em>Enterprise Architect · Systems Engineer · Founder, DPYC Network State</em>
+<em>Vergennes / Panton, Vermont</em></p>
+</blockquote>
+<p><a href="mailto:lonniev@gmail.com">lonniev@gmail.com</a> · <a href="https://linkedin.com/in/lonnievanzandt">linkedin.com/in/lonnievanzandt</a> · <a href="https://github.com/lonniev">github.com/lonniev</a> · <a href="https://stablecoin.myshopify.com">stablecoin.myshopify.com</a></p>
+<hr />
+<h2>Profile</h2>
+<blockquote>
+<p>Enterprise Architect, Systems Engineer, and Software Engineer with thirty-eight years of experience in mission-critical software, enterprise architecture, and model-based systems engineering across defense, telecommunications, aerospace, and commercial programs. In 2026 founded the DPYC™ (Don't Pester Your Customer™) Network State — a decentralized API monetization economy grounded in Bitcoin Lightning, Nostr-native identity, Austrian sound-money economics, and the Model Context Protocol — and serves as its Prime Authority. Principal author of the Tollbooth DPYC™ protocol and of multiple open-source MCP servers that implement it. OMG-certified modeler, Neo4j-certified professional, and contributing author to international standards bodies. Applied cybersecurity domains include CMMC, NIST, STIGs, FIPS, the Risk Management Framework, SBOM generation, and dependency vulnerability scanning in Java and Scala CI/CD pipelines. Current research spans Collaborative Ontology Engineering, Decision Management, Provenance Management, and Argumentation and Skepticism in Collaborative Engineering Artifacts. Holds a recent U.S. security clearance.</p>
+</blockquote>
+<hr />
+<h2>Professional Experience</h2>
+<h3>Founder &amp; Prime Authority — DPYC Network State <code>FOUNDER</code></h3>
+<p><strong>2026 – Present</strong> · Panton, Vermont</p>
+<ul>
+<li>Conceived, designed, and launched DPYC™ (Don't Pester Your Customer™) — a decentralized API monetization protocol built on Bitcoin Lightning, Nostr-native identity (npubs), and the Model Context Protocol. DPYC is a Network State in the sense Balaji Srinivasan gives the term: a coordinated online community with its own governance, economy, and membership.</li>
+<li>Holds trademark on DPYC™, Tollbooth DPYC™, and Don't Pester Your Customer™.</li>
+<li>Serves as Prime Authority (First Curator) of the DPYC Honor Chain governance structure; oversees Authority certification, Operator registration, and community governance via the <code>lonniev/dpyc-community</code> GitHub registry.</li>
+<li>Architected the Tollbooth DPYC™ protocol: pre-funded Lightning balances eliminate per-request payment negotiation; kind-30079 Nostr-signed certificates enforce metered API access; a composable Constraint Engine imposes temporal, supply, rate-limit, surge, and promotional pricing rules.</li>
+<li>Designed a fractal, self-similar multi-Authority hierarchy enabling arbitrarily deep trust chains without specialized processing.</li>
+<li>Designed the network-effect moat: all software is released under Apache 2.0, yet replication of the software in isolation is economically futile because value accrues to the network — to its Authorities, Operators, Patrons, and the Honor Chain ledger — rather than to any individual package. The design allows the architects of the economy to receive compensation through network participation even though the code remains fully open.</li>
+<li>Applied Austrian praxeology and sound-money economics as the philosophical foundation for honest, non-predatory, demurrage-based API credit systems.</li>
+<li>Authored the provisional patent cover memo and figure set for the Tollbooth DPYC Economic Architecture (six claim families, filing target mid-2026).</li>
+<li>Operates a BTCPay Server Lightning node on AWS EC2 as the sole payment infrastructure for the network.</li>
+<li>Five Operators live on Prefect Horizon as of the date of this document.</li>
+</ul>
+<h3>Store Owner and Administrator — Good Brew</h3>
+<p><strong>2026 – Present</strong> · <a href="https://stablecoin.myshopify.com">stablecoin.myshopify.com</a></p>
+<ul>
+<li>Founded and operates Good Brew, a Shopify print-on-demand merchandise store for DPYC Network State branded goods.</li>
+<li>Responsible for Shopify store administration, product catalog management, Gelato Print-on-Demand integration, BTCPay Server Bitcoin and USDC payment processing, and Stripe fiat settlement.</li>
+<li>DPYC logo designed in-house; SVG assets maintained in the <code>dpyc-community</code> repository.</li>
+</ul>
+<h3>Author — Monetized MCP Servers <code>OPEN SOURCE</code></h3>
+<p><strong>2026 – Present</strong> · <a href="https://github.com/lonniev">github.com/lonniev</a></p>
+<ul>
+<li><strong>thebrain-mcp</strong> — FastMCP Python server monetizing AI-agent access to a TheBrain knowledge graph of over nine thousand thoughts via the Tollbooth DPYC protocol; hosted on Prefect Horizon.</li>
+<li><strong>schwab-mcp</strong> — Multi-patron metered gateway to the Charles Schwab brokerage API; full OAuth2 Authorization Code flow handled in-MCP via <code>schwab_begin_oauth</code> and <code>schwab_check_oauth_status</code>; Tollbooth credit billing per call.</li>
+<li><strong>excalibur-mcp</strong> — X / Twitter posting MCP server with Tollbooth billing and NIP-17 Secure Courier credential delivery; supports Unicode Mathematical Alphanumeric Symbol rich-text formatting.</li>
+<li>All servers implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.</li>
+<li>Python maintainer of the <strong>tollbooth-dpyc</strong> wheel — the shared library underlying all Tollbooth-compliant MCP servers.</li>
+</ul>
+<h3>Swift and iOS Developer — Pricing Studio</h3>
+<p><strong>2026 – Present</strong> · DPYC Ecosystem · iOS / SwiftUI</p>
+<ul>
+<li>Designing and developing Pricing Studio, a native iOS application enabling DPYC Operators to configure, visualize, and publish Tollbooth pricing models.</li>
+<li>Implements the client-side Constraint Engine for rate-bps floors, ceilings, surge multipliers, and per-tool pricing rules surfaced through a SwiftUI interface, with NIP-98-authenticated deployment to live MCP endpoints.</li>
+</ul>
+<h3>Chief Solutions Officer — Intercax LLC</h3>
+<p><strong>January 2026 – Present</strong> · Vermont, United States (Remote)</p>
+<p><em>Promoted from Principal Solution Architect in January 2026.</em></p>
+<ul>
+<li>Leads the Customer Support Team, the Quality Assurance Team, and the DevSecOps IT Team in delivering innovative business solutions built on Syndeia, Intercax's digital-thread platform for aerospace, defense, automotive, healthcare, and energy sectors.</li>
+</ul>
+<h3>Principal Solution Architect — Intercax LLC</h3>
+<p><strong>October 2020 – January 2026</strong> · Vermont, United States (Remote)</p>
+<ul>
+<li>Led the Customer Support Team for Intercax, assuring user success with Syndeia and fostering long-term relationships with clients.</li>
+<li>Led Intercax's CMMC and NIST cybersecurity initiatives to protect Controlled Unclassified Information (CUI).</li>
+<li>Led the Kubernetes and Docker infrastructure initiatives for Syndeia.</li>
+<li>Served as Technical Lead on the Business Development Team and as Technical Account Manager for Intercax's primary services contracts.</li>
+<li>Served as Subject Matter Expert for STIGs, FIPS, and Java Security; for Apache TinkerPop Gremlin graph query; for OAuth2 and SSO SAML2 authentication; and for the business value of Digital Threads in Digital Engineering.</li>
+<li>Mentored U.S. Defense Industrial Base contractors on digital engineering, digital threading, and API integrations.</li>
+<li>Software supply-chain and CI/CD modernization: introduced Maven for the Java SDLC; improved the Scala SBT build; implemented SBT publishing to GHCR and AWS ECR; introduced Snyk and OWASP Dependency-Check scanning; introduced CycloneDX SBOMs to SBT builds; introduced GitHub Actions for cloud-based CI/CD.</li>
+<li>Applied expertise in OSLC, Jazz DNG and GCM, and Windchill; data transformation using HTTP/REST, XML, XMI, JSON, OWL, RDF, and Linked Data Platform.</li>
+<li>Co-authored and led Intercax's first NASA Phase 2 SBIR.</li>
+<li>Presented at INCOSE, OMG, NDIA, and the Intercax Digital Thread Conference series on Syndeia and collaborative engineering.</li>
+<li>Developed in Scala, Java, and Python.</li>
+</ul>
+<h3>AWS Solutions Consultant — Independent</h3>
+<p><strong>January 2025</strong> · Remote</p>
+<ul>
+<li>Implemented an AWS Amplify site containing an embedded Amazon Bedrock AI chat bot.</li>
+<li>Implemented a complete CloudFormation stack for an ECS Fargate Dockerized service fronted by AWS Application Load Balancers and API Gateways.</li>
+<li>Implemented AWS Cognito identity provisioning with OIDC and OAuth2 proxies.</li>
+<li>Implemented a complete AWS Marketplace product offering for a user-metered container product, including custom Lambda functions that release CloudFormation templates from S3 only when a subscription is verified active.</li>
+<li>Integrated a Scala build process with AWS ECR to generate Docker images for ECS Fargate in the CI/CD pipeline.</li>
+</ul>
+<h3>Business Analyst T5 — CACI International Inc.</h3>
+<p><strong>June 2018 – October 2020</strong> · Chantilly, VA</p>
+<ul>
+<li>Lead Subject Matter Expert on Enterprise Architecture, focusing on UPDM, UAF, and SysML, for CACI's Department of Defense acquisition programs.</li>
+<li>Lead Analyst for several of CACI's classified C4ISR projects.</li>
+<li>Subject Matter Expert on the Cameo MagicDraw OpenAPI for plugin customization.</li>
+<li>MBSE trainer to CACI staff and U.S. Navy clients.</li>
+<li>Refactored the UAF Security Viewpoint back from UAF to UPDM to make Security Viewpoints available to CACI's UPDM-anchored clients.</li>
+<li>Risk Management Framework Subject Matter Expert.</li>
+<li>Senior contributor to CACI's center of excellence for model-based systems engineering, advancing digital-engineering practices and solution patterns.</li>
+</ul>
+<h3>Enterprise Architect — SODIUS SAS</h3>
+<p><strong>February 2014 – June 2018</strong> · Evergreen, CO</p>
+<ul>
+<li>Contributing software engineer for OSLC integration products across bespoke lifecycle-management engineering tools.</li>
+<li>Subject Matter Expert for Cameo MagicDraw; for IBM Jazz DNG and Windchill PDMLink integration via OSLC; and for RDF Linked Data Tracked Resource Sets.</li>
+<li>Implemented extensive customization of Windchill deployments and its Sencha user interface to expose OSLC capabilities.</li>
+<li>Automated the deployment of the complete Windchill PDMLink service and the IBM Jazz Engineering Lifecycle Management suite using Ruby Vagrant.</li>
+<li>Product Portfolio Technology Planner and proponent of Aha! for technology roadmaps; Agile ScrumMaster; Business Development Associate.</li>
+</ul>
+<h3>Chief Architect — No Magic, Inc.</h3>
+<p><strong>August 2012 – February 2014</strong> · Evergreen, CO</p>
+<ul>
+<li>Liaison between customers, users, engineering teams, marketing and sales, and executive management.</li>
+<li>Forward-deployed Applications Engineer for MagicDraw and UPDM.</li>
+<li>Established solution strategies that supported customer satisfaction across legacy, current, and future products.</li>
+<li>Represented No Magic as technology evangelist for enterprise architectures and for systems engineering using UPDM and SysML; served at the Object Management Group on the UML, SysML, and UPDM revision task forces.</li>
+<li>Led the initial implementation of Teamwork Cloud, replacing the less-scalable Teamwork Server.</li>
+</ul>
+<h3>Systems Engineer — LGS Innovations</h3>
+<p><strong>December 2008 – August 2012</strong> · Westminster, CO</p>
+<ul>
+<li>Systems Engineering Subject Matter Expert supporting the IR&amp;D Bid and Proposal Team with technology insight, competitive analysis, customer expectations, product reliability, and requirements clarification.</li>
+<li>Contributed to numerous classified Technical Task Orders ranging in value from $250,000 to over $5,000,000 for innovative tactical base-station systems spanning GSM, CDMA, UMTS, HSPA, LTE, and WiMAX air interfaces.</li>
+<li>RF Link Budget analysis; proposal author; Requirements Engineer; Lead Technical Writer.</li>
+</ul>
+<h3>Consulting Applications Engineer — Artisan Software Tools Limited</h3>
+<p><strong>March 2007 – December 2008</strong> · North America</p>
+<ul>
+<li>Consulting Applications Engineer for North America; technical sales support and professional services for aerospace and defense systems engineers.</li>
+<li>Tools services for UML, SysML, MARTE, and DoDAF modeling and for Model-Driven Design and MDA targeting C, C++, Java, and Ada software systems.</li>
+<li>Specialist in UML model bidirectional C code generation.</li>
+<li>Representative to the Object Management Group.</li>
+</ul>
+<h3>Software Engineer V — Northrop Grumman</h3>
+<p><strong>September 2004 – September 2006</strong> · Denver, CO</p>
+<ul>
+<li>Key software engineer on a Northrop Grumman Silver-award IR&amp;D program.</li>
+<li>Network protocol stack programming, network security implementation and test, kernel programming, and FreeBSD system administration.</li>
+<li>Specialization in packet content filtering, redirection, and spoofing.</li>
+<li>XSLT, XPath, Java, JNI, C, C++, Cloudshield RAVE, and FreeBSD.</li>
+</ul>
+<h3>Independent Consulting — Real-Time, Embedded, and Model-Driven Systems Engineering</h3>
+<p><strong>June 2000 – March 2007</strong> · Colorado Front Range</p>
+<p>Successive engagements at firms building real-time operating systems, synchronous reactive control systems, embedded conditional-access platforms, and UML-based software-engineering tooling:</p>
+<ul>
+<li><strong>Vidiom</strong> (September 2006 – February 2007, Westminster, CO): Senior systems modeler and software engineer on the OpenCable Downloadable Conditional Access System — UML 2.0 design and C implementation of a messaging broker coupling Java-resident OCAP applications to 7816-resident SecureMicro Conditional Access clients.</li>
+<li><strong>Deadline Specialists</strong> (February 2007 – December 2008, Boulder, CO, overlapping with the Artisan consulting engagement above): Contract embedded real-time OS programming on disk-drive firmware (Borland Together, Microsoft Visual Studio, CruiseControl, Ant; unit testing via <code>unit++</code>, CppUnit, mbUnit).</li>
+<li><strong>Design_Net Engineering</strong> (December 2003 – August 2004, Denver, CO): UML modeling, UML-to-C generation, VxWorks AE on PowerPC, data acquisition and telemetry management, SQUID control.</li>
+<li><strong>Aztek Engineering</strong> (July 2003 – November 2003, Denver, CO): UML modeling and C++ coding for GR-303 Local Digital Terminal.</li>
+<li><strong>Esterel Technologies</strong> (May 2003 – July 2003, Denver, CO): Applications engineering and technical sales support for the Esterel SCADE synchronous design tool for dynamic and reactive control systems.</li>
+<li><strong>Artisan Software</strong> (August 2002 – December 2002, Denver, CO): Applications engineering and technical sales support; UML modeling for real-time systems engineering (Artisan Studio, later Integrity Modeler).</li>
+<li><strong>QNX Software Systems</strong> (April 2001 – February 2002, Denver, CO): QNX Neutrino applications engineering, technical sales support, IPv4 network stack programming.</li>
+<li><strong>TimeSys Real-time Linux</strong> (June 2000 – April 2001, Denver, CO): Linux kernel programming, GNU GCC compiler builds, Linux distribution builder, technical sales support and marketing, Rate Monotonic Analysis consulting.</li>
+</ul>
+<h3>Member of Technical Staff — AT&amp;T Bell Labs</h3>
+<p><strong>January 1988 – December 1998</strong> · Naperville, IL</p>
+<ul>
+<li>Unix and Linux kernel developer.</li>
+<li>Programmer of device drivers for network cards, flash memory, and Direct Memory Access controllers.</li>
+<li>Architect of a dual-node high-availability Linux racked server.</li>
+<li>Contributed to cellular technology platforms; recognized by peers for sustained technical excellence and for staying ahead of rapidly evolving standards across embedded and communications software domains.</li>
+</ul>
+<hr />
+<h2>Volunteer Service</h2>
+<h3>Technical Program Director — INCOSE Colorado Front Range Chapter</h3>
+<p><strong>September 2008 – September 2010</strong> · Denver, CO</p>
+<ul>
+<li>Identified, recruited, and coordinated speakers of interest to practicing systems engineers for monthly chapter presentations and biannual tutorials.</li>
+</ul>
+<h3>Grand Knight — Knights of Columbus, Council 6905</h3>
+<p><strong>August 2012 – July 2014</strong></p>
+<h3>Deputy Grand Knight — Knights of Columbus, Council 6905</h3>
+<p><strong>September 2009 – August 2010</strong></p>
+<ul>
+<li>Served as the Grand Knight's right hand; chair of the membership retention committee; past Chancellor of the Council.</li>
+</ul>
+<hr />
+<h2>Education</h2>
+<table>
+<thead>
+<tr>
+<th>Years</th>
+<th>Degree</th>
+<th>Institution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1986 – 1988</td>
+<td><strong>M.S., Computer Engineering</strong></td>
+<td>University of Illinois, Urbana-Champaign</td>
+</tr>
+<tr>
+<td>1982 – 1986</td>
+<td><strong>B.S., Electrical and Computer Engineering</strong></td>
+<td>University of Illinois, Urbana-Champaign</td>
+</tr>
+</tbody>
+</table>
+<h3>Continuing Education</h3>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Course</th>
+<th>Provider</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2025</td>
+<td>Foundry &amp; AIP Builder Foundations</td>
+<td>Palantir Technologies</td>
+</tr>
+<tr>
+<td>2025</td>
+<td>Palantir Foundry Overview</td>
+<td>Palantir Technologies</td>
+</tr>
+<tr>
+<td>2024</td>
+<td>Machine Learning Specialization</td>
+<td>DeepLearning.AI / Stanford University (Coursera)</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>Introduction to Cyber Security Learning Path</td>
+<td>TryHackMe</td>
+</tr>
+<tr>
+<td>2013</td>
+<td>Functional Programming Principles in Scala</td>
+<td>École Polytechnique Fédérale de Lausanne (Coursera)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Certifications, Clearances, and Standards Contributions</h2>
+<ul>
+<li>U.S. Security Clearance (recent)</li>
+<li>OMG-Certified Business Process Modeler (OCBP)</li>
+<li>OMG BPMN2 Certified Modeler</li>
+<li>Neo4j Certified Professional (2020)</li>
+<li>Contributing Author — OMG UML Certification Exam</li>
+<li>Contributing Author — OMG BPMN Certification Exam</li>
+<li>Co-Chair — OMG Unified Profile for DoDAF and MODAF (UPDM)</li>
+<li>Co-Chair — INCOSE Model Lifecycle Management Working Group</li>
+<li>Technical Program Director — INCOSE Colorado Front Range Chapter (2008–2010)</li>
+<li>Trademark holder — DPYC™, Tollbooth DPYC™, Don't Pester Your Customer™</li>
+</ul>
+<hr />
+<h2>Technical Skills</h2>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Technologies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Architecture</strong></td>
+<td>Enterprise Architecture, MBSE, SysML v1 / v2, UML, BPMN, UPDM, UAF, DoDAF / MODAF, Digital Threads, OSLC, Model Context Protocol</td>
+</tr>
+<tr>
+<td><strong>Cybersecurity</strong></td>
+<td>CMMC, NIST 800-series, STIGs, FIPS, Risk Management Framework, CycloneDX SBOM, Snyk, OWASP Dependency-Check, OAuth2, SAML2, OIDC, Schnorr signatures, NIP-44 / NIP-17 encrypted messaging</td>
+</tr>
+<tr>
+<td><strong>Languages</strong></td>
+<td>Python, Swift / SwiftUI, Scala, Java, JavaScript / TypeScript, Groovy, Ruby, C, C++; HTTP / REST, GraphQL, SPARQL, Cypher</td>
+</tr>
+<tr>
+<td><strong>Data and Formats</strong></td>
+<td>JSON, XML, XMI, RDF / OWL, Turtle, Linked Data Platform, CSV, Neo4j, Cassandra, Neon (Postgres), pgvector</td>
+</tr>
+<tr>
+<td><strong>Blockchain and Identity</strong></td>
+<td>Bitcoin Lightning (BTCPay Server, LND, BOLT-11), Nostr (npubs, kind-30079, NIP-17, NIP-44, NIP-98), Schnorr signatures, OpenTimestamps</td>
+</tr>
+<tr>
+<td><strong>Platforms and Infrastructure</strong></td>
+<td>AWS (EC2, ECS Fargate, Lambda, Cognito, Amplify, Bedrock, API Gateway, CloudFormation, ECR, Marketplace), Prefect Horizon, Shopify, Gelato, Stripe, GitHub Actions, Docker, Kubernetes, Ruby Vagrant</td>
+</tr>
+<tr>
+<td><strong>MBSE and PLM Tooling</strong></td>
+<td>Syndeia, MagicDraw / Cameo Enterprise Architecture, Teamwork Cloud, TheBrain, Windchill PDMLink, IBM Jazz DNG / GCM, ParaMagic, DOORS, Artisan Studio / Integrity Modeler</td>
+</tr>
+<tr>
+<td><strong>Real-Time and Embedded</strong></td>
+<td>QNX Neutrino, VxWorks, Esterel SCADE, FreeBSD, embedded Linux, Rate Monotonic Analysis</td>
+</tr>
+<tr>
+<td><strong>Open Source</strong></td>
+<td>thebrain-mcp, schwab-mcp, excalibur-mcp, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Languages</h2>
+<ul>
+<li>English — Native</li>
+<li>French — Professional</li>
+</ul>
+<hr />
+<h2>Affiliations and Community</h2>
+<ul>
+<li>Member, INCOSE (International Council on Systems Engineering)</li>
+<li>Active contributor to OMG working groups (SysML v2 API &amp; Services, UPDM)</li>
+<li>Presenter at MBSE symposia, INCOSE chapter events, NDIA, and the Intercax Digital Thread Conference series</li>
+<li>Founder and curator of the DPYC Network State open-source community (<code>lonniev/dpyc-community</code> on GitHub)</li>
+<li>500+ connections on LinkedIn; peer-recommended across telecommunications, defense, and systems engineering disciplines</li>
+</ul>
+<hr />
+<p><em>Lonnie VanZandt · 205 Ridgeline Road, Panton, VT 05491 · lonniev@gmail.com · April 2026</em></p>
 </body>
 </html>

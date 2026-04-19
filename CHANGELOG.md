@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.0] — 2026-04-19
+
+### Added
+- TrancheLifetime constraint: configurable credit expiration replacing DemurrageConstraint
+- Constraint scoping: per-tool (`tool_ids`) and per-patron (`patron_npubs`, max 10) targeting
+- Happy Hour recurrence: user-facing fields (`in_effect`, `until`, `repeats`, `apply_on`, `percent_off`, `max_discount`)
+- Per-operator Neon schema isolation with `encrypted_blob` column for credential storage
+- Authority schema created symmetrically with operator schemas
+- Cold start inline retry: 3 attempts with 2-second backoff on vault hydration
+- Patron-chosen proof cache duration via `parse_duration` (24h cap)
+- Secure Courier: human-in-the-loop proof requirement and destructive relay drain documented
+- Network advisory for April 2026 releases (v0.10.0–v0.13.5)
+
+### Changed
+- Schema symmetry: `public` Postgres schema eliminated; all data in named operator/authority schemas
+- OAuth: credential field mapping consolidated, `/callback` suffix removed, `scope` removed for Schwab
+- All MCPs pinned to tollbooth-dpyc==0.13.5
+- Pricing Studio v1.8.0 with constraint scoping UI and Happy Hour editor
+- network-status.json updated with architecture notes on schema symmetry
+
+### Fixed
+- `encrypted_blob` column creation in per-operator schema isolation
+- OAuth redirect URI `/callback` suffix causing 404s on some providers
+
 ## [1.1.0] — 2026-03-04
 
 - docs: update README for file-per-member directory structure

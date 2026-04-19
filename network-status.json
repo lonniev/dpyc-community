@@ -1,8 +1,8 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.6.2",
-      "minimum": "0.6.0",
+      "current": "0.13.5",
+      "minimum": "0.13.5",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
     "tollbooth-authority": {
@@ -59,6 +59,7 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-04-13",
-  "advisory": "v0.6.0 security refactor: unified proof parameter across all tools — every npub param is now paired with a proof param. operator_proof.py deleted; proof validation consolidated into OperatorRuntime. All MCPs pinned >=0.6.0."
+  "last_updated": "2026-04-19",
+  "advisory": "April 2026 releases (v0.10.0–v0.13.5): TrancheLifetime replaces DemurrageConstraint, schema symmetry (public schema eliminated, per-operator + authority schemas), constraint scoping (tool_ids, patron_npubs), Happy Hour recurrence, OAuth fixes, cold start retry, patron-chosen proof cache duration. All MCPs pinned ==0.13.5.",
+  "architecture_notes": "Schema symmetry: every operator and the Authority each get their own Neon schema. The public schema is no longer used. Credential storage uses encrypted_blob column within operator schemas."
 }

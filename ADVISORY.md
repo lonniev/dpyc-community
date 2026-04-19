@@ -1,8 +1,58 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-04-11
+> Last updated: 2026-04-19
 
 ## Current Advisories
+
+### April 2026 Releases: v0.10.0–v0.13.5 (2026-04-19)
+
+**Affects:** All operators, Authority, all downstream MCPs
+
+This advisory covers the v0.10.0 through v0.13.5 series of tollbooth-dpyc releases and corresponding MCP updates.
+
+**TrancheLifetime replaces DemurrageConstraint**
+- `DemurrageConstraint` removed; credit expiration is now managed by `TrancheLifetime`
+- Configurable per-constraint with `parse_duration` support (e.g., `"7d"`, `"24h"`)
+
+**Schema symmetry: public schema eliminated, authority schema created**
+- The `public` Postgres schema is no longer used; each operator (including the Authority) gets its own named schema
+- Per-operator Neon schema isolation with `encrypted_blob` column for credential storage
+- Authority schema created symmetrically with operator schemas
+
+**Constraint scoping**
+- Constraints can now target specific tools via `tool_ids` list
+- Constraints can target specific patrons via `patron_npubs` list (max 10 entries)
+
+**Happy Hour — user-facing field names**
+- Fields: `in_effect`, `until`, `repeats`, `apply_on`, `percent_off`, `max_discount`
+- Supports recurrence schedules for automatic discount activation
+
+**OAuth fixes**
+- Credential field mapping consolidated
+- `/callback` suffix removed from OAuth redirect URIs
+- `scope` parameter removed for Schwab (not required by their API)
+
+**Patron-chosen proof cache duration**
+- Patrons can specify proof cache TTL via `parse_duration` (e.g., `"1h"`, `"30m"`)
+- Maximum cache duration capped at 24 hours
+
+**Cold start inline retry**
+- 3 attempts with 2-second backoff on cold start vault hydration
+- Prevents transient Neon connection failures from blocking startup
+
+**Secure Courier updates**
+- Human-in-the-loop proof requirement documented: patrons must consciously approve each request
+- Destructive relay drain behavior documented: `receive_credentials` consumes all matching DMs
+
+**All MCPs pinned to tollbooth-dpyc==0.13.5:**
+- thebrain-mcp v1.10.0
+- excalibur-mcp v0.8.0
+- schwab-mcp v0.10.0
+- taxsort-mcp v0.26.0
+- tollbooth-authority v0.6.0
+- tollbooth-sample v0.2.0
+
+---
 
 ### Ad Valorem Pricing + Authority on OperatorRuntime (2026-04-11)
 

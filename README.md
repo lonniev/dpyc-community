@@ -141,7 +141,13 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 ![DPYC Network Economics](docs/diagrams/dpyc-network-5auth-economics.svg)
 
-The Honor Chain uses a cascading certification fee model. Each Authority collects a 2% ad valorem fee when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect (+0.81%), keeping the total effective rate under 2.05% even at maximum depth.
+The Honor Chain uses a cascading certification fee model. Each Authority collects an ad valorem fee (configurable per Authority; default 2%) when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect, keeping the total effective rate low even at maximum depth.
+
+**Ecosystem features (v0.13.5):**
+- **TrancheLifetime** — configurable credit expiration (replaces DemurrageConstraint)
+- **Constraint scoping** — per-tool (`tool_ids`) and per-patron (`patron_npubs`, max 10) targeting
+- **Per-operator schema isolation** — each operator gets its own Neon schema with `encrypted_blob` column for credential storage
+- **Happy Hour recurrence** — user-facing constraint with `in_effect`, `until`, `repeats`, `apply_on`, `percent_off`, `max_discount` fields
 
 [DPYP-01: Base Certificate Protocol](https://github.com/lonniev/dpyc-community/blob/main/protocols/dpyp-01-base-certificate.md) — the canonical specification for Honor Chain credit certificates.
 

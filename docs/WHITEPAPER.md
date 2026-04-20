@@ -100,8 +100,9 @@ Prime Authority (First Curator)
 
 Toll pricing is not limited to fixed per-call rates. The Constraint Engine evaluates a pipeline of composable pricing rules at each tool invocation:
 
-- **Temporal windows** — discount during off-peak hours, surge during peak
-- **Finite supply caps** — only N calls available today (artificial scarcity)
+- **Temporal windows** — discount during off-peak hours, block outside business hours
+- **Surge pricing** — demand-elastic pricing via global counters (busier = pricier, or busier = cheaper with volume discounts)
+- **Finite supply caps** — lifetime invocation limits (global or per-patron), backed by persistent Neon counters
 - **Periodic refresh limits** — 50 calls/hour included, then pay-per-use
 - **Loyalty discounts** — reduced rates after cumulative spend thresholds
 - **Promotional coupons** — one-time or time-limited price modifiers

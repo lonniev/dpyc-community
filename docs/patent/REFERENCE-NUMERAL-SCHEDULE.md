@@ -71,7 +71,7 @@ The same element carries the same numeral in every figure where it appears.
 | 436 | Price modifier accumulator | 3 |
 | 438 | Surge pricing constraint | 3 |
 | 440 | Expression constraint | 3 |
-| 442 | Demand tracking (get_global_demand) | 3 |
+| 442 | Demand tracking (get_global_demand, hourly + lifetime counters via tool_demand table) | 3 |
 | 444 | Auto-seed default pricing model | 3 |
 | 446 | check_price standard tool | 3 |
 | 448 | list_constraint_types standard tool | 3 |

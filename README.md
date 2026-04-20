@@ -121,6 +121,8 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Authority-side certification and fee collection |
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | First Tollbooth Operator — TheBrain MCP Server |
 | [excalibur-mcp](https://github.com/lonniev/excalibur-mcp) | X (Twitter) posting MCP service with Secure Courier credential delivery |
+| [schwab-mcp](https://github.com/lonniev/schwab-mcp) | Charles Schwab brokerage data MCP with OAuth2 patron auth |
+| [taxsort-mcp](https://github.com/lonniev/taxsort-mcp) | Tax classification MCP with Cloudflare Pages frontend |
 | [tollbooth-shortlinks](https://github.com/lonniev/tollbooth-shortlinks) | Community utility — ephemeral short URLs for OAuth flows |
 
 ## Built On
@@ -143,9 +145,12 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 The Honor Chain uses a cascading certification fee model. Each Authority collects an ad valorem fee (configurable per Authority; default 2%) when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect, keeping the total effective rate low even at maximum depth.
 
-**Ecosystem features (v0.13.5):**
-- **TrancheLifetime** — configurable credit expiration (replaces DemurrageConstraint)
+**Ecosystem features (v0.14.2):**
+- **Global-state constraint persistence** — SurgePricing and FiniteSupply constraints share the `tool_demand` table in Neon with hourly windowed keys and lifetime sentinel keys
+- **FiniteSupply Neon backing** — global-scope invocation caps now persist across restarts; monotonic counter with adjustable ceiling
+- **Volume discount pricing** — SurgePricing supports multipliers < 1.0 (busier = cheaper)
 - **Constraint scoping** — per-tool (`tool_ids`) and per-patron (`patron_npubs`, max 10) targeting
+- **TrancheLifetime** — configurable credit expiration (replaces DemurrageConstraint)
 - **Per-operator schema isolation** — each operator gets its own Neon schema with `encrypted_blob` column for credential storage
 - **Happy Hour recurrence** — user-facing constraint with `in_effect`, `until`, `repeats`, `apply_on`, `percent_off`, `max_discount` fields
 

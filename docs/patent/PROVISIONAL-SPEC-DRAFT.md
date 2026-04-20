@@ -425,8 +425,9 @@ code. When a consumer invokes a tool, the decorator and underlying middleware:
    (FIFO) and permits the tool invocation to proceed.
 5. If insufficient, returns an error indicating the required balance and providing
    a direct path to purchase additional credits. The tool invocation does not proceed.
-6. On successful execution, increments the demand counter for the tool (feeding
-   the SurgePricingConstraint, Section 3.2) and injects a low-balance warning
+6. On successful execution, increments both the hourly demand counter and the
+   lifetime supply counter for the tool (feeding the SurgePricingConstraint and
+   FiniteSupplyConstraint respectively, Section 3.2) and injects a low-balance warning
    into the result if the consumer's remaining balance is below a configurable
    threshold.
 7. On execution failure (exception), automatically rolls back the debit — the
@@ -544,7 +545,7 @@ arbitrarily long session of tool invocations, each completing in under 100ms.
 
 #### 2.7 Demand Tracking
 
-The OperatorRuntime provides demand tracking primitives — `get_global_demand()` and `fire_and_forget_demand_increment()` — that record aggregate invocation counts per hourly window. These primitives feed the SurgePricingConstraint (Section 3.2), enabling real-time congestion-based price adjustments without external analytics infrastructure. Demand increment is performed automatically by the `paid_tool` decorator on each successful invocation; Operators do not call it explicitly.
+The OperatorRuntime provides demand tracking primitives — `get_global_demand()`, `fire_and_forget_demand_increment()`, and `fire_and_forget_supply_increment()` — that record aggregate invocation counts in the `tool_demand` table using the Neon vault. The table schema is `(tool_name TEXT, window_key TEXT, count INTEGER)` with a composite primary key. Hourly demand uses time-bucketed window keys (e.g. `"2026-04-20T14:00"`) and feeds the SurgePricingConstraint (Section 3.2). Lifetime supply uses a sentinel window key `"__total__"` and feeds the FiniteSupplyConstraint (Section 3.2) when configured with global scope. Both counters are incremented atomically via `INSERT ... ON CONFLICT DO UPDATE SET count = count + 1` and are incremented automatically by the `paid_tool` decorator on each successful invocation; Operators do not call them explicitly. Reads are on-demand at constraint evaluation time; increments are fire-and-forget asynchronous tasks that never block tool execution.
 
 ### 3. Composable Constraint Engine (Claim Family 2)
 
@@ -595,6 +596,10 @@ native code (Python) for performance and reliability:
    either globally (across all consumers) or per-consumer. Example: tool may be
    invoked at most 1,000 times total, or at most 50 times per consumer. When the
    supply is exhausted, returns `allowed=false` with reason indicating exhaustion.
+   Global scope reads the lifetime invocation total from the `tool_demand` table
+   (Section 2.7) via the `EnvironmentSnapshot.supply_total_for()` accessor. The
+   lifetime counter is monotonic — Operators raise the `max_invocations` ceiling
+   to grant additional runway without resetting the counter.
 
 3. **PeriodicRefreshConstraint**: Implements rolling-window rate limits with automatic
    refresh. Specifies a maximum invocation count and a refresh period as an ISO 8601

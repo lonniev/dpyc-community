@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "docs/patent/*.md"
+      - "docs/patent/*.svg"
 
 permissions:
   contents: write
@@ -15,10 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pandoc and LaTeX
+      - name: Install pandoc, LaTeX, and rsvg-convert
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra lmodern
+          sudo apt-get install -y pandoc texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra lmodern librsvg2-bin python3-pip
+          pip install --quiet pypdf
 
       - name: Generate PDFs from patent markdown
         run: |
@@ -38,6 +40,25 @@ jobs:
               -V colorlinks=true \
               -V linkcolor=blue
           done
+
+      - name: Regenerate figures PDF from SVGs
+        run: |
+          cd docs/patent
+          for svg in FIG-1-*.svg FIG-2-*.svg FIG-3-*.svg FIG-4-*.svg FIG-5-*.svg FIG-6-*.svg; do
+            rsvg-convert -f pdf "$svg" -o "${svg%.svg}.pdf"
+          done
+          python3 -c "
+          from pypdf import PdfWriter
+          import glob, re
+          writer = PdfWriter()
+          for i in range(1, 7):
+              matches = sorted(glob.glob(f'FIG-{i}-*.pdf'))
+              if matches:
+                  writer.append(matches[0])
+          writer.write('PATENT-FIGURES-ALL.pdf')
+          "
+          rm -f FIG-*-*.pdf
+          echo "Regenerated PATENT-FIGURES-ALL.pdf"
 
       - name: Commit PDFs if changed
         run: |

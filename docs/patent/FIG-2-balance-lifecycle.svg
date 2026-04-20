@@ -94,7 +94,7 @@
   <rect class="step" x="400" y="365" width="150" height="50" rx="3"/>
   <text x="475" y="383" class="step-label">CREDIT LEDGER 300</text>
   <text x="475" y="395" class="step-label">WITH api_sats 304</text>
-  <text x="475" y="407" class="step-label">× VIP MULTIPLIER 306</text>
+  <text x="475" y="407" class="step-label">1:1 PARITY 306</text>
 
   <!-- Arrow down -->
   <line class="flow" x1="475" y1="415" x2="475" y2="432" marker-end="url(#ah)"/>

@@ -17,7 +17,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 | Actor | Identity | Trust Level | Secrets Held | Threat Posture |
 |-------|----------|-------------|--------------|----------------|
 | **Patron** | npub + nsec | Untrusted (external) | nsec, API credentials (vaulted) | May be malicious, automated, or compromised |
-| **Operator** | npub + nsec | Semi-trusted (registered) | nsec (env), BTCPay key, Authority npub | Trusted to run service; nsec compromise = full tenant breach |
+| **Operator** | npub + nsec | Semi-trusted (registered) | nsec (env), BTCPay key (vault), Authority npub | Trusted to run service; nsec compromise = full tenant breach |
 | **Authority** | npub + nsec | Trusted (certified) | nsec (env), Neon URL, operator ledgers | Certificate forgery if nsec compromised |
 | **First Curator** | npub + nsec | Root of trust | nsec, authority approval power | Entire Honor Chain compromise if nsec lost |
 | **AI Agent** | Delegated patron session | Untrusted | Session-scoped proof cache | All tool arguments treated as adversarial input |

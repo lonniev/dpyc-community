@@ -213,7 +213,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 | I-4 | Credential template reveals expected fields | TB4 | Template sent in NIP-44 DM (encrypted) | Only patron and operator see it; but template structure is in source code (public repo) |
 | I-5 | Timing side-channel on proof verification | TB1 | Schnorr verification is constant-time in secp256k1 library | Python-level timing may leak proof validity before full verification completes |
 | I-6 | Balance inference from error messages | TB1 | `debit_or_deny` returns "Insufficient credit balance" without revealing exact balance | Attacker can binary-search balance by varying tool cost (if tool pricing varies by kwargs) |
-| I-7 | BTCPay API key in operator env | TB5/TB7 | Env var, never logged | Same FastMCP Cloud env risk as I-3 |
+| I-7 | BTCPay API key exposure | TB5 | Delivered via Secure Courier, encrypted at rest in Neon vault (AES-256-GCM, operator nsec-derived key) | **Requires operator nsec to decrypt** — vault compromise alone yields only ciphertext |
 | I-8 | Credential card (ncred1) interception | Patron device | Bech32-encoded, encrypted with operator nsec-derived key | **If patron's device is compromised**, ncred1 is recoverable — but useless without operator's nsec to decrypt |
 
 ### 3.5 Denial of Service
@@ -237,23 +237,24 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 | E-3 | Patron accesses another patron's session | Operator runtime | Proof cache bound to `(session_id, npub)` — different npub requires new proof | **If patron can predict/steal session ID** (see S-8), they inherit cached proof |
 | E-4 | Lateral movement: compromised operator accesses other operators' Neon data | TB3 | Per-operator Postgres schema; LOGIN role per operator with ownership transferred | **If Neon connection string is shared** (misconfiguration), cross-tenant access possible |
 | E-5 | AI agent escalates beyond patron's intent | TB1 | Proof is human-in-the-loop (patron must consciously approve); 1-hour TTL | **Within the 1-hour proof window**, AI agent acts with full patron authority on all tools |
-| E-6 | OAuth2 collector sees plaintext auth codes | TB (Advocate) | Auth code encrypted with `SHA-256(npub)` key before storage | **SHA-256(npub) is deterministic and npub is public** — collector can derive the key. Encryption is only transport obscurity, not real confidentiality against the collector. |
+| E-6 | OAuth2 collector can derive auth code decryption key | TB (Advocate) | Auth code encrypted with AES-256-GCM, key = `SHA-256(npub)` | Cipher upgraded from XOR to AES-256-GCM, but **key derivation unchanged** — npub is public, so collector (or anyone with Neon access) can derive the key and decrypt. Confidentiality depends on collector integrity, not cryptography. |
 
 ---
 
 ## 4. Attack Chains (Multi-Step Exploits)
 
-### Chain 1: BTCPay Token Theft → Free Credits
+### Chain 1: Operator Nsec Theft → BTCPay Token → Free Credits
 
-1. Attacker obtains operator's BTCPay API token (I-7, via FastMCP Cloud env compromise)
-2. Attacker creates invoices via BTCPay API directly, marks them as settled
-3. Attacker calls `check_payment` with the fake-settled invoice ID (S-4)
-4. Authority credits the operator's balance with unearned sats
-5. **Impact:** Unlimited free credits; Authority's Lightning wallet is not actually funded
+1. Attacker obtains operator's nsec (compromised machine, leaked env var)
+2. Attacker decrypts BTCPay API credentials from Neon vault (AES-256-GCM, nsec-derived key)
+3. Attacker creates invoices via BTCPay API directly, marks them as settled
+4. Attacker calls `check_payment` with the fake-settled invoice ID (S-4)
+5. Authority credits the operator's balance with unearned sats
+6. **Impact:** Unlimited free credits; Authority's Lightning wallet is not actually funded
 
-**Severity:** Critical  
-**Prerequisite:** BTCPay API token compromise  
-**Mitigation:** Add cryptographic proof of Lightning settlement (e.g., preimage verification)
+**Severity:** Critical (but **prerequisite is nsec compromise**, which is already game-over for the operator)  
+**Prerequisite:** Operator nsec theft  
+**Mitigation:** Add cryptographic proof of Lightning settlement (e.g., preimage verification) as defense-in-depth; nsec compromise is the root cause
 
 ### Chain 2: Session ID Prediction → Proof Cache Hijack → Account Takeover
 
@@ -281,15 +282,16 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 ### Chain 4: OAuth2 Collector Compromise → Upstream API Takeover
 
-1. Attacker compromises OAuth2 Collector advocate service (E-6)
-2. Collector derives `SHA-256(patron_npub)` key (npub is public)
-3. Attacker decrypts stored auth codes and exchanges them for access tokens
+1. Attacker compromises OAuth2 Collector advocate service or its Neon database (E-6)
+2. Attacker derives AES-256-GCM key via `SHA-256(patron_npub)` — npub is public
+3. Attacker decrypts stored auth codes and exchanges them for upstream access tokens
 4. Attacker accesses upstream API (Schwab, etc.) as the patron
 5. **Impact:** Full upstream API access; financial data exposure (Schwab), social media control (X/Twitter)
 
 **Severity:** Critical  
-**Prerequisite:** OAuth2 Collector service compromise  
-**Mitigation:** Replace `SHA-256(npub)` with asymmetric encryption — collector encrypts with operator's public key; only operator can decrypt with nsec
+**Prerequisite:** OAuth2 Collector service or database compromise  
+**Note:** Cipher was upgraded from XOR to AES-256-GCM, but key derivation from public npub remains the weakness  
+**Mitigation:** Replace `SHA-256(npub)` key derivation with NIP-44 asymmetric encryption using operator's public key; collector cannot decrypt
 
 ### Chain 5: Balance Inference + Surge Timing → Economic Griefing
 
@@ -308,11 +310,11 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 ```
               ┌─────────────────────────────────────────────┐
-  Critical    │  S-4+Chain1   E-6+Chain4                    │
-              │  (BTCPay)     (OAuth Collector)              │
+  Critical    │  E-6+Chain4                                   │
+              │  (OAuth Collector — public key derivation)    │
               ├─────────────────────────────────────────────┤
-  High        │  S-8+E-3     I-3+T-5      D-6              │
-              │  (Session)   (Neon leak)   (JTI growth)     │
+  High        │  S-8+E-3     I-3+T-5      D-6   Chain1     │
+              │  (Session)   (Neon leak)   (JTI) (nsec-gated) │
               ├─────────────────────────────────────────────┤
   Medium      │  I-2  I-6    D-2  D-7     R-1  R-4         │
               │  (metadata)  (flooding)    (repudiation)    │
@@ -332,7 +334,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-1** | S-4, Chain 1 | Add Lightning preimage verification to `check_payment` — verify the payment preimage against the invoice hash, not just BTCPay's reported status |
+| **R-1** | S-4, Chain 1 | Defense-in-depth: add Lightning preimage verification to `check_payment`. Chain 1 already requires nsec compromise (game-over), but preimage check prevents BTCPay-only exploits |
 | **R-2** | E-6, Chain 4 | Replace `SHA-256(npub)` auth code encryption with NIP-44 asymmetric encryption using operator's public key; collector cannot decrypt |
 | **R-3** | D-6 | Add TTL-based cleanup to `_JTIStore._seen` — evict entries older than max certificate lifetime |
 

@@ -547,6 +547,16 @@ arbitrarily long session of tool invocations, each completing in under 100ms.
 
 The OperatorRuntime provides demand tracking primitives — `get_global_demand()`, `fire_and_forget_demand_increment()`, and `fire_and_forget_supply_increment()` — that record aggregate invocation counts in the `tool_demand` table using the Neon vault. The table schema is `(tool_name TEXT, window_key TEXT, count INTEGER)` with a composite primary key. Hourly demand uses time-bucketed window keys (e.g. `"2026-04-20T14:00"`) and feeds the SurgePricingConstraint (Section 3.2). Lifetime supply uses a sentinel window key `"__total__"` and feeds the FiniteSupplyConstraint (Section 3.2) when configured with global scope. Both counters are incremented atomically via `INSERT ... ON CONFLICT DO UPDATE SET count = count + 1` and are incremented automatically by the `paid_tool` decorator on each successful invocation; Operators do not call them explicitly. Reads are on-demand at constraint evaluation time; increments are fire-and-forget asynchronous tasks that never block tool execution.
 
+#### 2.8 Upstream Payment Encapsulation (x402 Adapter)
+
+The SDK provides an optional HTTP client adapter (`X402Client`) that enables Operators to transparently consume upstream APIs protected by the Coinbase x402 payment protocol. When an upstream HTTP endpoint returns a 402 status with a `payment-required` header, the adapter parses the payment requirements, signs an EIP-712 typed-data authorization using the Operator's agentic wallet private key, and retries the request with the signed payment in an `X-PAYMENT` header.
+
+This encapsulation pattern treats upstream x402 fees as Operator cost of goods sold (COGS), analogous to server rental or bandwidth charges. Patrons interact exclusively through the Tollbooth pre-funded balance model — they never see the 402 handshake, USDC settlement, or Ethereum wallet mechanics. The Operator's agentic wallet credentials are delivered via Secure Courier (Section 4) and stored in the encrypted Neon vault.
+
+The adapter is per-tool opt-in: Operators import and configure it only for tool handlers that access x402-protected upstreams. Tools that access non-x402 APIs use standard HTTP clients. The adapter is gated behind an optional dependency group (`[x402]`) and imposes no import cost on Operators who do not use it.
+
+This architecture enables DPYC Operators to act as wholesale aggregators of x402-priced services, re-denominating upstream USDC costs into pre-funded sat-denominated tool calls. The Operator captures the customer relationship; x402 becomes a commodity upstream input.
+
 ### 3. Composable Constraint Engine (Claim Family 2)
 
 #### 3.1 Architecture

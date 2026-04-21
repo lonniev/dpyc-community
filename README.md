@@ -145,7 +145,8 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 The Honor Chain uses a cascading certification fee model. Each Authority collects an ad valorem fee (configurable per Authority; default 2%) when certifying operator purchase orders. Multi-hop chains (C→B→A) create a small cascade effect, keeping the total effective rate low even at maximum depth.
 
-**Ecosystem features (v0.14.2):**
+**Ecosystem features (v0.14.x):**
+- **x402 upstream encapsulation** — Operators transparently consume Coinbase x402-protected APIs; patrons see pre-funded sats, never USDC or 402 handshakes
 - **Global-state constraint persistence** — SurgePricing and FiniteSupply constraints share the `tool_demand` table in Neon with hourly windowed keys and lifetime sentinel keys
 - **FiniteSupply Neon backing** — global-scope invocation caps now persist across restarts; monotonic counter with adjustable ceiling
 - **Volume discount pricing** — SurgePricing supports multipliers < 1.0 (busier = cheaper)

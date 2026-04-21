@@ -334,28 +334,33 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-1** | S-4, Chain 1 | Defense-in-depth: add Lightning preimage verification to `check_payment`. Chain 1 already requires nsec compromise (game-over), but preimage check prevents BTCPay-only exploits |
-| **R-2** | E-6, Chain 4 | Replace `SHA-256(npub)` auth code encryption with NIP-44 asymmetric encryption using operator's public key; collector cannot decrypt |
-| **R-3** | D-6 | Add TTL-based cleanup to `_JTIStore._seen` — evict entries older than max certificate lifetime |
+| **R-1** | E-6, Chain 4 | Replace `SHA-256(npub)` auth code encryption with NIP-44 asymmetric encryption using operator's public key; collector cannot decrypt |
+| **R-2** | D-6 | Add TTL-based cleanup to `_JTIStore._seen` — evict entries older than max certificate lifetime |
+
+### 6.1a Accepted Risks
+
+| ID | Addresses | Rationale |
+|----|-----------|-----------|
+| **A-1** | S-4, Chain 1 | BTCPay settlement trust gap is accepted. Chain 1 requires operator nsec compromise, which is already game-over (vault decryption, identity spoofing, full tenant breach). Adding preimage verification is not practical — BTCPay (the payee) already knows the preimage, so asking it to prove its own honesty is circular. Patron-submitted preimage would work cryptographically but adds UX friction for negligible incremental security given the nsec prerequisite. |
 
 ### 6.2 High Priority
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-4** | S-8, E-3, Chain 2 | Audit FastMCP session ID entropy; consider binding proof cache to `(session_id, npub, client_fingerprint)` |
-| **R-5** | I-3, T-5, Chain 3 | Sign pricing model with operator nsec at write time; verify signature at load time |
-| **R-6** | S-2 | Persist `_consumed_proofs` to vault for cold-restart replay protection (or accept the ~60s race window) |
-| **R-7** | I-1 | Add a runtime secret scanner — grep for nsec/key patterns in all outbound strings before they reach logs or responses |
+| **R-3** | S-8, E-3, Chain 2 | Audit FastMCP session ID entropy; consider binding proof cache to `(session_id, npub, client_fingerprint)` |
+| **R-4** | I-3, T-5, Chain 3 | Sign pricing model with operator nsec at write time; verify signature at load time |
+| **R-5** | S-2 | Persist `_consumed_proofs` to vault for cold-restart replay protection (or accept the ~60s race window) |
+| **R-6** | I-1 | Add a runtime secret scanner — grep for nsec/key patterns in all outbound strings before they reach logs or responses |
 
 ### 6.3 Medium Priority
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-8** | D-2, D-7 | Add per-npub rate limiting at the MCP layer (token bucket or sliding window) independent of FastMCP Cloud |
-| **R-9** | I-6, Chain 5 | Normalize error messages — return identical error for "insufficient balance" and "tool not found" to prevent balance probing |
-| **R-10** | R-1 | Consider patron-signed receipts (kind event) for non-repudiable purchase records |
-| **R-11** | R-4 | Retain Nostr DM event ID + signature hash in vault after NIP-09 deletion, as proof of credential delivery |
-| **R-12** | I-2 | Document Nostr metadata exposure in patron onboarding materials; patrons should understand relay operators see DM graph |
+| **R-7** | D-2, D-7 | Add per-npub rate limiting at the MCP layer (token bucket or sliding window) independent of FastMCP Cloud |
+| **R-8** | I-6, Chain 5 | Normalize error messages — return identical error for "insufficient balance" and "tool not found" to prevent balance probing |
+| **R-9** | R-1 | Consider patron-signed receipts (kind event) for non-repudiable purchase records |
+| **R-10** | R-4 | Retain Nostr DM event ID + signature hash in vault after NIP-09 deletion, as proof of credential delivery |
+| **R-11** | I-2 | Document Nostr metadata exposure in patron onboarding materials; patrons should understand relay operators see DM graph |
 
 ---
 

@@ -19,28 +19,10 @@ jobs:
       - name: Install pandoc, LaTeX, and rsvg-convert
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra lmodern librsvg2-bin python3-pip
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-latex-extra fonts-lmodern librsvg2-bin python3-pip
           pip install --quiet pypdf
 
-      - name: Generate PDFs from patent markdown
-        run: |
-          cd docs/patent
-          for md in PROVISIONAL-SPEC-DRAFT.md COVER-MEMO.md REFERENCE-NUMERAL-SCHEDULE.md; do
-            pdf="${md%.md}.pdf"
-            echo "Converting $md -> $pdf"
-            pandoc "$md" \
-              -o "$pdf" \
-              --pdf-engine=pdflatex \
-              -V geometry:margin=1in \
-              -V fontsize=11pt \
-              -V mainfont="Latin Modern Roman" \
-              -V documentclass=article \
-              --toc \
-              --number-sections \
-              -V colorlinks=true \
-              -V linkcolor=blue
-          done
-
+      # Step 1: SVGs → PATENT-FIGURES-ALL.pdf
       - name: Regenerate figures PDF from SVGs
         run: |
           cd docs/patent
@@ -49,7 +31,7 @@ jobs:
           done
           python3 -c "
           from pypdf import PdfWriter
-          import glob, re
+          import glob
           writer = PdfWriter()
           for i in range(1, 7):
               matches = sorted(glob.glob(f'FIG-{i}-*.pdf'))
@@ -59,6 +41,46 @@ jobs:
           "
           rm -f FIG-*-*.pdf
           echo "Regenerated PATENT-FIGURES-ALL.pdf"
+
+      # Step 2: MDs → individual PDFs
+      - name: Generate PDFs from patent markdown
+        run: |
+          cd docs/patent
+          for md in PROVISIONAL-SPEC-DRAFT.md COVER-MEMO.md REFERENCE-NUMERAL-SCHEDULE.md; do
+            pdf="${md%.md}.pdf"
+            echo "Converting $md -> $pdf"
+            pandoc "$md" \
+              -o "$pdf" \
+              --pdf-engine=xelatex \
+              -V geometry:margin=1in \
+              -V geometry:letterpaper \
+              -V fontsize=12pt \
+              -V mainfont="DejaVu Serif" \
+              -V monofont="DejaVu Sans Mono" \
+              -V documentclass=article \
+              --toc \
+              --number-sections \
+              -V colorlinks=false \
+              -V urlcolor=black \
+              -V linkcolor=black
+          done
+
+      # Step 3: Concat → FILING-PACKAGE.pdf (depends on steps 1 and 2)
+      - name: Generate consolidated filing package
+        run: |
+          cd docs/patent
+          python3 -c "
+          from pypdf import PdfWriter
+          writer = PdfWriter()
+          for pdf in ['SB16-FILLED.pdf', 'SB15A-FILLED.pdf', 'PROVISIONAL-SPEC-DRAFT.pdf', 'PATENT-FIGURES-ALL.pdf']:
+              try:
+                  writer.append(pdf)
+              except FileNotFoundError:
+                  print(f'Skipping {pdf} (not found)')
+          if len(writer.pages) > 0:
+              writer.write('FILING-PACKAGE.pdf')
+              print(f'FILING-PACKAGE.pdf: {len(writer.pages)} pages')
+          "
 
       - name: Commit PDFs if changed
         run: |

@@ -155,10 +155,10 @@
   <text x="110" y="770" style="font-size:11px; font-weight:bold;">PHASE 4: EXPIRATION</text>
 
   <!-- S13: Time passes, tranche expires — ANTI-BANKING BY DESIGN -->
-  <rect class="step" x="400" y="780" width="150" height="50" rx="3" style="stroke:#c00;stroke-width:2"/>
+  <rect class="step" x="400" y="780" width="150" height="50" rx="3" style="stroke:black;stroke-width:2.5"/>
   <text x="475" y="795" class="step-label">TRANCHE EXPIRES</text>
   <text x="475" y="807" class="step-label" style="font-weight:bold">(DEMURRAGE 310)</text>
-  <text x="475" y="822" class="step-label" style="font-size:7px;fill:#c00">NOT A BANK — CREDITS FORFEIT</text>
+  <text x="475" y="822" class="step-label" style="font-size:7px;font-weight:bold">NOT A BANK — CREDITS FORFEIT</text>
 
   <!-- Arrow down -->
   <line class="flow" x1="475" y1="820" x2="475" y2="838" marker-end="url(#ah)"/>

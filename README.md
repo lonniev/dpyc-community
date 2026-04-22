@@ -157,7 +157,9 @@ The Honor Chain uses a cascading certification fee model. Each Authority collect
 
 [DPYP-01: Base Certificate Protocol](https://github.com/lonniev/dpyc-community/blob/main/protocols/dpyp-01-base-certificate.md) — the canonical specification for Honor Chain credit certificates.
 
-## Trademarks
+## Patent & Trademarks
+
+**Patent Pending** — US Provisional Application 64/045,999
 
 DPYC, Tollbooth DPYC, and Don't Pester Your Customer are trademarks of Lonnie VanZandt. See [TRADEMARKS.md](TRADEMARKS.md) for usage guidelines.
 

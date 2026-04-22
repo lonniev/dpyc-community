@@ -52,6 +52,7 @@ jobs:
             pandoc "$md" \
               -o "$pdf" \
               --pdf-engine=xelatex \
+              --syntax-highlighting=none \
               -V geometry:margin=1in \
               -V geometry:letterpaper \
               -V fontsize=12pt \

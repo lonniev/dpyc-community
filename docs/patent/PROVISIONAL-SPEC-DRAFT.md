@@ -80,6 +80,23 @@ control over pricing policy or customer relationships.
 
 ### Prior Art
 
+#### Pre-Funded Credit Balances (General Concept)
+
+The concept of pre-funded credit balances with per-usage deduction is well-established
+in commercial billing systems. Cloud API providers (Google, OpenAI, Anthropic) offer
+prepaid credit models. Open-source billing platforms such as Lago and Orb implement
+prepaid credit wallets with append-only ledgers and per-usage deduction. The Machine
+Payments Protocol (MPP, Stripe/Tempo, March 2026) introduces session-based pre-funding
+with signed vouchers for agent payments.
+
+The present invention does not claim novelty in the abstract concept of pre-funded
+balance deduction. Rather, the invention's novel contributions lie in: (a) the
+intentional application of demurrage (credit expiration) to prevent the system from
+becoming a de facto bank or asset storehouse; (b) the composable constraint engine
+that transforms static pricing into a runtime-configurable, AI-assisted policy layer;
+(c) the Secure Courier protocol for out-of-band credential exchange; and (d) the
+hierarchical trust chain with self-similar economic certification.
+
 #### L402 Protocol (Lightning Labs, 2020)
 
 The L402 protocol (originally named LSAT) was published by Lightning Labs in March
@@ -99,9 +116,11 @@ L402 limitations relevant to the present invention:
 - No mechanism for pre-funding a balance that covers multiple future requests
 - Pricing rules are configured ad hoc in the reverse proxy; no composable
   constraint system exists
+- No intentional demurrage mechanism — tokens expire but balances do not
 - Single-party architecture with no multi-layer revenue distribution
 - Identity is bound to macaroons, not to a portable cryptographic keypair
 - No community governance or network coordination mechanism
+- No out-of-band credential exchange protocol
 
 The L402 specification mentions "top-up" functionality in passing but does not
 define a pre-funded balance architecture. It mentions "surge pricing" as a
@@ -120,11 +139,13 @@ service (hosted by Coinbase) verifies the signature and settles the payment on-c
 x402 limitations relevant to the present invention:
 
 - Same challenge-response pattern as L402 — no pre-funded balance
+- No demurrage or expiration mechanism
 - Two payment "schemes" only: "exact" (fixed price) and "upto" (variable with ceiling);
   no composable constraint pipeline
 - Relies on a centralized Facilitator service operated by Coinbase
 - Identity is a blockchain wallet address, not a portable network identity
 - No hierarchical trust chain or revenue distribution mechanism
+- No out-of-band credential exchange protocol
 - No governance layer — Coinbase controls the Facilitator and the Foundation
 - Uses stablecoins (USDC) pegged to fiat currency, not native cryptocurrency
 
@@ -135,53 +156,72 @@ Several platforms have emerged to monetize MCP tool services:
 - **MCPize**: Marketplace model with 85% revenue share, Stripe-based payments
 - **PayMCP/Walleot**: Decorator-based tool pricing (`@price`) with multiple payment modes
   via a centralized wallet service
-- **Masumi Network**: Blockchain-based (Cardano-adjacent) payment integration
-- **Moesif**: Traditional API analytics and billing wrapping Stripe/Chargebee/Zuora
-- **Apify**: MCP server marketplace with conventional payment rails
+- **PaidMCP (Alby)**: Lightning via Nostr Wallet Connect, per-request payment
+- **Masumi Network**: Blockchain-based (Cardano-adjacent) payment integration with escrow
+- **Sats4AI**: L402-based MCP tool marketplace, per-request Lightning payment
 
-None of these platforms use the Lightning Network for settlement. None implement
-a pre-funded credit balance model. None have composable constraint-based pricing.
-None have hierarchical trust chains with royalty distribution. None use
-decentralized cryptographic identity. None have community governance mechanisms.
+None of these platforms implement intentional demurrage on pre-funded balances.
+None have composable constraint-based pricing engines. None have hierarchical trust
+chains with economic certification fees. None provide out-of-band credential exchange
+via encrypted relay messaging. None have AI-assisted pricing campaign design tools.
 
 ### Unmet Need
 
 There exists a need for an API monetization system that:
 
-1. Eliminates per-request payment negotiation by allowing consumers to pre-fund
-   a credit balance from which individual tool invocations are deducted
-2. Provides API operators with a composable, programmable pricing policy engine
-   rather than ad hoc price configurations
-3. Supports multi-party revenue distribution through a hierarchical trust chain
+1. Applies intentional **demurrage** (credit expiration) to pre-funded balances,
+   preventing the system from becoming a de facto bank, asset storehouse, or
+   fiduciary custodian — while maintaining the per-session performance advantages
+   of pre-funded architectures
+2. Provides API operators with a **composable, programmable pricing policy engine**
+   with named constraint types (temporal windows, surge pricing, finite supply,
+   promotional modifiers, loyalty discounts, custom expressions) that are
+   runtime-configurable and **deployable via AI-assisted design tools**
+3. Delivers API credentials through an **out-of-band encrypted relay protocol**
+   (Secure Courier) that requires no email, no OAuth redirects, no centralized
+   identity provider, and no storage of personally identifiable information
+4. Supports multi-party revenue distribution through a **hierarchical trust chain**
    where each layer uses the same protocol, enabling franchise-like scaling
-4. Uses portable, decentralized cryptographic identity that requires no
+5. Uses portable, decentralized cryptographic identity that requires no
    personally identifiable information, email addresses, passwords, or OAuth tokens
-5. Provides community governance mechanisms that make the network's economic value
+6. Provides community governance mechanisms that make the network's economic value
    reside in participation rather than in proprietary code
-6. Assists API operators in designing pricing policies through AI-guided structured
-   interviews, with schema-aware validation, multi-provider adversarial review, and
-   cryptographically authenticated deployment to live endpoints
 
 ---
 
 ## Summary of the Invention
 
-The present invention provides an integrated system and method for monetizing
-tool-based APIs through six interconnected architectural components:
+The present invention improves upon known pre-funded credit balance architectures
+by introducing three principal innovations — intentional demurrage, composable
+constraint-based pricing with AI-assisted deployment, and out-of-band encrypted
+credential exchange — integrated with a hierarchical trust chain, decentralized
+identity, and community governance into a unified system for monetizing tool-based
+APIs. The system comprises six interconnected architectural components:
 
-**First**, a pre-funded balance monetization system in which API consumers purchase
-credit units ("api_sats") via Lightning Network micropayments, and individual tool
-invocations deduct from that balance according to per-tool pricing rules, eliminating
-per-request payment negotiation entirely.
+**First**, a pre-funded balance monetization system with **intentional demurrage**
+(credit expiration). API consumers purchase credit units ("api_sats") via Lightning
+Network micropayments, and individual tool invocations deduct from that balance.
+Critically, purchased credits carry a configurable expiration timestamp — upon
+expiration, remaining credits are removed from the consumer's available balance.
+This demurrage mechanism serves a deliberate regulatory function: it prevents the
+system from becoming a de facto bank, asset storehouse, or fiduciary custodian by
+ensuring that credits are consumed or forfeited within a bounded time window. The
+Operator never holds open-ended financial obligations. This design choice explicitly
+distinguishes the system from custodial payment services that would trigger Virtual
+Asset Service Provider (VASP) regulatory obligations.
 
 **Second**, a composable constraint engine that evaluates a pipeline of pricing
 constraints on each tool invocation — including temporal windows, finite supply caps,
-periodic refresh limits, congestion-based surge pricing, ad valorem pricing proportional
-to response value, and promotional modifiers — to produce a final deduction amount.
-The constraint engine supports runtime-configurable pricing models: named bundles of
-per-tool prices and constraint pipelines that are persisted in a database, activated
-atomically (at most one active per operator), resolved at tool-call time through a
-TTL-cached resolver, and subject to graceful degradation on database failure.
+periodic refresh limits, congestion-based surge pricing, volume discounts, ad valorem
+pricing proportional to response value, and promotional modifiers — to produce a final
+deduction amount. The constraint engine supports runtime-configurable pricing models:
+named bundles of per-tool prices and constraint pipelines that are persisted in a
+database, activated atomically (at most one active per operator), resolved at
+tool-call time through a TTL-cached resolver, and subject to graceful degradation on
+database failure. Operators design pricing campaigns through an **AI-assisted structured
+interview** that co-designs constraint pipelines, validates them against the server's
+schema, solicits adversarial second opinions from independent AI providers, and deploys
+approved campaigns to live endpoints via cryptographically authenticated tool calls.
 
 **Third**, a hierarchical trust chain with self-similar royalty distribution, in which
 an Authority certifies purchase orders for downstream Operators using cryptographic
@@ -207,11 +247,15 @@ Operator to serve multiple concurrent patrons, each with their own independently
 encrypted credential set, with credential restoration surviving process restarts
 without re-authentication.
 
-**Fourth**, a Nostr-based identity and credential exchange system in which each
-participant is identified by a Nostr public key (npub), citizenship is verified through
-cryptographic signature challenges, and API credentials are exchanged through encrypted
-direct messages on the Nostr relay network — requiring no email, passwords, OAuth, or
-personally identifiable information.
+**Fourth**, a Nostr-based identity system with a novel **Secure Courier** credential
+exchange protocol. Each participant is identified by a Nostr public key (npub), and
+citizenship is verified through cryptographic signature challenges. API credentials
+are exchanged through the Secure Courier protocol: an out-of-band, human-in-the-loop
+flow using NIP-44 encrypted direct messages on the Nostr relay network, with
+anti-replay poison nonces (Interlock Protocol), timestamp freshness windows
+(Wide-Mouth Frog Protocol), and destructive relay reads that leave no transcript.
+The protocol requires no email, passwords, OAuth redirects, centralized identity
+provider, or storage of personally identifiable information.
 
 **Fifth**, a network governance system implemented through version-controlled community
 registries on a collaborative source code platform (GitHub), in which membership,
@@ -481,23 +525,45 @@ The ledger is associated with the consumer's Nostr npub. Every patron-facing too
 views (current balance, usage statistics, invoice history) are returned through
 read-only tools.
 
-#### 2.5 Demurrage and Expiration
+#### 2.5 Intentional Demurrage: Anti-Banking by Design
 
-Purchased api_sats are subject to expiration (demurrage). Each credit tranche carries
-an expiration timestamp. Upon expiration, the remaining api_sats in the tranche are
-removed from the consumer's available balance. This design choice serves three purposes:
+Purchased api_sats are subject to mandatory expiration (demurrage). Each credit
+tranche carries an expiration timestamp derived from a configurable
+``TrancheLifetime`` (default: 30 days). Upon expiration, the remaining api_sats in
+the tranche are irrevocably removed from the consumer's available balance and
+recorded as an ``expire`` transaction in the append-only journal.
 
-1. **Prevents store-of-value accumulation**: Without expiration, consumers would treat
-   pre-funded balances as deposits, creating an implicit fiduciary obligation for the
-   Operator to maintain backward compatibility with historical protocol versions
-   indefinitely.
-2. **Encourages timely consumption**: Expiration creates a natural incentive for
-   consumers to use purchased credits, driving API traffic and revenue.
-3. **Simplifies ledger management**: Expired tranches can be pruned from the ledger,
-   bounding storage growth.
+This demurrage mechanism is a **deliberate architectural choice** — not a limitation
+— that serves four critical purposes:
 
-The expiration period is configurable per Operator. The preferred embodiment uses
-a 30-day default.
+1. **Prevents the system from becoming a bank or asset custodian**: Without
+   expiration, consumers would treat pre-funded balances as deposits, creating an
+   implicit fiduciary obligation. The Operator would be holding funds on behalf of
+   customers — the defining characteristic of a Virtual Asset Service Provider (VASP)
+   under FATF guidance. By ensuring that credits expire, the system is structurally
+   incapable of functioning as a store of value. Credits are prepaid service tokens
+   with a bounded lifetime, analogous to a transit pass or phone card — not a bank
+   account, investment vehicle, or custodial wallet.
+
+2. **Eliminates open-ended financial obligations**: The Operator's maximum liability
+   is bounded by the sum of all non-expired tranches. Once a tranche expires, the
+   Operator has no obligation — contractual, regulatory, or technical — to honor it.
+   This is qualitatively different from custodial systems where deposited funds must
+   be available for withdrawal indefinitely.
+
+3. **Encourages timely consumption**: Expiration creates a natural incentive for
+   consumers to use purchased credits within the service window, driving API traffic
+   and sustaining the economic viability of the tool ecosystem.
+
+4. **Bounds ledger growth**: Expired tranches are pruned during balance operations,
+   preventing unbounded storage accumulation.
+
+The expiration period is configurable per Operator via the ``TrancheLifetime``
+constraint or the ``resolve_tranche_lifetime()`` runtime method. The preferred
+embodiment uses a 30-day default. Operators may set shorter lifetimes (e.g., 24
+hours for high-frequency services) or longer lifetimes (up to the system maximum)
+depending on their service model. The key invariant is that **all credits expire** —
+the system provides no mechanism for indefinite balance retention.
 
 When the Pricing Resolver finds no stored pricing model but the Operator's registered tools carry base costs, the system auto-generates a default pricing model from the tool cost annotations. This ensures every Operator has a valid pricing model from first deployment without requiring manual configuration.
 
@@ -1425,46 +1491,50 @@ described in Section 5.
 ## Abstract
 
 A system and method for monetizing tool-based application programming interfaces
-(APIs) through pre-funded credit balances, composable pricing constraints,
-hierarchical trust chains, decentralized cryptographic identity, community
-governance, and AI-assisted pricing campaign design.
+(APIs) that improves upon known pre-funded credit balance architectures by
+introducing three principal innovations: intentional demurrage, composable
+constraint-based pricing with AI-assisted deployment, and out-of-band encrypted
+credential exchange — integrated with a hierarchical trust chain, decentralized
+identity, and community governance.
 
-API consumers pre-fund credit balances denominated in internal units (api_sats) via
-Lightning Network micropayments. Individual tool invocations deduct from the balance
-according to pricing rules evaluated by a composable Constraint Engine supporting
-temporal windows, supply caps, rate limits, surge pricing, promotional modifiers, and
-custom expressions. Pricing models — named bundles of per-tool costs and constraint
-pipelines — are runtime-configurable, persisted in a database, and resolved at
-tool-call time through a TTL-cached resolver with graceful fallback.
+**Intentional Demurrage.** API consumers pre-fund credit balances denominated in
+internal units (api_sats) via Lightning Network micropayments. Purchased credits
+carry mandatory expiration timestamps (demurrage). Upon expiration, remaining credits
+are irrevocably removed. This demurrage mechanism is a deliberate architectural
+choice that prevents the system from functioning as a bank, asset storehouse, or
+custodial wallet — ensuring that credits are consumed or forfeited within a bounded
+window and that Operators never hold open-ended financial obligations.
+
+**Composable Constraint Engine with AI-Assisted Deployment.** Each tool invocation
+is priced through a composable Constraint Engine that evaluates a pipeline of named
+constraint types — temporal windows, finite supply caps, surge pricing, volume
+discounts, periodic refresh limits, promotional modifiers, and custom expressions —
+to produce a final deduction amount. Pricing models are runtime-configurable, persisted
+in a database, and resolved at tool-call time through a TTL-cached resolver. Operators
+design pricing campaigns through an AI-assisted structured interview tool that
+co-designs constraint pipelines, validates them against the server's schema with
+automatic repair, solicits adversarial second opinions from independent AI providers,
+and deploys approved campaigns to live MCP endpoints authenticated by Nostr
+cryptographic operator proofs.
+
+**Secure Courier Credential Exchange.** API credentials are exchanged through the
+Secure Courier protocol: an out-of-band, human-in-the-loop flow using NIP-44
+encrypted direct messages on the Nostr relay network, with anti-replay poison
+nonces, timestamp freshness windows, and destructive relay reads that leave no
+transcript. The protocol requires no email, passwords, OAuth redirects, centralized
+identity provider, or storage of personally identifiable information.
 
 Revenue is distributed through a hierarchical trust chain in which Authorities
 certify purchase orders for downstream Operators using Schnorr digital signatures.
 Each layer in the hierarchy implements the same protocol pattern — an Authority is
-structurally an Operator whose consumers are other Operators. A configuration-time
-fee floor invariant ensures that each Authority's local fee rate meets or exceeds
-its upstream rate, preventing economically unviable configurations. Authorities
-provision isolated database schemas for each Operator; Operators encrypt all
-persisted data with keys derived from their own private keys via HKDF-SHA256.
-A bootstrap protocol enables Operators to discover their full configuration from
-a single private key. Community utility services (Advocates) provide shared
-infrastructure discoverable via registry-based service name resolution.
-
-Participants are identified by Nostr public keys (npubs). Citizenship is verified
-through cryptographic signature challenges. API credentials are exchanged through
-encrypted direct messages (NIP-44, NIP-17) on the Nostr relay network, eliminating
-the need for email, passwords, OAuth tokens, or personally identifiable information.
-Portable credential cards (ncred) and operator-signed identity credentials (Nostr kind 30080) provide redeemable, verifiable attestations of patron relationships.
+structurally an Operator whose consumers are other Operators. Authorities provision
+isolated database schemas for each Operator; Operators encrypt all persisted data
+with keys derived from their own private keys via HKDF-SHA256.
 
 The system is governed through a version-controlled community registry on a
 collaborative source code platform, providing cryptographic auditability through
 Merkle-tree commit history. Economic defense resides in network participation rather
 than in proprietary code.
-
-Pricing models are designed through an AI-assisted campaign tool that conducts
-structured six-stage interviews with Operators, validates proposed constraint
-pipelines against the server's schema with automatic repair, solicits adversarial
-second opinions from independent AI providers, and deploys approved campaigns to
-live MCP endpoints authenticated by Nostr cryptographic operator proofs.
 
 ---
 

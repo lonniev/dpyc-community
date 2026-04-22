@@ -21,16 +21,33 @@
 Mermaid diagrams can be rendered at https://mermaid.live or converted to
 formal patent figures by a draftsperson.
 
+## Three Principal Innovations (over known pre-funded balance architectures)
+
+1. **Intentional Demurrage** — All credits expire. Mandatory tranche expiration
+   prevents the system from becoming a bank, asset storehouse, or custodial wallet.
+   Operators never hold open-ended financial obligations. Structurally incapable of
+   functioning as a VASP.
+2. **Composable Constraint Engine with AI-Assisted Deployment** — Pipeline of
+   named pricing constraints (temporal, surge, supply, promotional, loyalty, custom
+   expression) runtime-configurable via AI-conducted structured interviews with
+   schema validation, adversarial review, and cryptographically authenticated
+   deployment to live MCP endpoints.
+3. **Secure Courier Credential Exchange** — Out-of-band, human-in-the-loop
+   credential delivery via NIP-44 encrypted Nostr DMs with anti-replay poison nonces
+   (Interlock Protocol), timestamp freshness (Wide-Mouth Frog), and destructive
+   relay reads. No email, no OAuth, no PII.
+
 ## Six Claim Families
 
-1. **Pre-Funded Balance Monetization** — Consumers pre-fund api_sats via Lightning;
-   tool invocations deduct from balance. No per-request payment negotiation.
+1. **Pre-Funded Balance with Intentional Demurrage** — Consumers pre-fund api_sats
+   via Lightning; tool invocations deduct from balance; credits expire by design.
 2. **Composable Constraint Engine** — Pipeline of pricing constraints (temporal,
    supply, rate-limit, surge, promotional, custom expression) producing final price.
+   Runtime-configurable, AI-assisted design and deployment.
 3. **Hierarchical Trust Chain** — Authority certifies Operator purchases via Schnorr
    signatures; each layer uses same protocol (self-similar / fractal pattern).
-4. **Nostr-Based Identity** — npub as universal ID; NIP-44/NIP-17 encrypted
-   credential exchange; signature-based citizenship verification.
+4. **Nostr-Based Identity + Secure Courier** — npub as universal ID; Secure Courier
+   credential exchange via NIP-44/NIP-17 encrypted DMs with anti-replay protection.
 5. **Network Governance** — GitHub-native registry under version control; economic
    defense through network effects rather than proprietary code.
 6. **AI-Assisted Pricing Campaign Design** — Structured six-stage AI interview

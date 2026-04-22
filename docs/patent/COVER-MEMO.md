@@ -1,8 +1,12 @@
 # Patent Submission Package — Cover Memo
 
 **From**: Lonnie VanZandt, Inventor
-**Date**: March 2026
+**Date**: April 2026
 **Re**: Provisional Patent Application — Tollbooth DPYC Economic Architecture
+
+**Title**: System and Method for Pre-Funded Balance Monetization of Tool-Based APIs
+with Composable Constraint Pricing, Hierarchical Trust Chains,
+Cryptographic Identity, and Network Governance
 
 ---
 
@@ -10,16 +14,23 @@
 
 | File | Purpose |
 |------|---------|
-| `PROVISIONAL-SPEC-DRAFT.md` | Full specification draft in USPTO format (Title, Background, Summary, Detailed Description, Abstract, Appendices) |
-| `fig1-system-architecture.mermaid` | FIG. 1 — System architecture (Authority → Operator → Consumer) |
-| `fig2-balance-lifecycle.mermaid` | FIG. 2 — Pre-funded balance lifecycle |
-| `fig3-constraint-engine.mermaid` | FIG. 3 — Constraint Engine evaluation pipeline |
-| `fig4-certification-flow.mermaid` | FIG. 4 — Trust chain certification flow |
-| `fig5-secure-courier.mermaid` | FIG. 5 — Secure Courier credential exchange |
-| `fig6-governance-flow.mermaid` | FIG. 6 — Network governance data flow |
+| `SB16-FILLED.pdf` | PTO/SB/16 Provisional cover sheet (filled) |
+| `SB15A-FILLED.pdf` | PTO/SB/15A Micro entity certification (filled) |
+| `PROVISIONAL-SPEC-DRAFT.pdf` | Full specification in USPTO format (35 pages) |
+| `REFERENCE-NUMERAL-SCHEDULE.pdf` | Reference numerals for FIGS. 1-7 (6 pages) |
+| `PATENT-FIGURES-ALL.pdf` | Patent drawings — FIGS. 1-6 (6 sheets, B&W, Letter) |
+| `FILING-PACKAGE.pdf` | Consolidated filing PDF (all of the above) |
 
-Mermaid diagrams can be rendered at https://mermaid.live or converted to
-formal patent figures by a draftsperson.
+### Patent Figures
+
+| Figure | Description |
+|--------|-------------|
+| FIG. 1 | System architecture — Authority → Operator → Consumer trust chain |
+| FIG. 2 | Pre-funded balance lifecycle with intentional demurrage |
+| FIG. 3 | Constraint Engine evaluation pipeline |
+| FIG. 4 | Trust chain certification flow with Schnorr signatures |
+| FIG. 5 | Secure Courier credential exchange via Nostr relay |
+| FIG. 6 | Network governance data flow |
 
 ## Three Principal Innovations (over known pre-funded balance architectures)
 
@@ -60,16 +71,31 @@ formal patent figures by a draftsperson.
 - **Feb 16, 2026**: GPG-signed tag `v1.0.0-prior-art` on `thebrain-mcp` repo
 - **Feb 17, 2026**: Repository made public; README with patent notice live
 - **Grace period expiry**: ~Feb 17, 2027 (AIA one-year grace period)
-- **Filing target**: Mid-2026 as provisional (~$320 micro-entity)
+- **Filed**: April 2026 as provisional ($65 micro-entity)
 
-## Key Prior Art to Distinguish
+## Key Prior Art (Acknowledged and Distinguished)
 
-- **L402** (Lightning Labs, 2020): Challenge-response per request, Macaroons, no balance model
-- **x402** (Coinbase, 2025): Challenge-response per request, USDC stablecoins, centralized Facilitator
-- **MCP platforms** (MCPize, PayMCP, Masumi, etc.): Traditional payment rails, no constraint engine, no trust chain
+**Pre-funded credit balances** are acknowledged as known prior art in the
+specification. Cloud API providers (Google, OpenAI, Anthropic), billing platforms
+(Lago, Orb), and MPP (Stripe/Tempo, March 2026) implement prepaid credit models.
+The invention does not claim novelty in the abstract concept of pre-funded balance
+deduction. Rather, the novel contributions are: (a) intentional demurrage preventing
+VASP/banking classification, (b) composable constraint engine with AI-assisted
+deployment, and (c) Secure Courier credential exchange.
 
-None implements pre-funded balances, composable constraints, self-similar trust chains,
-Nostr identity, or network governance. The combination is novel.
+**Per-request payment protocols** (distinguished by architecture):
+- **L402** (Lightning Labs, 2020): Challenge-response per request, Macaroons, no balance model, no demurrage, no constraints
+- **x402** (Coinbase, 2025): Challenge-response per request, USDC stablecoins, centralized Facilitator, no demurrage
+- **PaidMCP** (Alby, 2025): Lightning + NWC + MCP tools, per-request payment
+- **Sats4AI**: L402-based MCP marketplace, per-request
+
+**MCP monetization platforms** (distinguished by missing components):
+- **MCPize, PayMCP, Masumi, xpay.sh**: No composable constraints, no trust chain, no Nostr identity, no demurrage
+
+**Prior art search results** filed separately in `PRIOR-ART-PATENT-SEARCH.md` and
+`PRIOR-ART-NON-PATENT-SEARCH.md`. Closest patent hit: Pappas US20260087492A1
+(pre-funded AI agent balances, Sep 2025) — blockchain-generic, no Lightning, no
+constraints, no trust chain. Three claim families (4, 5, 6) have zero prior art.
 
 ## Alice/Mayo Considerations
 

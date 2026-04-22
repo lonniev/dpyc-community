@@ -82,7 +82,7 @@ jobs:
               print(f'FILING-PACKAGE.pdf: {len(writer.pages)} pages')
           "
 
-      - name: Commit PDFs if changed
+      - name: Open PR with regenerated PDFs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -90,6 +90,15 @@ jobs:
           if git diff --cached --quiet; then
             echo "No PDF changes to commit"
           else
+            BRANCH="ci/patent-pdfs-$(date +%Y%m%d-%H%M%S)"
+            git checkout -b "$BRANCH"
             git commit -m "ci: regenerate patent PDFs from markdown"
-            git push
+            git push origin "$BRANCH"
+            gh pr create \
+              --title "ci: regenerate patent PDFs" \
+              --body "Auto-generated from patent markdown and SVG changes on main." \
+              --base main \
+              --head "$BRANCH"
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

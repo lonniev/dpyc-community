@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-04-26T21:29:25.983263+00:00",
+  "collected_at": "2026-04-26T22:29:18.061021+00:00",
   "summary": {
     "operators": 6,
     "total_notarizations": 0,
@@ -20,8 +20,8 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",

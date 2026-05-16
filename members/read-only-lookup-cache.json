@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-05-16T21:54:06Z",
+  "updated_at": "2026-05-16T22:01:30Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -18,6 +18,22 @@
       ],
       "upstream_authority_npub": null,
       "notes": "Founding Prime Authority of the DPYC Honor Chain"
+    },
+    {
+      "npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+      "role": "authority",
+      "status": "active",
+      "member_since": "2026-05-16",
+      "display_name": "Tollbooth Authority New England",
+      "services": [
+        {
+          "name": "tollbooth-authority-newengland",
+          "url": "https://tollbooth-authority-newengland.fastmcp.app/mcp",
+          "description": "DPYC Authority — New England sub-regional certifier"
+        }
+      ],
+      "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+      "notes": "Sub-regional Authority for New England. Certified by Tollbooth-Authority-NorthAmerica. Identity re-generated 2026-05-16 after the original nsec was lost during onboarding."
     },
     {
       "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",

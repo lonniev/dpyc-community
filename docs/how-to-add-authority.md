@@ -71,4 +71,4 @@ Every cert your Authority issues to an Operator deducts a small fee from your pr
 |---|---|---|
 | [Lonnie-Authority](https://github.com/lonniev/tollbooth-authority) | Prime | `aws-us-east-1` |
 | [NorthAmerica](https://github.com/lonniev/tollbooth-authority-northamerica) | Prime | `aws-us-west-2` |
-| [NewEngland](https://github.com/lonniev/tollbooth-authority-newengland) | NorthAmerica | `aws-us-east-1` |
+| [NewEngland](https://github.com/lonniev/tollbooth-authority-newengland) | NorthAmerica | `aws-us-east-2` |

@@ -1,7 +1,7 @@
 {
-  "collected_at": "2026-05-16T19:40:54.392431+00:00",
+  "collected_at": "2026-05-16T20:32:45.743120+00:00",
   "summary": {
-    "operators": 6,
+    "operators": 8,
     "total_notarizations": 0,
     "confirmed": 0,
     "coverage_percent": 0
@@ -10,6 +10,22 @@
     {
       "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
       "display_name": "Lonnie-Authority",
+      "role": "authority",
+      "notarizations": [],
+      "status": "never",
+      "error": null
+    },
+    {
+      "npub": "npub1vnjelzjwkaa4yjhnye3txeqp2dltffk7e866zjqgvwl83vn70a0szmh34q",
+      "display_name": "Tollbooth Authority New England",
+      "role": "authority",
+      "notarizations": [],
+      "status": "never",
+      "error": null
+    },
+    {
+      "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+      "display_name": "Tollbooth-Authority-NorthAmerica",
       "role": "authority",
       "notarizations": [],
       "status": "never",

@@ -1,0 +1,16 @@
+{
+  "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+  "role": "authority",
+  "status": "active",
+  "member_since": "2026-05-16",
+  "display_name": "Tollbooth-Authority-NorthAmerica",
+  "services": [
+    {
+      "name": "tollbooth-authority-northamerica",
+      "url": "https://tollbooth-authority-northamerica.fastmcp.app/mcp",
+      "description": "DPYC Authority — North America regional certifier"
+    }
+  ],
+  "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
+  "notes": "Regional Authority for North America. Peer to Lonnie-Authority under the DPYC Prime Authority."
+}

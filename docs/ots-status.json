@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-05-16T21:34:42.324378+00:00",
+  "collected_at": "2026-05-16T22:32:02.437177+00:00",
   "summary": {
     "operators": 8,
     "total_notarizations": 0,
@@ -8,16 +8,16 @@
   },
   "operators": [
     {
-      "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
-      "display_name": "Lonnie-Authority",
+      "npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+      "display_name": "Tollbooth Authority New England",
       "role": "authority",
       "notarizations": [],
       "status": "never",
       "error": null
     },
     {
-      "npub": "npub1vnjelzjwkaa4yjhnye3txeqp2dltffk7e866zjqgvwl83vn70a0szmh34q",
-      "display_name": "Tollbooth Authority New England",
+      "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+      "display_name": "Lonnie-Authority",
       "role": "authority",
       "notarizations": [],
       "status": "never",

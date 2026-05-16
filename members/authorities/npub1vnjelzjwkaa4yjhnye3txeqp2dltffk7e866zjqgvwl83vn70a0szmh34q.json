@@ -1,0 +1,16 @@
+{
+  "npub": "npub1vnjelzjwkaa4yjhnye3txeqp2dltffk7e866zjqgvwl83vn70a0szmh34q",
+  "role": "authority",
+  "status": "active",
+  "member_since": "2026-05-16",
+  "display_name": "Tollbooth Authority New England",
+  "services": [
+    {
+      "name": "tollbooth-authority-newengland",
+      "url": "https://tollbooth-authority-newengland.fastmcp.app/mcp",
+      "description": "DPYC Authority — New England sub-regional certifier"
+    }
+  ],
+  "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+  "notes": "Sub-regional Authority for New England. Certified by Tollbooth-Authority-NorthAmerica."
+}

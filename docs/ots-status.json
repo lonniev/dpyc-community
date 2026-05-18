@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-05-18T18:01:11.820910+00:00",
+  "collected_at": "2026-05-18T18:56:34.602850+00:00",
   "summary": {
     "operators": 8,
     "total_notarizations": 0,
@@ -28,8 +28,8 @@
       "display_name": "Tollbooth-Authority-NorthAmerica",
       "role": "authority",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",

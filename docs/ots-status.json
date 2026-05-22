@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-05-22T17:57:15.648558+00:00",
+  "collected_at": "2026-05-22T18:57:48.664562+00:00",
   "summary": {
     "operators": 8,
     "total_notarizations": 0,
@@ -52,8 +52,8 @@
       "display_name": "npub1sz60evcudpn...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
@@ -68,8 +68,8 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     }
   ]
 }

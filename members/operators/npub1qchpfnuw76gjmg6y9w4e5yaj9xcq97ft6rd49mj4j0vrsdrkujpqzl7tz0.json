@@ -1,0 +1,16 @@
+{
+  "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-05-22",
+  "display_name": "Optionality MCP",
+  "services": [
+    {
+      "name": "optionality-mcp",
+      "url": "https://optionality-mcp.fastmcp.app/mcp",
+      "description": "Optionality — AI-judged options trading drill with red-herring fact integration scoring"
+    }
+  ],
+  "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+  "notes": "Tollbooth Operator certified by Tollbooth-Authority-NewEngland. AI-judged options trading drill (dealer + judge + journal + leaderboard). Source: github.com/lonniev/optionality-mcp"
+}

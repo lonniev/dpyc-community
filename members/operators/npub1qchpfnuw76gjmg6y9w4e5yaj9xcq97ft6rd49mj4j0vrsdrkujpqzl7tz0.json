@@ -1,0 +1,16 @@
+{
+  "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-05-23",
+  "display_name": "npub1qchpfnuw76g...",
+  "services": [
+    {
+      "name": "npub1qchpfnuw76g...",
+      "url": "https://optionality-mcp.fastmcp.app/mcp",
+      "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+    }
+  ],
+  "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+  "notes": "Registered via Authority-mediated operator registration protocol"
+}

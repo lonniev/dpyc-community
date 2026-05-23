@@ -1,7 +1,7 @@
 {
-  "collected_at": "2026-05-23T22:36:09.076751+00:00",
+  "collected_at": "2026-05-23T23:38:20.400414+00:00",
   "summary": {
-    "operators": 8,
+    "operators": 9,
     "total_notarizations": 0,
     "confirmed": 0,
     "coverage_percent": 0
@@ -46,6 +46,14 @@
       "notarizations": [],
       "status": "never",
       "error": null
+    },
+    {
+      "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
+      "display_name": "npub1qchpfnuw76g...",
+      "role": "operator",
+      "notarizations": [],
+      "status": "unreachable",
+      "error": "Expecting value: line 1 column 1 (char 0)"
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",

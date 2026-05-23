@@ -1175,6 +1175,24 @@ being transmitted over any network.
 
 #### 5.3 Secure Courier Credential Exchange
 
+**Trust-minimized peer-to-peer exchange.** The Secure Courier protocol enables
+two mutually-distrusting parties — sharing no prior security relationship and
+no pre-distributed shared secret — to exchange credentials without requiring
+any trusted third party. No certificate authority, identity provider, escrow
+agent, key-distribution centre, or out-of-band channel is needed. The only
+required infrastructure is the public Nostr relay network, and the relays
+themselves are explicitly untrusted intermediaries: they cannot read message
+content (encrypted with NIP-44 using an ECDH-derived symmetric key), cannot
+determine sender or recipient (wrapped per NIP-17 with ephemeral keys for
+metadata protection), and cannot replay or reorder messages without detection
+(poison-nonce binding; see step 5 below). All cryptographic primitives —
+Schnorr signatures on the secp256k1 curve for authentication, NIP-04 and
+NIP-44 for confidentiality, HKDF-SHA256 for key derivation — are
+standardized, publicly specified, and independently auditable; no novel or
+proprietary algorithm is invoked. Either party may participate using any
+conforming Nostr client; neither needs to install any DPYC-specific software
+to read or send the messages.
+
 When an Operator's MCP service requires external API credentials from a consumer
 (for example, API keys for an upstream service that the MCP tools proxy), the
 Secure Courier protocol enables privacy-preserving credential delivery using

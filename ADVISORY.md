@@ -1,8 +1,46 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-04-19
+> Last updated: 2026-06-11
 
 ## Current Advisories
+
+### June 2026 Releases: tollbooth-dpyc v0.44.2–v0.44.5 (2026-06-11)
+
+**Affects:** All operators and downstream MCPs. **Network minimum is now tollbooth-dpyc `>=0.44.2`.**
+
+#### 🔒 SECURITY (v0.44.2) — credential-card redemption leak — fixed
+
+The `receive_credentials` and `receive_patron_credentials` tools could echo
+**raw credential values** in their result when redeeming an `ncred1…`
+credential card. The card-redemption branch bypassed the Secure Courier
+wrapper that strips credentials, so vaulted API keys/tokens could surface in
+the tool response (and thus in an agent's context or logs). The DM-poison
+receive flow was **not** affected.
+
+- **Fix:** both tools now route card redemption through `courier.redeem_card()`,
+  which vaults and then strips credential values. Guarded by a regression test
+  asserting credentials never appear in any receive/redeem result.
+- **Action:** run `tollbooth-dpyc >=0.44.2`. All operator MCPs are pinned
+  `==0.44.5`. Exposure was limited (the credential-card path is rarely used);
+  rotate any credentials you redeemed via an `ncred` card on an older version
+  if you want to be cautious.
+
+#### Event-loop hardening (v0.44.3)
+
+Secure Courier relay I/O (`open_channel` and the `receive` drain) ran
+synchronous websocket calls on the async event loop, which could freeze a
+serverless operator for up to the per-relay timeout under concurrent load.
+Both now run off the event loop via `asyncio.to_thread`.
+
+#### Maintenance (v0.44.4–v0.44.5)
+
+Coverage is now measured on every CI run, and the large `register_standard_tools`
+registration is being decomposed into tested `tollbooth.tools.*` modules
+(coupons, pricing/`check_price`, identities, status, proof) behind thin
+proof-gate shims. **No wire-API changes** — tool names, signatures, and
+behavior are identical.
+
+---
 
 ### April 2026 Releases: v0.10.0–v0.13.5 (2026-04-19)
 

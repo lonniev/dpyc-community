@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.0] — 2026-06-11
+
+### Added
+- Network advisory for the June 2026 tollbooth-dpyc v0.44.2–v0.44.5 series,
+  including a **security advisory** for the v0.44.2 credential-card redemption
+  leak (raw credentials could be echoed when redeeming an `ncred` card; fixed).
+
+### Changed
+- `network-status.json` refreshed to current component versions (it was stale
+  at the v0.13.5 era): tollbooth-dpyc 0.44.5 (**minimum raised to 0.44.2** — the
+  security floor), tollbooth-authority 0.10.1, thebrain-mcp 1.12.0, excalibur-mcp
+  0.9.1, schwab-mcp 0.11.1, taxsort-mcp 0.27.1, tollbooth-sample 0.3.1. Advisory
+  and architecture notes updated to reflect event-loop hardening (v0.44.3) and
+  the in-progress `register_standard_tools` → `tollbooth.tools.*` decomposition.
+
 ## [1.2.0] — 2026-04-19
 
 ### Added

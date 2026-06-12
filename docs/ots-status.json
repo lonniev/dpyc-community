@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-11T23:53:53.929504+00:00",
+  "collected_at": "2026-06-12T01:30:07.890010+00:00",
   "summary": {
     "operators": 9,
     "total_notarizations": 0,
@@ -36,8 +36,8 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
@@ -76,8 +76,8 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     }
   ]
 }

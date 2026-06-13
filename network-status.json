@@ -10,6 +10,16 @@
       "minimum": "0.10.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-authority/releases"
     },
+    "tollbooth-authority-northamerica": {
+      "current": "0.4.1",
+      "minimum": "0.4.1",
+      "changelog_url": "https://github.com/lonniev/tollbooth-authority-northamerica/releases"
+    },
+    "tollbooth-authority-newengland": {
+      "current": "0.4.1",
+      "minimum": "0.4.1",
+      "changelog_url": "https://github.com/lonniev/tollbooth-authority-newengland/releases"
+    },
     "dpyc-oracle": {
       "current": "0.2.10",
       "minimum": "0.2.10",

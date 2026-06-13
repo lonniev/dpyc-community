@@ -39,14 +39,14 @@ hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
 <ul>
 <li>Conceived, designed, and launched DPYC™ (Don't Pester Your Customer™) — a decentralized API monetization protocol built on Bitcoin Lightning, Nostr-native identity (npubs), and the Model Context Protocol. DPYC is a Network State in the sense Balaji Srinivasan gives the term: a coordinated online community with its own governance, economy, and membership.</li>
 <li>Holds trademark on DPYC™, Tollbooth DPYC™, and Don't Pester Your Customer™.</li>
-<li>Serves as Prime Authority (First Curator) of the DPYC Honor Chain governance structure; oversees Authority certification, Operator registration, and community governance via the <code>lonniev/dpyc-community</code> GitHub registry.</li>
+<li>Serves as Prime Authority (First Curator) of the DPYC Social Contract governance structure; oversees Authority certification, Operator registration, and community governance via the <code>lonniev/dpyc-community</code> GitHub registry.</li>
 <li>Architected the Tollbooth DPYC™ protocol: pre-funded Lightning balances eliminate per-request payment negotiation; kind-30079 Nostr-signed certificates enforce metered API access; a composable Constraint Engine imposes temporal, supply, rate-limit, surge, and promotional pricing rules.</li>
 <li>Designed a fractal, self-similar multi-Authority hierarchy enabling arbitrarily deep trust chains without specialized processing.</li>
-<li>Designed the network-effect moat: all software is released under Apache 2.0, yet replication of the software in isolation is economically futile because value accrues to the network — to its Authorities, Operators, Patrons, and the Honor Chain ledger — rather than to any individual package. The design allows the architects of the economy to receive compensation through network participation even though the code remains fully open.</li>
+<li>Designed the network-effect moat: all software is released under Apache 2.0, yet replication of the software in isolation is economically futile because value accrues to the network — to its Authorities, Operators, Patrons, and the shared ledger — rather than to any individual package. The design allows the architects of the economy to receive compensation through network participation even though the code remains fully open.</li>
 <li>Applied Austrian praxeology and sound-money economics as the philosophical foundation for honest, non-predatory, demurrage-based API credit systems.</li>
 <li>Authored the provisional patent cover memo and figure set for the Tollbooth DPYC Economic Architecture (six claim families, filing target mid-2026).</li>
 <li>Operates a BTCPay Server Lightning node on AWS EC2 as the sole payment infrastructure for the network.</li>
-<li>Five Operators live on Prefect Horizon as of the date of this document.</li>
+<li>Operates the live fleet on Prefect Horizon: six monetized Operators — TheBrain, Schwab, eXcalibur, TaxSort, Optionality, and a weather-stats teaching sample — plus the free DPYC Oracle and two community-utility MCPs (an OAuth2 callback collector and a URL shortener).</li>
 </ul>
 <h3>Store Owner and Administrator — Good Brew</h3>
 <p><strong>2026 – Present</strong> · <a href="https://stablecoin.myshopify.com">stablecoin.myshopify.com</a></p>
@@ -61,7 +61,11 @@ hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
 <li><strong>thebrain-mcp</strong> — FastMCP Python server monetizing AI-agent access to a TheBrain knowledge graph of over nine thousand thoughts via the Tollbooth DPYC protocol; hosted on Prefect Horizon.</li>
 <li><strong>schwab-mcp</strong> — Multi-patron metered gateway to the Charles Schwab brokerage API; full OAuth2 Authorization Code flow handled in-MCP via <code>schwab_begin_oauth</code> and <code>schwab_check_oauth_status</code>; Tollbooth credit billing per call.</li>
 <li><strong>excalibur-mcp</strong> — X / Twitter posting MCP server with Tollbooth billing and NIP-17 Secure Courier credential delivery; supports Unicode Mathematical Alphanumeric Symbol rich-text formatting.</li>
-<li>All servers implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.</li>
+<li><strong>taxsort-mcp</strong> — Personal tax-transaction classification with bulk CSV import and IRS category mapping; paired with a React 18 + Vite + TypeScript frontend deployed on Cloudflare Pages.</li>
+<li><strong>optionality-mcp</strong> — An AI-judged options-trading drill that grades practice trades across multiple dimensions; paired with a React 18 + Vite + TypeScript frontend on Cloudflare Pages.</li>
+<li><strong>tollbooth-sample</strong> — An educational weather-stats Operator; the canonical reference implementation new Operators are scaffolded from.</li>
+<li>Beyond the Operators, authored two community-utility (Advocate) MCPs: <strong>tollbooth-oauth2-collector</strong> (a shared, unauthenticated OAuth2 callback mailbox) and <strong>tollbooth-shortlinks</strong> (ephemeral, Nostr-friendly short URLs).</li>
+<li>All Operators implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.</li>
 <li>Python maintainer of the <strong>tollbooth-dpyc</strong> wheel — the shared library underlying all Tollbooth-compliant MCP servers.</li>
 </ul>
 <h3>Swift and iOS Developer — Pricing Studio</h3>
@@ -305,7 +309,7 @@ hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
 </tr>
 <tr>
 <td><strong>Open Source</strong></td>
-<td>thebrain-mcp, schwab-mcp, excalibur-mcp, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle</td>
+<td>thebrain-mcp, schwab-mcp, excalibur-mcp, taxsort-mcp, optionality-mcp, tollbooth-sample, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle, tollbooth-oauth2-collector, tollbooth-shortlinks</td>
 </tr>
 </tbody>
 </table>

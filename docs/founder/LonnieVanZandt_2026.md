@@ -23,14 +23,14 @@
 
 - Conceived, designed, and launched DPYC™ (Don't Pester Your Customer™) — a decentralized API monetization protocol built on Bitcoin Lightning, Nostr-native identity (npubs), and the Model Context Protocol. DPYC is a Network State in the sense Balaji Srinivasan gives the term: a coordinated online community with its own governance, economy, and membership.
 - Holds trademark on DPYC™, Tollbooth DPYC™, and Don't Pester Your Customer™.
-- Serves as Prime Authority (First Curator) of the DPYC Honor Chain governance structure; oversees Authority certification, Operator registration, and community governance via the `lonniev/dpyc-community` GitHub registry.
+- Serves as Prime Authority (First Curator) of the DPYC Social Contract governance structure; oversees Authority certification, Operator registration, and community governance via the `lonniev/dpyc-community` GitHub registry.
 - Architected the Tollbooth DPYC™ protocol: pre-funded Lightning balances eliminate per-request payment negotiation; kind-30079 Nostr-signed certificates enforce metered API access; a composable Constraint Engine imposes temporal, supply, rate-limit, surge, and promotional pricing rules.
 - Designed a fractal, self-similar multi-Authority hierarchy enabling arbitrarily deep trust chains without specialized processing.
-- Designed the network-effect moat: all software is released under Apache 2.0, yet replication of the software in isolation is economically futile because value accrues to the network — to its Authorities, Operators, Patrons, and the Honor Chain ledger — rather than to any individual package. The design allows the architects of the economy to receive compensation through network participation even though the code remains fully open.
+- Designed the network-effect moat: all software is released under Apache 2.0, yet replication of the software in isolation is economically futile because value accrues to the network — to its Authorities, Operators, Patrons, and the shared ledger — rather than to any individual package. The design allows the architects of the economy to receive compensation through network participation even though the code remains fully open.
 - Applied Austrian praxeology and sound-money economics as the philosophical foundation for honest, non-predatory, demurrage-based API credit systems.
 - Authored the provisional patent cover memo and figure set for the Tollbooth DPYC Economic Architecture (six claim families, filing target mid-2026).
 - Operates a BTCPay Server Lightning node on AWS EC2 as the sole payment infrastructure for the network.
-- Five Operators live on Prefect Horizon as of the date of this document.
+- Operates the live fleet on Prefect Horizon: six monetized Operators — TheBrain, Schwab, eXcalibur, TaxSort, Optionality, and a weather-stats teaching sample — plus the free DPYC Oracle and two community-utility MCPs (an OAuth2 callback collector and a URL shortener).
 
 ### Store Owner and Administrator — Good Brew
 
@@ -47,7 +47,11 @@
 - **thebrain-mcp** — FastMCP Python server monetizing AI-agent access to a TheBrain knowledge graph of over nine thousand thoughts via the Tollbooth DPYC protocol; hosted on Prefect Horizon.
 - **schwab-mcp** — Multi-patron metered gateway to the Charles Schwab brokerage API; full OAuth2 Authorization Code flow handled in-MCP via `schwab_begin_oauth` and `schwab_check_oauth_status`; Tollbooth credit billing per call.
 - **excalibur-mcp** — X / Twitter posting MCP server with Tollbooth billing and NIP-17 Secure Courier credential delivery; supports Unicode Mathematical Alphanumeric Symbol rich-text formatting.
-- All servers implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.
+- **taxsort-mcp** — Personal tax-transaction classification with bulk CSV import and IRS category mapping; paired with a React 18 + Vite + TypeScript frontend deployed on Cloudflare Pages.
+- **optionality-mcp** — An AI-judged options-trading drill that grades practice trades across multiple dimensions; paired with a React 18 + Vite + TypeScript frontend on Cloudflare Pages.
+- **tollbooth-sample** — An educational weather-stats Operator; the canonical reference implementation new Operators are scaffolded from.
+- Beyond the Operators, authored two community-utility (Advocate) MCPs: **tollbooth-oauth2-collector** (a shared, unauthenticated OAuth2 callback mailbox) and **tollbooth-shortlinks** (ephemeral, Nostr-friendly short URLs).
+- All Operators implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.
 - Python maintainer of the **tollbooth-dpyc** wheel — the shared library underlying all Tollbooth-compliant MCP servers.
 
 ### Swift and iOS Developer — Pricing Studio
@@ -231,17 +235,17 @@ Successive engagements at firms building real-time operating systems, synchronou
 
 ## Technical Skills
 
-|Domain                          |Technologies                                                                                                                                                                                        |
-|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|**Architecture**                |Enterprise Architecture, MBSE, SysML v1 / v2, UML, BPMN, UPDM, UAF, DoDAF / MODAF, Digital Threads, OSLC, Model Context Protocol                                                                    |
-|**Cybersecurity**               |CMMC, NIST 800-series, STIGs, FIPS, Risk Management Framework, CycloneDX SBOM, Snyk, OWASP Dependency-Check, OAuth2, SAML2, OIDC, Schnorr signatures, NIP-44 / NIP-17 encrypted messaging           |
-|**Languages**                   |Python, Swift / SwiftUI, Scala, Java, JavaScript / TypeScript, Groovy, Ruby, C, C++; HTTP / REST, GraphQL, SPARQL, Cypher, Gremlin                                                                  |
-|**Data and Formats**            |JSON, XML, XMI, RDF / OWL, Turtle, Linked Data Platform, CSV, Neo4j, Cassandra, Neon (Postgres), pgvector                                                                                           |
-|**Blockchain and Identity**     |Bitcoin Lightning (BTCPay Server, LND, BOLT-11), Nostr (npubs, kind-30079, NIP-17, NIP-44, NIP-98), Schnorr signatures, OpenTimestamps                                                              |
-|**Platforms and Infrastructure**|AWS (EC2, ECS Fargate, Lambda, Cognito, Amplify, Bedrock, API Gateway, CloudFormation, ECR, Marketplace), Prefect Horizon, Shopify, Gelato, Stripe, GitHub Actions, Docker, Kubernetes, Ruby Vagrant|
-|**MBSE and PLM Tooling**        |Syndeia, MagicDraw / Cameo Enterprise Architecture, Teamwork Cloud, TheBrain, Windchill PDMLink, IBM Jazz DNG / GCM, ParaMagic, DOORS, Artisan Studio / Integrity Modeler                           |
-|**Real-Time and Embedded**      |QNX Neutrino, VxWorks, Esterel SCADE, FreeBSD, embedded Linux, Rate Monotonic Analysis                                                                                                              |
-|**Open Source**                 |thebrain-mcp, schwab-mcp, excalibur-mcp, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle                                                                                            |
+|Domain                          |Technologies                                                                                                                                                                                              |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|**Architecture**                |Enterprise Architecture, MBSE, SysML v1 / v2, UML, BPMN, UPDM, UAF, DoDAF / MODAF, Digital Threads, OSLC, Model Context Protocol                                                                          |
+|**Cybersecurity**               |CMMC, NIST 800-series, STIGs, FIPS, Risk Management Framework, CycloneDX SBOM, Snyk, OWASP Dependency-Check, OAuth2, SAML2, OIDC, Schnorr signatures, NIP-44 / NIP-17 encrypted messaging                 |
+|**Languages**                   |Python, Swift / SwiftUI, Scala, Java, JavaScript / TypeScript, Groovy, Ruby, C, C++; HTTP / REST, GraphQL, SPARQL, Cypher, Gremlin                                                                        |
+|**Data and Formats**            |JSON, XML, XMI, RDF / OWL, Turtle, Linked Data Platform, CSV, Neo4j, Cassandra, Neon (Postgres), pgvector                                                                                                 |
+|**Blockchain and Identity**     |Bitcoin Lightning (BTCPay Server, LND, BOLT-11), Nostr (npubs, kind-30079, NIP-17, NIP-44, NIP-98), Schnorr signatures, OpenTimestamps                                                                    |
+|**Platforms and Infrastructure**|AWS (EC2, ECS Fargate, Lambda, Cognito, Amplify, Bedrock, API Gateway, CloudFormation, ECR, Marketplace), Prefect Horizon, Shopify, Gelato, Stripe, GitHub Actions, Docker, Kubernetes, Ruby Vagrant      |
+|**MBSE and PLM Tooling**        |Syndeia, MagicDraw / Cameo Enterprise Architecture, Teamwork Cloud, TheBrain, Windchill PDMLink, IBM Jazz DNG / GCM, ParaMagic, DOORS, Artisan Studio / Integrity Modeler                                 |
+|**Real-Time and Embedded**      |QNX Neutrino, VxWorks, Esterel SCADE, FreeBSD, embedded Linux, Rate Monotonic Analysis                                                                                                                    |
+|**Open Source**                 |thebrain-mcp, schwab-mcp, excalibur-mcp, taxsort-mcp, optionality-mcp, tollbooth-sample, tollbooth-dpyc (Python wheel), tollbooth-authority, dpyc-oracle, tollbooth-oauth2-collector, tollbooth-shortlinks|
 
 -----
 

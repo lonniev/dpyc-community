@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-13T22:41:23.923338+00:00",
+  "collected_at": "2026-06-13T23:42:47.203007+00:00",
   "summary": {
     "operators": 9,
     "total_notarizations": 0,
@@ -45,7 +45,7 @@
       "role": "operator",
       "notarizations": [],
       "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "error": ""
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

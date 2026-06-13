@@ -254,6 +254,14 @@ The network uses a cascading certification fee model. Each Authority collects an
 
 **Patent Pending** — US Provisional Application 64/045,999
 
+The filing documents are published in [`docs/patent/`](docs/patent/):
+
+- [Cover Memo](docs/patent/COVER-MEMO.md)
+- [Provisional Specification (draft)](docs/patent/PROVISIONAL-SPEC-DRAFT.md)
+- [Patent Figures](docs/patent/PATENT-FIGURES-ALL.pdf) · [Reference Numeral Schedule](docs/patent/REFERENCE-NUMERAL-SCHEDULE.md)
+- Prior-art search: [Patent](docs/patent/PRIOR-ART-PATENT-SEARCH.md) · [Non-Patent](docs/patent/PRIOR-ART-NON-PATENT-SEARCH.md)
+- [Complete filing package (PDF)](docs/patent/FILING-PACKAGE.pdf)
+
 DPYC, Tollbooth DPYC, and Don't Pester Your Customer are trademarks of Lonnie VanZandt. See [TRADEMARKS.md](TRADEMARKS.md) for usage guidelines.
 
 ## License

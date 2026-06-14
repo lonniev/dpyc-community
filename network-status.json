@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.44.6",
+      "current": "0.44.15",
       "minimum": "0.44.2",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -21,7 +21,7 @@
       "changelog_url": "https://github.com/lonniev/tollbooth-authority-newengland/releases"
     },
     "dpyc-oracle": {
-      "current": "0.2.10",
+      "current": "0.2.11",
       "minimum": "0.2.10",
       "changelog_url": "https://github.com/lonniev/dpyc-oracle/releases"
     },
@@ -74,7 +74,7 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-06-13",
-  "advisory": "June 2026 (tollbooth-dpyc v0.44.2-v0.44.5). SECURITY: v0.44.2 fixes a credential-card redemption leak - receive_credentials / receive_patron_credentials could echo raw credential values when redeeming an ncred card. Operators MUST run tollbooth-dpyc >=0.44.2 (network minimum). v0.44.3 moves Secure Courier relay I/O off the async event loop (serverless responsiveness under load). v0.44.4-v0.44.6 add coverage measurement in CI and decompose the standard-tool registration into tested tools/ modules (coupons, pricing, identities, status, proof, courier) behind thin shims - no wire-API changes. All operator MCPs are pinned ==0.44.6.",
+  "last_updated": "2026-06-14",
+  "advisory": "June 2026 (tollbooth-dpyc v0.44.2-v0.44.15). SECURITY: v0.44.2 fixes a credential-card redemption leak - receive_credentials / receive_patron_credentials could echo raw credential values when redeeming an ncred card. Operators MUST run tollbooth-dpyc >=0.44.2 (network minimum). v0.44.3 moves Secure Courier relay I/O off the async event loop (serverless responsiveness under load). v0.44.4-v0.44.8 add coverage measurement in CI and decompose standard-tool registration into tested tools/ modules (coupons, pricing, identities, status, proof, courier) behind thin shims - no wire-API changes. CORRECTNESS: v0.44.9 fixes silently-disabled credit-tranche expiration (credits never expired fleet-wide), and v0.44.10 fixes receive_npub_proof discarding valid proof replies on clock skew / human-paced replies. v0.44.11-v0.44.15 add blocking mypy + coverage gates and error-handling hardening. All operator MCPs are pinned ==0.44.15.",
   "architecture_notes": "Schema symmetry: every operator and the Authority each get their own Neon schema. The public schema is no longer used. Credential storage uses encrypted_blob column within operator schemas. Standard tool bodies are progressively moving out of register_standard_tools into tested tollbooth.tools.* modules (coupons, pricing/check_price, identities, status, proof) behind thin proof-gate shims; tool names and behavior are unchanged."
 }

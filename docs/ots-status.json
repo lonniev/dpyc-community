@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-16T08:22:40.822616+00:00",
+  "collected_at": "2026-06-16T10:59:49.323473+00:00",
   "summary": {
     "operators": 9,
     "total_notarizations": 0,
@@ -76,8 +76,8 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     }
   ]
 }

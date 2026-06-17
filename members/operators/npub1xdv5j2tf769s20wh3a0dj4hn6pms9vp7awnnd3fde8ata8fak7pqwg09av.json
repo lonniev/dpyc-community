@@ -1,0 +1,16 @@
+{
+  "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-06-17",
+  "display_name": "npub1xdv5j2tf769...",
+  "services": [
+    {
+      "name": "npub1xdv5j2tf769...",
+      "url": "https://cypher-mcp.fastmcp.app/mcp",
+      "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+    }
+  ],
+  "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+  "notes": "Registered via Authority-mediated operator registration protocol"
+}

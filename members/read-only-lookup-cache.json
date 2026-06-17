@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-05-23T22:41:30Z",
+  "updated_at": "2026-06-17T17:23:51Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -145,6 +145,22 @@
         }
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+      "notes": "Registered via Authority-mediated operator registration protocol"
+    },
+    {
+      "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-06-17",
+      "display_name": "npub1xdv5j2tf769...",
+      "services": [
+        {
+          "name": "npub1xdv5j2tf769...",
+          "url": "https://cypher-mcp.fastmcp.app/mcp",
+          "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+        }
+      ],
+      "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
       "notes": "Registered via Authority-mediated operator registration protocol"
     },
     {

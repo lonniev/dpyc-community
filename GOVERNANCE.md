@@ -1,12 +1,12 @@
-# DPYC™ Honor Chain Governance
+# DPYC™ Social Contract Governance
 
-This document describes how the DPYC community manages membership, resolves disputes, and maintains the integrity of the Honor Chain registry.
+This document describes how the DPYC community manages membership, resolves disputes, and maintains the integrity of the Social Contract registry.
 
 ## Membership Tiers
 
 ### Prime Authority
 
-The founding root of the Honor Chain. The Prime Authority:
+The founding root of the Certification Chain. The Prime Authority:
 
 - Mints cert-sats (all downstream supply originates here)
 - Has no upstream authority (`upstream_authority_npub: null`)
@@ -18,7 +18,7 @@ The founding root of the Honor Chain. The Prime Authority:
 
 ### Authority
 
-An intermediate node in the Honor Chain that:
+An intermediate node in the Certification Chain that:
 
 - Purchases cert-sats from its upstream Authority
 - Certifies purchase orders for its downstream Operators
@@ -81,7 +81,7 @@ Citizens are admitted through a Nostr signature challenge: the applicant signs a
 - Collecting payments without proper Authority certification
 - Storing customer PII in violation of the DPYC philosophy
 - Misrepresenting upstream Authority affiliation
-- Operating a cloned Tollbooth without Honor Chain membership
+- Operating a cloned Tollbooth without Social Contract membership
 - Fraud, abuse, or conduct harmful to the community
 
 ### Process

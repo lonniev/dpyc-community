@@ -1,6 +1,6 @@
 # Tollbooth: Pre-Funded Lightning Micropayments for MCP Tool Economies
 
-**A Technical Whitepaper for the DPYC Honor Chain**
+**A Technical Whitepaper for the DPYC Social Contract**
 
 *Lonnie VanZandt — Prime Authority, DPYC Network State*
 *February 2026*
@@ -11,7 +11,7 @@
 
 Tollbooth is an architecture for monetizing AI tool calls using pre-funded Bitcoin Lightning balances. Unlike challenge-response protocols that negotiate payment on every request, Tollbooth separates the funding event from the consumption event. Customers fund a satoshi balance once via Lightning invoice, then consume MCP tool calls against that balance with zero payment latency. Identity is a Nostr keypair — no email, no KYC, no vendor lock-in.
 
-This paper describes the architecture, its economic model, and the voluntary governance structure (the DPYC Honor Chain) that organizes operators, authorities, and customers into a self-sustaining network.
+This paper describes the architecture, its economic model, and the voluntary governance structure (the DPYC Social Contract) that organizes operators, authorities, and customers into a self-sustaining network.
 
 ---
 
@@ -142,7 +142,7 @@ For long-term anchoring, the [OpenTimestamps](https://opentimestamps.org/) integ
 
 ## 4. The Network State
 
-The DPYC Honor Chain is organized as a **Network Society** — a voluntary community united by shared economic principles and cryptographic identity.
+The DPYC Social Contract is organized as a **Network Society** — a voluntary community united by shared economic principles and cryptographic identity.
 
 ### Why Open Source Is the Defense
 

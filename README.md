@@ -172,6 +172,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [thebrain-mcp](https://github.com/lonniev/thebrain-mcp) | TheBrain personal knowledge-graph MCP — the first Tollbooth Operator |
 | [schwab-mcp](https://github.com/lonniev/schwab-mcp) | Charles Schwab brokerage data MCP with OAuth2 patron auth |
 | [excalibur-mcp](https://github.com/lonniev/excalibur-mcp) | X (Twitter) posting MCP with Secure Courier credential delivery |
+| [cypher-mcp](https://github.com/lonniev/cypher-mcp) | Monetized graph answers — named Cypher templates over Neo4j/AuraDB |
 | [taxsort-mcp](https://github.com/lonniev/taxsort-mcp) | Tax-transaction classification MCP with a hosted frontend |
 | [optionality-mcp](https://github.com/lonniev/optionality-mcp) | AI-judged options-trading practice MCP |
 | [tollbooth-sample](https://github.com/lonniev/tollbooth-sample) | Reference Operator — the canonical template for new servers |

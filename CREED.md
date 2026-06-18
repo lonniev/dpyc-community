@@ -2,7 +2,7 @@
 
 # The DPYC Creed
 
-*A declaration of values for the Don't-Pester-Your-Customer Honor Chain.*
+*A declaration of values for the Don't-Pester-Your-Customer Social Contract.*
 
 ---
 
@@ -26,7 +26,7 @@ Sell true value in exchange for true sound currency. Do not care or record with 
 
 We are passionate about profit. Profit is not a dirty word — it is the market's verdict that you created more value than you consumed.
 
-Every successful transaction in the Honor Chain is proof that someone, somewhere, received something worth more to them than the sats they spent. That is not exploitation. That is civilization.
+Every successful transaction in the Social Contract is proof that someone, somewhere, received something worth more to them than the sats they spent. That is not exploitation. That is civilization.
 
 We pursue profit relentlessly. We celebrate those who achieve it. We study their methods and sharpen our own.
 
@@ -52,7 +52,7 @@ We trust markets, not committees. We trust price discovery, not administered rat
 
 ## VII. Proof of Work, Not Proof of Authority
 
-Membership in the Honor Chain is earned, not granted by credential. Standing is maintained through service, not through title.
+Membership in the Social Contract is earned, not granted by credential. Standing is maintained through service, not through title.
 
 Your keys, your identity. Your service, your reputation. Your customers, your revenue. No permission required to build. No gatekeeper required to serve.
 
@@ -60,7 +60,7 @@ The separation of money and state is not an aspiration. It is a prerequisite.
 
 ---
 
-## The Honor Chain
+## The Social Contract
 
 These seven articles are not guidelines. They are the load-bearing walls of the DPYC Network State.
 

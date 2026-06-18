@@ -2,7 +2,7 @@
 
 The following are trademarks of Lonnie VanZandt:
 
-- **DPYC™** — the name of the Honor Chain network and ecosystem
+- **DPYC™** — the name of the Social Contract network and ecosystem
 - **Tollbooth DPYC™** — the API monetization middleware and protocol
 - **Don't Pester Your Customer™** — the design philosophy and tagline
 
@@ -12,7 +12,7 @@ These marks identify the DPYC ecosystem of tools, services, and governance
 structures. You may use them to:
 
 - Accurately refer to the DPYC project, its components, and services
-- Indicate compatibility with or participation in the DPYC Honor Chain
+- Indicate compatibility with or participation in the DPYC Social Contract
 - Reproduce in documentation, articles, and discussions about the project
 
 You may NOT use them to:

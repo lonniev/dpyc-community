@@ -3,7 +3,7 @@
 **Framework:** STRIDE + Data Flow Diagrams  
 **Version:** 1.0  
 **Date:** 2026-04-20  
-**Scope:** All DPYC Honor Chain components — SDK, Operators, Authority, Oracle, external dependencies  
+**Scope:** All DPYC Social Contract components — SDK, Operators, Authority, Oracle, external dependencies  
 **Classification:** Public (no secrets — this document references architecture, not credentials)
 
 ---
@@ -19,7 +19,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 | **Patron** | npub + nsec | Untrusted (external) | nsec, API credentials (vaulted) | May be malicious, automated, or compromised |
 | **Operator** | npub + nsec | Semi-trusted (registered) | nsec (env), BTCPay key (vault), Authority npub | Trusted to run service; nsec compromise = full tenant breach |
 | **Authority** | npub + nsec | Trusted (certified) | nsec (env), Neon URL, operator ledgers | Certificate forgery if nsec compromised |
-| **First Curator** | npub + nsec | Root of trust | nsec, authority approval power | Entire Honor Chain compromise if nsec lost |
+| **First Curator** | npub + nsec | Root of trust | nsec, authority approval power | Entire Certification Chain compromise if nsec lost |
 | **AI Agent** | Delegated patron session | Untrusted | Session-scoped proof cache | All tool arguments treated as adversarial input |
 | **Anonymous** | None | Untrusted | None | Can call Oracle (free); blocked from paid tools |
 

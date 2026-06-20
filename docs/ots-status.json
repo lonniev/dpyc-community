@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-20T21:45:35.635510+00:00",
+  "collected_at": "2026-06-20T22:43:46.448684+00:00",
   "summary": {
     "operators": 10,
     "total_notarizations": 0,
@@ -36,8 +36,8 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
@@ -69,15 +69,15 @@
       "role": "operator",
       "notarizations": [],
       "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
       "display_name": "npub1xdv5j2tf769...",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",

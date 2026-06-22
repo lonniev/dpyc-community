@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-21T23:48:41.441631+00:00",
+  "collected_at": "2026-06-22T01:33:16.242231+00:00",
   "summary": {
     "operators": 10,
     "total_notarizations": 0,
@@ -68,8 +68,8 @@
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

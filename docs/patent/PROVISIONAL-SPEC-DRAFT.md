@@ -13,6 +13,12 @@
 > `github.com/lonniev/thebrain-mcp` with GPG-signed tag `v1.0.0-prior-art` dated
 > February 16, 2026)
 
+> **As-built revisions**: The body below is preserved as filed. As-built
+> corrections discovered after filing — notably to the upstream-certification
+> mechanism in §4.1 / §4.3 — are recorded in [`REVISIONS.md`](REVISIONS.md) for
+> incorporation into the non-provisional application. Read that log alongside
+> this draft.
+
 ---
 
 ## Title of the Invention

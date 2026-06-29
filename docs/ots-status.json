@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-29T01:26:29.435138+00:00",
+  "collected_at": "2026-06-29T03:29:41.301507+00:00",
   "summary": {
     "operators": 10,
     "total_notarizations": 0,
@@ -44,8 +44,8 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
@@ -76,8 +76,8 @@
       "display_name": "npub1xdv5j2tf769...",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",

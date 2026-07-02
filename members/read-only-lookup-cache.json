@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-06-17T17:23:51Z",
+  "updated_at": "2026-07-02T20:58:16Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -98,6 +98,22 @@
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
       "notes": "Excalibur MCP Server — Social media operator"
+    },
+    {
+      "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-07-02",
+      "display_name": "npub1ajcnwx8l4kd...",
+      "services": [
+        {
+          "name": "npub1ajcnwx8l4kd...",
+          "url": "https://fermyon.tollbooth-dpyc.com/mcp",
+          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+        }
+      ],
+      "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+      "notes": "Registered via Authority-mediated operator registration protocol"
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

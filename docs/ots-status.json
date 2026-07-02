@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-07-02T20:43:11.507589+00:00",
+  "collected_at": "2026-07-02T21:44:20.137882+00:00",
   "summary": {
-    "operators": 10,
+    "operators": 11,
     "total_notarizations": 2,
     "confirmed": 0,
-    "coverage_percent": 10
+    "coverage_percent": 9
   },
   "operators": [
     {
@@ -63,6 +63,14 @@
       ],
       "status": "submitted",
       "error": null
+    },
+    {
+      "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
+      "display_name": "npub1ajcnwx8l4kd...",
+      "role": "operator",
+      "notarizations": [],
+      "status": "unreachable",
+      "error": "[Errno -2] Name or service not known"
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

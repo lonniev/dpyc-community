@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-07-03T02:41:11Z",
+  "updated_at": "2026-07-03T18:16:20Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -104,16 +104,16 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-07-02",
-      "display_name": "npub1ajcnwx8l4kd...",
+      "display_name": "Tollbooth Fermyon",
       "services": [
         {
-          "name": "npub1ajcnwx8l4kd...",
+          "name": "tollbooth-fermyon",
           "url": "https://lonnies-mini.tailee8e94.ts.net/mcp",
-          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+          "description": "Weather stats Operator on Spin/WASI — the edge port of tollbooth-sample, hosted by the tollbooth-wasmcp SpinOperatorHost. Full DPYC toolset (proof, Secure Courier, Lightning) running in WebAssembly."
         }
       ],
       "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
-      "notes": "Registered via Authority-mediated operator registration protocol"
+      "notes": "Registered via Authority-mediated operator registration protocol. Spin/WASI implementation (tollbooth-wasmcp host); same operator source as tollbooth-sample. URL is the Tailscale funnel during development; intended production endpoint is https://fermyon.tollbooth-dpyc.com/mcp once the Akamai deploy is live."
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

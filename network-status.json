@@ -74,6 +74,16 @@
       "current": "0.3.1",
       "minimum": "0.3.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-sample/releases"
+    },
+    "tollbooth-wasmcp": {
+      "current": "0.1.5",
+      "minimum": "0.1.5",
+      "changelog_url": "https://github.com/lonniev/tollbooth-wasmcp/releases"
+    },
+    "tollbooth-fermyon": {
+      "current": "0.1.0",
+      "minimum": "0.1.0",
+      "changelog_url": "https://github.com/lonniev/tollbooth-fermyon/releases"
     }
   },
   "protocols": [

@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-03T17:49:53.655017+00:00",
+  "collected_at": "2026-07-03T18:45:22.623796+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 2,
@@ -66,7 +66,7 @@
     },
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
-      "display_name": "npub1ajcnwx8l4kd...",
+      "display_name": "Tollbooth Fermyon",
       "role": "operator",
       "notarizations": [],
       "status": "never",

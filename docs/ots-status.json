@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-08T09:11:00.538414+00:00",
+  "collected_at": "2026-07-08T10:02:15.070946+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 4,
+    "total_notarizations": 5,
     "confirmed": 0,
     "coverage_percent": 18
   },
@@ -12,8 +12,8 @@
       "display_name": "Tollbooth Authority New England",
       "role": "authority",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -53,6 +53,14 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "4",
+          "root_hash": "aa3ddb887d9cea84341d3151039d77de61e77b9c7d17ae2c0567d194dfb202a1",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-07-08 10:00:37.028428+00",
+          "receipt_count": 1
+        },
         {
           "notarization_id": "3",
           "root_hash": "f231bad0a806f8ec631627c95714f391ab9789f68e9a63131f931e9ec3f49027",
@@ -94,8 +102,8 @@
       "display_name": "npub1qchpfnuw76g...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",

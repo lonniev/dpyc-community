@@ -1,0 +1,11 @@
+{
+  "$schema": "./schemas/relays.schema.json",
+  "version": "1.0.0",
+  "updated_at": "2026-07-08T12:00:00Z",
+  "relays": [
+    { "url": "wss://relay.primal.net", "primary": true, "notes": "Well-funded caching relay; high uptime." },
+    { "url": "wss://relay.damus.io", "notes": "Damus relay; one of the most widely-used, reliable." },
+    { "url": "wss://nos.lol", "notes": "Popular free open-write relay." },
+    { "url": "wss://relay.nostr.band", "notes": "nostr.band indexer relay; reliable reads and writes." }
+  ]
+}

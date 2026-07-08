@@ -1,0 +1,61 @@
+name: Validate Relays Registry
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'relays.json'
+      - 'schemas/relays.schema.json'
+  push:
+    branches: [main]
+    paths:
+      - 'relays.json'
+      - 'schemas/relays.schema.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Validate relays.json against schema
+        run: |
+          python - <<'PY'
+          import json, sys
+          from jsonschema import Draft202012Validator
+
+          with open("relays.json") as f:
+              data = json.load(f)
+          with open("schemas/relays.schema.json") as f:
+              schema = json.load(f)
+
+          errors = sorted(
+              Draft202012Validator(schema).iter_errors(data),
+              key=lambda e: list(e.path),
+          )
+          if errors:
+              for e in errors:
+                  loc = "/".join(str(p) for p in e.path) or "<root>"
+                  print(f"  [{loc}] {e.message}")
+              sys.exit(1)
+
+          # Business rule: at most one primary relay.
+          primaries = [r for r in data["relays"] if r.get("primary")]
+          if len(primaries) > 1:
+              print(f"  At most one relay may be primary; found {len(primaries)}.")
+              sys.exit(1)
+
+          print(f"relays.json valid — {len(data['relays'])} relay(s), "
+                f"{len(primaries)} primary.")
+          PY

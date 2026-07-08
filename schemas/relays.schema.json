@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lonniev/dpyc-community/schemas/relays.schema.json",
+  "title": "DPYC Supported Nostr Relays",
+  "description": "Schema for the DPYC federation's single source of truth for Nostr relays (relays.json). Array order is preference order; the first entry (or the one flagged primary) is the Secure Courier's first rendezvous try.",
+  "type": "object",
+  "required": ["version", "updated_at", "relays"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "relays": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/relay"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "relay": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^wss://",
+          "description": "Relay WebSocket URL (must be wss://)."
+        },
+        "primary": {
+          "type": "boolean",
+          "description": "True for the courier's first rendezvous try. At most one relay should set this."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form rationale — why this relay is on the supported list."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

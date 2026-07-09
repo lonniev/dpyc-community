@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-09T20:55:32.710123+00:00",
+  "collected_at": "2026-07-09T21:49:22.574873+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 4,
+    "total_notarizations": 5,
     "confirmed": 0,
     "coverage_percent": 9
   },
@@ -44,6 +44,14 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "5",
+          "root_hash": "b5b6a69d201162838f4e6640c279c2b07970a22bf858b1c220b1a56310ec803b",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-07-09 21:34:45.577488+00",
+          "receipt_count": 2
+        },
         {
           "notarization_id": "4",
           "root_hash": "aa3ddb887d9cea84341d3151039d77de61e77b9c7d17ae2c0567d194dfb202a1",
@@ -93,24 +101,24 @@
       "display_name": "npub1qchpfnuw76g...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
       "display_name": "npub1sz60evcudpn...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

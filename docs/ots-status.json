@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-10T19:51:48.119377+00:00",
+  "collected_at": "2026-07-10T20:47:26.000887+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 6,
+    "total_notarizations": 7,
     "confirmed": 0,
     "coverage_percent": 18
   },
@@ -53,6 +53,14 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "6",
+          "root_hash": "3a29fffc7f29b5f215331f37ef29d260c6cddeb7a52b71b3de6dfa0f1a55e541",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-07-10 20:15:55.318947+00",
+          "receipt_count": 1
+        },
         {
           "notarization_id": "5",
           "root_hash": "b5b6a69d201162838f4e6640c279c2b07970a22bf858b1c220b1a56310ec803b",
@@ -142,8 +150,8 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     }
   ]
 }

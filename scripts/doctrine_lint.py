@@ -45,11 +45,41 @@ REGISTERED_ON_MARK = re.compile(
     r"(?:Don't Pester Your Customer|Tollbooth DPYC|DPYC)\s*®"
 )
 
+# --- workflow (GitHub Actions) hard rules -----------------------------------
+# Forbidden triggers/patterns in .github/workflows/*.yml. The Software Factory bans
+# pull_request_target: it runs in the base-repo context WITH secrets, so relying on an
+# `if` guard to keep a fork's PR out is fragile. A blanket ban is auditable; use
+# pull_request instead (fork PRs correctly receive no secrets — the load-bearing property).
+WORKFLOW_FORBIDDEN = {
+    "pull_request_target": (
+        "Forbidden trigger 'pull_request_target' (runs with base-repo secrets). "
+        "Use 'pull_request' — fork PRs then correctly receive no secrets."
+    ),
+}
+
 
 def is_prose(path: Path) -> bool:
     if path.suffix.lower() in PROSE_SUFFIXES:
         return True
     return any(hint in path.name for hint in PROSE_NAME_HINTS)
+
+
+def is_workflow(path: Path) -> bool:
+    p = path.as_posix()
+    return (".github/workflows/" in p) and path.suffix.lower() in {".yml", ".yaml"}
+
+
+def lint_workflow(text: str) -> list[str]:
+    """Hard violations for a workflow YAML file. Comment lines are ignored so a note
+    that merely mentions a forbidden token doesn't trip the rule."""
+    hard: list[str] = []
+    for i, line in enumerate(text.splitlines(), start=1):
+        if line.lstrip().startswith("#"):
+            continue
+        for token, advice in WORKFLOW_FORBIDDEN.items():
+            if token in line:
+                hard.append(f"L{i}: {advice}")
+    return hard
 
 
 def lint_text(text: str) -> tuple[list[str], list[str]]:
@@ -90,16 +120,24 @@ def main(argv: list[str]) -> int:
 
     total_hard = 0
     for path in files:
-        if not path.exists() or not is_prose(path):
+        if not path.exists():
+            continue
+        prose, workflow = is_prose(path), is_workflow(path)
+        if not (prose or workflow):
             continue
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError as exc:
             print(f"doctrine_lint: cannot read {path}: {exc}", file=sys.stderr)
             continue
-        hard, warn = lint_text(text)
-        for w in warn:
-            print(f"::warning file={path}::doctrine: {w}")
+        hard: list[str] = []
+        if prose:
+            phard, warn = lint_text(text)
+            hard += phard
+            for w in warn:
+                print(f"::warning file={path}::doctrine: {w}")
+        if workflow:
+            hard += lint_workflow(text)
         for h in hard:
             print(f"::error file={path}::doctrine: {h}")
         total_hard += len(hard)

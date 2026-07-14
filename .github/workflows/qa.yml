@@ -1,15 +1,16 @@
 # DPYC Agentic QA — Role 3 (adversarial review), reusable across the fleet.
 #
-# Fires (via a thin per-repo caller, guarded to bot-authored same-repo PRs) on
-# pull_request_target. Reviews the PR in a FRESH context — it did not write the code —
+# Fires (via a thin per-repo caller, guarded to bot-authored agent/fix-* PRs) on
+# pull_request. Reviews the PR in a FRESH context — it did not write the code —
 # and applies qa/pass or qa/flag with a review comment.
 #
 # QA judges SEMANTICS: does the diff actually fix the issue, and does it preserve the
 # invariants (e.g. the two-transaction-type invariant, no secret leakage, vault/ACL
 # usage intact)? Wording/doctrine is the deterministic doctrine-lint job's problem, not QA's.
 #
-# It reviews the DIFF via gh (does not check out or execute PR head code), so an
-# untrusted branch cannot run under pull_request_target's privileged token.
+# The caller uses pull_request (never pull_request_target): GitHub withholds secrets from
+# fork PRs, so a stranger's PR simply doesn't run QA. Same-repo bot PRs get secrets and
+# are reviewed. QA also only reads the DIFF via gh — it never checks out or runs head code.
 name: DPYC QA (reusable)
 
 on:

@@ -70,7 +70,10 @@ jobs:
             2. Search for duplicates:   gh issue list --state all --search "<key terms from the title>"
                and gh search issues if useful. If it clearly duplicates an existing issue,
                close it with a comment linking the original and apply label: rejected/duplicate.
-            3. Classify and label with EXACTLY one type/*, one sev/*, and one area/* label:
+            3. Classify and label with EXACTLY one type/*, one sev/*, and one area/* label.
+               Apply all three in a SINGLE command to save steps, e.g.:
+                 gh issue edit ${{ github.event.issue.number }} --add-label type/bug --add-label sev/high --add-label area/auth
+               Choices:
                type/{bug,feature,docs,question,chore}
                sev/{critical,high,medium,low}
                area/{ledger,pricing,vault,auth,ci,docs,ui}
@@ -100,5 +103,5 @@ jobs:
             let Engineering escalate — do not guess an upstream repo.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 6
+            --max-turns 15
             --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh issue list:*),Bash(gh search:*)"

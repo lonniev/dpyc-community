@@ -81,5 +81,5 @@ jobs:
             Do not edit code, merge, or approve via the reviews API — labels + a comment only.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 10
+            --max-turns 20
             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh issue view:*),Read,Glob,Grep"

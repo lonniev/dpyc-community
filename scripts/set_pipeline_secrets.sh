@@ -8,9 +8,12 @@
 # Usage:
 #   scripts/set_pipeline_secrets.sh <path-to-app-private-key.pem> [repo ...]
 #
-# With no repo args it applies to the whole FLEET below. Repos may be "owner/name"
-# or a bare name (owner defaults to $OWNER / lonniev). Every secret value is passed
-# via stdin — never argv — so it won't appear in `ps` or shell history.
+# With no repo args it DISCOVERS the fleet from the checkouts under the working
+# directory (each subdir that is a git repo with a github.com/$OWNER origin) — so it
+# only ever touches repos you actually have here, never legacy cruft elsewhere in the
+# account. Override the scan root with ROOT=..., or pass explicit repos as args.
+# Every secret value is passed via stdin — never argv — so it won't appear in `ps`
+# or shell history.
 set -euo pipefail
 
 OWNER="${OWNER:-lonniev}"
@@ -26,15 +29,34 @@ if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
 fi
 [ -n "${ANTHROPIC_API_KEY:-}" ] || { echo "no Anthropic key provided" >&2; exit 1; }
 
-# Repos that run pipeline workflows (callers) + dpyc-community (the Digest runs there).
-FLEET=(
-  tollbooth-sample dpyc-community
-  excalibur-mcp schwab-mcp thebrain-mcp taxsort-mcp optionality-mcp cypher-mcp
-  tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica
-  tollbooth-fermyon tollbooth-wasmcp dpyc-oracle tollbooth-oauth2-collector tollbooth-shortlinks
-)
+# Discover the fleet from checkouts under the working directory. The script lives in
+# dpyc-community/scripts/, so the DPYC working dir is two levels up by default.
+SELF="$(cd "$(dirname "$0")" && pwd)"
+ROOT="${ROOT:-$(cd "$SELF/../.." && pwd)}"
 
-if [ "$#" -gt 0 ]; then repos=("$@"); else repos=("${FLEET[@]}"); fi
+discover_fleet() {
+  local d url slug
+  for d in "$ROOT"/*/; do
+    [ -e "$d/.git" ] || continue
+    url="$(git -C "$d" remote get-url origin 2>/dev/null)" || continue
+    case "$url" in
+      *github.com[:/]*) slug="$(printf '%s' "$url" | sed -E 's#.*github\.com[:/]([^/]+/[^/]+)#\1#; s#\.git$##')" ;;
+      *) continue ;;
+    esac
+    # Only repos owned by $OWNER (skip forks of other people's repos).
+    case "$slug" in "$OWNER"/*) printf '%s\n' "$slug" ;; esac
+  done | sort -u
+}
+
+if [ "$#" -gt 0 ]; then
+  repos=("$@")
+else
+  mapfile -t repos < <(discover_fleet)
+  echo "Discovered ${#repos[@]} $OWNER repo(s) under $ROOT:"
+  printf '  %s\n' "${repos[@]}"
+  read -rp "Set pipeline secrets in all of these? [y/N] " ans
+  [ "$ans" = "y" ] || [ "$ans" = "Y" ] || { echo "aborted."; exit 0; }
+fi
 
 ok=0; skipped=0
 for r in "${repos[@]}"; do

@@ -1,0 +1,74 @@
+# DPYC Agentic Desk Digest — Role 4, the cross-repo Dispatcher. Runs HERE in
+# dpyc-community (not reusable): it is the one place with a fleet-wide view.
+#
+# Weekly (and on demand) it sweeps every DPYC repo's open + recently-rejected issues,
+# reconciles escalation chains (origin blocked/upstream -> upstream issue -> PR ->
+# release -> Renovate pin bump -> origin close), and upserts a single pinned
+# "🤖 Agentic Desk Digest" issue here. Every rejected/* issue is listed so a wrongly
+# bounced Patron is rescued within the week.
+#
+# Read across the fleet; write limited to issues (its token is issues:write only). It
+# never writes code and never merges — it reports and, at most, files/labels issues.
+name: DPYC Agentic Desk Digest
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"   # Mondays 13:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint issues-only account-wide token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+
+      - name: Sweep the fleet and update the digest
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: |
+            You are the DPYC Agentic Desk Dispatcher. Produce this week's cross-repo digest.
+
+            Repos to sweep (owner is ${{ github.repository_owner }}):
+              tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp
+              optionality-mcp taxsort-mcp tollbooth-authority tollbooth-wasmcp
+              tollbooth-fermyon dpyc-oracle tollbooth-sample
+
+            STEPS:
+            1. For each repo, list open issues and PRs, e.g.:
+                 gh issue list --repo ${{ github.repository_owner }}/<repo> --state open --limit 50 --json number,title,labels,createdAt
+                 gh pr list    --repo ${{ github.repository_owner }}/<repo> --state open --limit 50 --json number,title,labels
+               Also list issues closed in the last 7 days labeled rejected/* so wrongly
+               bounced Patrons surface for a human second look.
+            2. Reconcile escalation chains: for every issue labeled blocked/upstream, find
+               its escalated child (search the linked upstream repo) and report the chain's
+               state (upstream issue open? PR open? merged? released? Renovate PR landed?).
+            3. Compose a concise Markdown report with sections:
+               - "Needs a human" (qa/flag PRs, blocked/upstream awaiting release, sev/critical)
+               - "In flight" (agent/fix issues, open bot PRs)
+               - "Rejected this week" (every rejected/* — with a one-line reason, so appeals are easy)
+               - "Escalation chains" (origin -> upstream -> status)
+            4. Upsert ONE issue titled exactly "🤖 Agentic Desk Digest" in
+               ${{ github.repository }}:
+                 - find it: gh issue list --repo ${{ github.repository }} --search '"🤖 Agentic Desk Digest" in:title' --state all --json number
+                 - if it exists, edit its body (gh issue edit <n> --body-file ...) and reopen if closed;
+                 - otherwise create it (gh issue create). Prepend a UTC datestamp heading.
+
+            Keep it skimmable — Lonnie reads this to decide where to intervene.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 20
+            --allowedTools "Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh search:*),Read,Write"

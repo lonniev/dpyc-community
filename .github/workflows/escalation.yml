@@ -1,0 +1,109 @@
+# DPYC cross-repo escalation — deterministic, NO agent, issues-only.
+#
+# Fires (via a thin per-repo caller) on issues.labeled == blocked/upstream. Reads the
+# structured <!-- dpyc-escalation --> comment left by the Service Desk / Engineering
+# agent, validates the named home repo against an allowlist, and opens a linked
+# agent/fix issue in that home repo — where its OWN pipeline picks it up.
+#
+# This is the ONLY workflow that writes across repositories, and its App token is
+# downscoped to issues:write ONLY (no contents, no PRs) across the account. No LLM
+# runs here: the escalation comment is authored by a trusted agent and its home_repo
+# is checked against a fixed allowlist before any cross-repo write. That confines the
+# blast radius of the account-wide token to "can file issues", never "can change code".
+name: DPYC Escalation (reusable)
+
+on:
+  workflow_call:
+    secrets:
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  issues: write
+
+jobs:
+  escalate:
+    runs-on: ubuntu-latest
+    steps:
+      # Account-wide token, but ONLY issues:write. Cannot touch code in any repo.
+      - name: Mint issues-only account-wide token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+
+      - name: Route to the home repo
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+          ORIGIN_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+
+          # Allowlist of DPYC repos that may receive an escalated issue.
+          allow="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks"
+
+          # Idempotency: if we already escalated this issue, stop.
+          if gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \
+               --jq '.comments[].body' | grep -q '<!-- dpyc-escalated -->'; then
+            echo "Already escalated; nothing to do."
+            exit 0
+          fi
+
+          # Pull the newest structured escalation block from the issue's comments.
+          body=$(gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \
+                   --jq '[.comments[].body | select(contains("<!-- dpyc-escalation -->"))] | last // ""')
+          if [ -z "$body" ]; then
+            echo "No <!-- dpyc-escalation --> comment found; cannot route. Leaving for a human."
+            exit 0
+          fi
+
+          get() { printf '%s\n' "$body" | grep -m1 -E "^$1:" | sed -E "s/^$1:[[:space:]]*//"; }
+          home_repo=$(get home_repo)
+          up_title=$(get title)
+          reason=$(get reason)
+          repro=$(get repro)
+
+          if [ -z "$home_repo" ]; then
+            echo "escalation comment missing home_repo; leaving for a human."
+            exit 0
+          fi
+          # Validate against the allowlist (word-boundary match).
+          case " $allow " in
+            *" $home_repo "*) : ;;
+            *) echo "home_repo '$home_repo' not in allowlist; refusing to route."; exit 1 ;;
+          esac
+          if [ "$home_repo" = "${ORIGIN_REPO#*/}" ]; then
+            echo "home_repo equals origin; not a cross-repo escalation. Skipping."
+            exit 0
+          fi
+
+          [ -z "$up_title" ] && up_title="Escalated from ${ORIGIN_REPO}#${ISSUE}"
+
+          new_body=$(cat <<EOF
+          Escalated automatically from ${ORIGIN_REPO}#${ISSUE}.
+
+          **Why this repo:** ${reason:-(diagnosed as owning the fix)}
+
+          **Reproduction:** ${repro:-see origin issue}
+
+          Origin: https://github.com/${ORIGIN_REPO}/issues/${ISSUE}
+
+          <!-- dpyc-escalated-child -->
+          EOF
+          )
+
+          url=$(gh issue create --repo "$OWNER/$home_repo" \
+                  --title "$up_title" \
+                  --body "$new_body" \
+                  --label "agent/fix")
+          echo "Opened upstream issue: $url"
+
+          gh issue comment "$ISSUE" --repo "$ORIGIN_REPO" --body \
+            "$(printf '<!-- dpyc-escalated -->\nRouted upstream to %s — the home repo owns this fix per the DPYC DRY boundaries. This issue stays open (blocked/upstream) and closes when the upstream fix propagates.' "$url")"

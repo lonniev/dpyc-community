@@ -47,6 +47,12 @@ jobs:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
+      # The Porter's signing hand: lets the agent record its triage to the memory graph
+      # under its own Nostr identity, without ever holding the nsec (that lives only in
+      # the keyring subprocess's env — see the --mcp-config block below).
+      - name: Install the agent keyring
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+
       - name: Triage the issue
         uses: anthropics/claude-code-action@v1
         env:
@@ -98,10 +104,25 @@ jobs:
                      repro: <how to reproduce, terse>
                      <!-- /dpyc-escalation -->
 
+            5. RECORD your triage in the DPYC memory graph — the `mcp__graph__*` tools write
+               under your own Porter identity. This is bookkeeping AFTER the fact: your GitHub
+               triage above already stands, so a graph failure is NON-fatal — do NOT retry a
+               graph tool more than once, and never let it change your routing decision.
+               - Always call `mcp__graph__cypher_record_triage` with:
+                   repo_name="${{ github.event.repository.name }}", issue_number=${{ github.event.issue.number }},
+                   title=<the issue title>, classification=<the type/* you chose, e.g. "bug">,
+                   disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">.
+               - If you REJECTED it, also call `mcp__graph__cypher_note_rejection` with
+                   repo_name, issue_number, reason=<short reason>.
+               - If you identified a specific culprit code symbol, call
+                   `mcp__graph__cypher_link_root_cause` with repo_name, issue_number,
+                   symbol_fqn=<fully-qualified symbol name>.
+
             Be decisive. Prefer closing junk over leaving it open. When you are unsure
             whether something is a local vs upstream fix, choose LOCAL FIX (agent/fix) and
             let Engineering escalate — do not guess an upstream repo.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 15
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh issue list:*),Bash(gh search:*)"
+            --max-turns 20
+            --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2","DPYC_KEYRING_NSEC":"${{ secrets.PORTER_NSEC }}"}}}}'
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh issue list:*),Bash(gh search:*),mcp__graph__cypher_record_triage,mcp__graph__cypher_note_rejection,mcp__graph__cypher_link_root_cause"

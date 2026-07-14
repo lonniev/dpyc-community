@@ -45,6 +45,12 @@ jobs:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
+      # The Journeyman's signing hand: lets the agent record its rationale to the memory
+      # graph under its own Nostr identity. The nsec lives only in the keyring subprocess's
+      # env (the --mcp-config block below), never in the agent's shell.
+      - name: Install the agent keyring
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+
       - name: Implement the fix and open a PR
         uses: anthropics/claude-code-action@v1
         env:
@@ -78,6 +84,20 @@ jobs:
                open a PR whose body starts with "Closes #${{ github.event.issue.number }}"
                and summarizes the root cause, the fix, and the test you added.
                Use: gh pr create --fill --head agent/fix-${{ github.event.issue.number }}
+            8. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
+               under your own Journeyman identity. Bookkeeping AFTER the PR: the PR you opened
+               already stands, so a graph failure is NON-fatal — do NOT retry a graph tool more
+               than once. Let `slug` be a short kebab-case summary of the fix:
+               - `mcp__graph__cypher_record_triage` with repo_name="${{ github.event.repository.name }}",
+                 issue_number=${{ github.event.issue.number }}, title=<issue title>,
+                 classification=<type/*>, disposition="agent/fix" (ensures the Issue node exists).
+               - `mcp__graph__cypher_assert_rationale` with
+                 decision_id="${{ github.event.repository.name }}#${{ github.event.issue.number }}-<slug>",
+                 repo_name, issue_number, statement=<the decision behind your fix, one line>,
+                 reason=<why this fix, terse>.
+               - `mcp__graph__cypher_bind_rationale_to_symbol` with the SAME decision_id and
+                 symbol_fqn=<the fully-qualified name of the main symbol you changed>.
+               (Only for the LOCAL-FIX path; skip graph recording entirely on the UPSTREAM path.)
 
             Escalation comment format (only for the UPSTREAM case in step 3):
                <!-- dpyc-escalation -->
@@ -91,5 +111,6 @@ jobs:
             a human or the QA + auto-merge pipeline decides landing.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 40
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep"
+            --max-turns 50
+            --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"

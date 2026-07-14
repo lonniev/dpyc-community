@@ -91,5 +91,5 @@ jobs:
             a human or the QA + auto-merge pipeline decides landing.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 20
+            --max-turns 40
             --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep"

@@ -52,6 +52,10 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
+          # The whole pipeline is bot-triggered (labels written by our App), so the
+          # action must accept our bot as the initiating actor. The label guard on the
+          # caller (agent/fix only) is the real gate on what runs.
+          allowed_bots: "dpyc-agentic-desk[bot]"
           prompt: |
             You are the DPYC Engineering agent for ${{ github.repository }}.
             Issue #${{ github.event.issue.number }} was labeled agent/fix. Fix it.

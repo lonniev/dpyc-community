@@ -4,6 +4,7 @@
   "extends": [
     "config:recommended"
   ],
+  "dependencyDashboard": false,
   "labels": ["dependencies"],
   "schedule": ["at any time"],
   "packageRules": [

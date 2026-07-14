@@ -1,0 +1,82 @@
+# DPYC Agentic QA — Role 3 (adversarial review), reusable across the fleet.
+#
+# Fires (via a thin per-repo caller, guarded to bot-authored same-repo PRs) on
+# pull_request_target. Reviews the PR in a FRESH context — it did not write the code —
+# and applies qa/pass or qa/flag with a review comment.
+#
+# QA judges SEMANTICS: does the diff actually fix the issue, and does it preserve the
+# invariants (e.g. the two-transaction-type invariant, no secret leakage, vault/ACL
+# usage intact)? Wording/doctrine is the deterministic doctrine-lint job's problem, not QA's.
+#
+# It reviews the DIFF via gh (does not check out or execute PR head code), so an
+# untrusted branch cannot run under pull_request_target's privileged token.
+name: DPYC QA (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: Claude model for review.
+        type: string
+        default: claude-opus-4-8
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
+      - name: Adversarially review the PR
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: |
+            You are DPYC QA for ${{ github.repository }}, reviewing PR
+            #${{ github.event.pull_request.number }} which you did NOT write. Be adversarial.
+
+            STEPS:
+            1. Read it:  gh pr view ${{ github.event.pull_request.number }} --json title,body,files
+               and  gh pr diff ${{ github.event.pull_request.number }}
+            2. Find the issue it claims to close and confirm the diff ACTUALLY fixes that
+               issue — not something adjacent.
+            3. Check the test: does the PR add/extend a test that would fail without the fix?
+               A fix with no covering test is a qa/flag.
+            4. Check DPYC invariants — flag if the diff:
+               - leaks an nsec, API key, token, or vault passphrase into logs/responses/errors
+               - reimplements crypto/vault/pricing/auth that the SDK owns (DRY violation)
+               - weakens crypto params, skips an ACL/proof check, or breaks tenant isolation
+               - breaks the two-transaction-type invariant
+               - touches a money path (ledger/credits/demurrage/certificate) — note it so a
+                 human reviewer is required (CODEOWNERS already gates the merge).
+            5. Verdict — apply EXACTLY ONE label and leave a concise review comment:
+               - gh pr edit ${{ github.event.pull_request.number }} --add-label "qa/pass"   (correct, tested, invariants intact)
+               - gh pr edit ${{ github.event.pull_request.number }} --add-label "qa/flag"   (any concern above; explain what to fix)
+               Post the reasoning with: gh pr comment ${{ github.event.pull_request.number }} --body "..."
+
+            Do not edit code, merge, or approve via the reviews API — labels + a comment only.
+          claude_args: |
+            --model ${{ inputs.model }}
+            --max-turns 10
+            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh issue view:*),Read,Glob,Grep"

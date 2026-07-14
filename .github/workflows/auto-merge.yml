@@ -1,0 +1,67 @@
+# DPYC path-gated auto-merge — deterministic, NO agent.
+#
+# Fires (via a thin per-repo caller) on pull_request labeled qa/pass. If every changed
+# file is on a low-risk path (docs / tests / UI / README / CHANGELOG), it enables
+# GitHub native auto-merge (--auto --squash): the PR then lands on its own once branch
+# protection's required checks pass. Any file on a code / money-adjacent path → no-op,
+# leaving the PR for a human (CODEOWNERS + branch protection enforce the review).
+#
+# There is no LLM here on purpose: "which paths are safe to auto-land" is policy, not
+# judgement. GitHub — not this workflow — enforces green CI, via required status checks.
+name: DPYC Auto-merge (reusable)
+
+on:
+  workflow_call:
+    secrets:
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
+      - name: Enable auto-merge only for low-risk paths
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          files=$(gh pr view "$PR" --repo "$REPO" --json files --jq '.files[].path')
+          if [ -z "$files" ]; then
+            echo "No changed files reported; leaving PR for a human."
+            exit 0
+          fi
+          echo "Changed files:"; echo "$files"
+
+          # A file is low-risk iff it matches one of these path patterns.
+          safe_re='(^|/)(docs|tests|frontend)/|\.md$|(^|/)(README|CHANGELOG)(\.[A-Za-z]+)?$'
+          unsafe=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if ! printf '%s\n' "$f" | grep -Eq "$safe_re"; then
+              echo "  UNSAFE path (needs human review): $f"
+              unsafe=1
+            fi
+          done <<< "$files"
+
+          if [ "$unsafe" -eq 1 ]; then
+            echo "PR touches code / money-adjacent paths — not auto-merging. CODEOWNERS + branch protection will require a human."
+            exit 0
+          fi
+
+          echo "All changed files are low-risk. Enabling native auto-merge (squash)."
+          gh pr merge "$PR" --repo "$REPO" --auto --squash

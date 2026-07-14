@@ -1,0 +1,48 @@
+# DPYC doctrine linter — Role: deterministic wording/brand gate, reusable across the fleet.
+#
+# Fires (via a thin per-repo caller) on pull_request. Lints only the CHANGED prose/doc
+# files against scripts/doctrine_lint.py (fetched from dpyc-community). Fast, free, and
+# never hallucinates — this is a grep-shaped problem, kept off the QA agent's plate.
+name: DPYC Doctrine Lint (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: dpyc-community ref to fetch the linter from.
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  doctrine-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch the canonical linter from dpyc-community
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/scripts/doctrine_lint.py" \
+            -o /tmp/doctrine_lint.py
+
+      - name: Lint changed prose files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # Changed files in this PR, restricted to prose/doc suffixes.
+          mapfile -t changed < <(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
+            | grep -Ei '\.(md|mdx|markdown|txt|rst)$|(^|/)(README|CHANGELOG|GETTING-STARTED)' || true)
+          if [ "${#changed[@]}" -eq 0 ]; then
+            echo "No prose/doc files changed — nothing to lint."
+            exit 0
+          fi
+          printf 'Linting:\n%s\n' "${changed[*]}"
+          python3 /tmp/doctrine_lint.py "${changed[@]}"

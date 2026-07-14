@@ -52,6 +52,9 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
+          # Bot-authored PRs (Engineering's) are exactly what we review; the caller's
+          # head-ref guard (agent/fix-*) is the real gate.
+          allowed_bots: "dpyc-agentic-desk[bot]"
           prompt: |
             You are DPYC QA for ${{ github.repository }}, reviewing PR
             #${{ github.event.pull_request.number }} which you did NOT write. Be adversarial.

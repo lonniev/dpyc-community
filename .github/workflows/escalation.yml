@@ -86,6 +86,11 @@ jobs:
 
           [ -z "$up_title" ] && up_title="Escalated from ${ORIGIN_REPO}#${ISSUE}"
 
+          # The home repo may not carry the DPYC label taxonomy yet — ensure the one
+          # label we attach exists so gh issue create doesn't fail on an unknown label.
+          gh label create "agent/fix" --repo "$OWNER/$home_repo" --color 5319e7 \
+            --description "Handed to the Engineering agent" --force >/dev/null 2>&1 || true
+
           new_body=$(cat <<EOF
           Escalated automatically from ${ORIGIN_REPO}#${ISSUE}.
 

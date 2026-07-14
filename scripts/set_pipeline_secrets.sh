@@ -16,22 +16,35 @@
 # or shell history.
 set -euo pipefail
 
+# The script lives in dpyc-community/scripts/; the repo root is one level up.
+SELF="$(cd "$(dirname "$0")" && pwd)"
+
+# Convenience: load dpyc-community/.env if present (gitignored — never committed).
+# It may set ANTHROPIC_API_KEY, APP_ID, OWNER, and DPYC_BOT_PRIVATE_KEY_FILE so you
+# don't retype them. Values already in the environment win over the file.
+ENV_FILE="${ENV_FILE:-$SELF/../.env}"
+if [ -f "$ENV_FILE" ]; then
+  echo "Loading $ENV_FILE"
+  set -a; . "$ENV_FILE"; set +a
+fi
+
 OWNER="${OWNER:-lonniev}"
 APP_ID="${APP_ID:-4292331}"
 
-PEM="${1:?usage: set_pipeline_secrets.sh <private-key.pem> [repo ...]}"
-shift || true
+# Private key: from the first arg, else from DPYC_BOT_PRIVATE_KEY_FILE (e.g. in .env).
+PEM="${1:-${DPYC_BOT_PRIVATE_KEY_FILE:-}}"
+[ "$#" -gt 0 ] && shift || true
+[ -n "$PEM" ] || { echo "usage: set_pipeline_secrets.sh <private-key.pem> [repo ...]  (or set DPYC_BOT_PRIVATE_KEY_FILE in .env)" >&2; exit 1; }
+PEM="${PEM/#\~/$HOME}"
 [ -f "$PEM" ] || { echo "private key file not found: $PEM" >&2; exit 1; }
 
-# Anthropic key: from env if set, else prompt without echo (keeps it out of history).
+# Anthropic key: from env/.env if set, else prompt without echo (keeps it out of history).
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
   read -rsp "Anthropic API key (sk-ant-...): " ANTHROPIC_API_KEY; echo
 fi
 [ -n "${ANTHROPIC_API_KEY:-}" ] || { echo "no Anthropic key provided" >&2; exit 1; }
 
-# Discover the fleet from checkouts under the working directory. The script lives in
-# dpyc-community/scripts/, so the DPYC working dir is two levels up by default.
-SELF="$(cd "$(dirname "$0")" && pwd)"
+# Discover the fleet from checkouts under the working directory (repo root's parent).
 ROOT="${ROOT:-$(cd "$SELF/../.." && pwd)}"
 
 discover_fleet() {

@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-14T21:36:45.114534+00:00",
+  "collected_at": "2026-07-14T22:37:35.554883+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 7,
+    "total_notarizations": 6,
     "confirmed": 0,
     "coverage_percent": 9
   },
@@ -35,18 +35,9 @@
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
       "display_name": "schwab-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "9931b04684388ee232bbd0b1cfeaa3fbea61c29921066d1f1b87dea735fbb14a",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-05 23:46:59.58714+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",

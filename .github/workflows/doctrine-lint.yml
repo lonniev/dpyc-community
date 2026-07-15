@@ -37,10 +37,11 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          # Changed files in this PR: prose/doc suffixes plus workflow YAML (for the
-          # pull_request_target ban and other workflow-doctrine rules).
+          # Changed files in this PR: prose/doc suffixes; workflow YAML (pull_request_target
+          # ban + factory self-off tripwires); CODEOWNERS (money-gate); and factory/*.md role
+          # prompts (safety anchors). The last three enforce "don't turn yourself off".
           mapfile -t changed < <(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
-            | grep -Ei '\.(md|mdx|markdown|txt|rst)$|(^|/)(README|CHANGELOG|GETTING-STARTED)|\.github/workflows/.*\.ya?ml$' || true)
+            | grep -Ei '\.(md|mdx|markdown|txt|rst)$|(^|/)(README|CHANGELOG|GETTING-STARTED)|(^|/)CODEOWNERS$|\.github/workflows/.*\.ya?ml$' || true)
           if [ "${#changed[@]}" -eq 0 ]; then
             echo "No prose/doc files changed — nothing to lint."
             exit 0

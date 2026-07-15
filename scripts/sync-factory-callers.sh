@@ -80,6 +80,12 @@ for r in "${repos[@]}"; do
     echo "-- $full: skip (clone failed)"; skipped=$((skipped+1)); continue
   fi
 
+  # Push via the ACTIVE gh token. A fresh clone's credential helper can resolve a broken
+  # secondary account (push denied); x-access-token + `gh auth token` uses the active token,
+  # which carries `workflow` scope so .github/workflows/ edits are accepted.
+  git -C "$work" remote set-url origin \
+    "https://x-access-token:$(gh auth token)@github.com/$full.git"
+
   mkdir -p "$work/.github/workflows"
   cp "$CALLERS_DIR"/*.yml "$work/.github/workflows/"
   # Add the money-path CODEOWNERS gate only if the repo doesn't already have one
@@ -103,8 +109,11 @@ workflows they call (dpyc-community @main).
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 
-  if ! git -C "$work" push -q -u origin "$BRANCH" --force-with-lease 2>/dev/null; then
-    echo "-- $full: skip (push denied)"; skipped=$((skipped+1)); continue
+  # Clear any stale sync branch first: a shallow clone lacks its ref, so --force-with-lease
+  # would wrongly reject. Best-effort delete, then a clean push (no force needed).
+  git -C "$work" push -q origin --delete "$BRANCH" >/dev/null 2>&1 || true
+  if ! err=$(git -C "$work" push -u origin "$BRANCH" 2>&1); then
+    echo "-- $full: skip (push failed: $(printf '%s' "$err" | tail -1))"; skipped=$((skipped+1)); continue
   fi
 
   url="$(gh pr create --repo "$full" --base "$default" --head "$BRANCH" \

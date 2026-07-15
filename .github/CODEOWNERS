@@ -1,0 +1,15 @@
+# Money-path human gate for the factory's OWN home repo. Every source/config change
+# requires @lonniev review (CODEOWNERS + branch protection); the agentic Journeyman may
+# open PRs but nothing lands without you. Only tests and general docs are uncovered, so
+# path-gated auto-merge can land those unattended.
+* @lonniev
+/tests/
+*.md
+
+# Self-modification surface — re-cover it AFTER the *.md carve-out (last match wins).
+# factory/*.prompt.md are Porter/Journeyman's own behavior and the .github workflows are
+# their guardrail skeleton: a self-edit to either is exactly what must stay human-gated,
+# never auto-merged as "just docs". doctrine_lint enforces the invariants; this makes the
+# review mandatory.
+/factory/ @lonniev
+/.github/ @lonniev

@@ -1,15 +1,16 @@
 # DPYC post-merge deploy verification — Role 5, reusable across the MCP operators.
 #
-# Fires (via a thin per-repo caller) on push to main — i.e. right after a PR merges. Horizon
-# redeploys operators automatically from main, but a redeploy can silently fail to take (the
-# "stale wheel" class: the service keeps serving old bytes). This agent PROVES the merge is
-# actually live: it probes the operator's own *_service_status tool and compares the deployed
-# git sha to the sha that just merged.
+# Fires (via a thin per-repo caller) on push to main — right after a PR merges. Horizon
+# redeploys operators automatically, but a redeploy can silently fail to take (the "stale
+# wheel" class: the service keeps serving old bytes). This job PROVES the merge went live by
+# probing the operator's own *_service_status tool and comparing the DEPLOYED git sha
+# (build_info.fastmcp_cloud_git_commit_sha) to the sha that just merged.
 #
-# On a confirmed live deploy it comments the version + sha. On a persistent mismatch (or an
-# unreachable service) after Horizon's rebuild window it opens an `agent/fix` issue so the
-# Journeyman investigates — fix-forward, the factory's model. It NEVER merges, approves, edits
-# code, or pushes; its tools are probe + comment + open-issue only.
+# Deterministic on purpose: claude-code-action does not support the `push` event, and an exact
+# sha comparison needs no judgement. The AWARE half is the repair — a persistent stale/broken
+# deploy opens an `agent/fix` issue, which the Journeyman (Engineering) picks up and fixes
+# forward. This job only probes, comments, and (on real failure) opens one issue — no merge,
+# approve, edit, or push.
 name: DPYC Deploy Verify (reusable)
 
 on:
@@ -21,13 +22,11 @@ on:
           https://<repo>.fastmcp.app/mcp; override for a custom domain.
         type: string
         default: ""
-      model:
-        description: Claude model for the verifier (probe + report — sonnet is plenty).
-        type: string
-        default: claude-sonnet-5
+      poll_minutes:
+        description: How long to wait for Horizon to redeploy before flagging a stale deploy.
+        type: number
+        default: 12
     secrets:
-      ANTHROPIC_API_KEY:
-        required: true
       DPYC_BOT_APP_ID:
         required: true
       DPYC_BOT_PRIVATE_KEY:
@@ -49,67 +48,102 @@ jobs:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
-      - name: Verify the redeploy landed
-        uses: anthropics/claude-code-action@v1
+      - name: Probe the live service and verify the redeploy
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ steps.token.outputs.token }}
-          allowed_bots: "dpyc-agentic-desk[bot]"
-          prompt: |
-            A commit just landed on main of ${{ github.repository }}. Confirm that Horizon has
-            actually redeployed it to the live service — do not assume a merge means a deploy.
+          REPO: ${{ github.repository }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          EXPECTED_SHA: ${{ github.sha }}
+          SERVICE_URL_IN: ${{ inputs.service_url }}
+          POLL_MINUTES: ${{ inputs.poll_minutes }}
+        run: |
+          set -uo pipefail
+          SERVICE_URL="${SERVICE_URL_IN:-}"
+          [ -z "$SERVICE_URL" ] && SERVICE_URL="https://${REPO_NAME}.fastmcp.app/mcp"
+          echo "Service: $SERVICE_URL   Expected sha: $EXPECTED_SHA"
 
-            EXPECTED_SHA (what must be serving): ${{ github.sha }}
-            SERVICE_URL: ${{ inputs.service_url != '' && inputs.service_url || format('https://{0}.fastmcp.app/mcp', github.event.repository.name) }}
+          # --- did this merge change deployable code? -------------------------------------
+          # A change confined to .github/, docs/, tests/, or *.md / CHANGELOG doesn't redeploy;
+          # a sha mismatch there is EXPECTED, not a failure.
+          files="$(gh api "repos/$REPO/commits/$EXPECTED_SHA" --jq '.files[].filename' 2>/dev/null)"
+          deployable=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if printf '%s\n' "$f" | grep -Eqv '^(\.github/|docs/|tests/)|(^|/)(README|CHANGELOG)|\.md$'; then
+              deployable=1
+            fi
+          done <<< "$files"
+          echo "Deployable code changed: $deployable"
 
-            HOW TO PROBE (stateless, no auth — service_status is a free tool):
-            1. Find the status tool name. It is "<slug>_service_status" (e.g. schwab_service_status).
-               If unsure, list tools first:
-                 curl -s -m 25 -X POST "$SERVICE_URL" -H 'Content-Type: application/json' \
-                   -H 'Accept: application/json, text/event-stream' \
-                   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
-               and pick the name ending in _service_status.
-            2. Call it:
-                 curl -s -m 25 -X POST "$SERVICE_URL" -H 'Content-Type: application/json' \
-                   -H 'Accept: application/json, text/event-stream' \
-                   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"<slug>_service_status","arguments":{}}}'
-               The response is SSE; the JSON you want is in the `data:` line, and the tool's
-               payload is the `result.content[0].text` string (parse it as JSON). Read
-               build_info.fastmcp_cloud_git_commit_sha (the DEPLOYED sha) and version.
+          # --- probe helper: echoes "<deployed_sha> <version>" or empty on any error --------
+          # The response is SSE; the tool payload is result.content[0].text (itself a JSON
+          # string, parsed with jq's fromjson). jq ships on every GitHub runner.
+          probe() {
+            local body raw text
+            body='{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"'"$1"'_service_status","arguments":{}}}'
+            raw="$(curl -s -m 25 -X POST "$SERVICE_URL" \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json, text/event-stream' \
+              -d "$body" 2>/dev/null)"
+            text="$(printf '%s\n' "$raw" | sed -n 's/^data: //p' \
+              | jq -r '.result.content[0].text // empty' 2>/dev/null | head -1)"
+            [ -z "$text" ] && return
+            local sha ver
+            sha="$(printf '%s' "$text" | jq -r '.build_info.fastmcp_cloud_git_commit_sha // ""' 2>/dev/null)"
+            ver="$(printf '%s' "$text" | jq -r '.version // ""' 2>/dev/null)"
+            printf '%s %s' "$sha" "$ver"
+          }
 
-            FIRST — did this merge even change deployable code? Check what the commit touched:
-              gh api repos/${{ github.repository }}/commits/${{ github.sha }} --jq '.files[].filename'
-            If EVERY changed file is under .github/, docs/, tests/, or is a *.md / CHANGELOG (i.e.
-            nothing the server actually deploys), then Horizon has no reason to redeploy and a sha
-            mismatch is EXPECTED and FINE. In that case do a single health probe (below), and if the
-            service responds, post a short PR comment "no redeploy needed (non-deployable change);
-            service healthy at <version>" and STOP. Do NOT open an issue for this case.
+          # Slug for the status tool is usually the repo minus a trailing -mcp; probe both.
+          SLUG1="${REPO_NAME%-mcp}"
+          try_probe() { local r; r="$(probe "$SLUG1")"; [ -n "$r" ] && { echo "$r"; return; }; probe "$REPO_NAME"; }
 
-            Otherwise (deployable code changed), verify the redeploy:
-            - Horizon rebuilds take time. A cold start / "warming up" / a brief non-200 is NORMAL —
-              retry with `sleep`. A dependency change triggers a FULL rebuild (~10 min); a code-only
-              change is faster. Poll roughly every 60s for up to ~12 minutes before concluding.
-            - SUCCESS = build_info.fastmcp_cloud_git_commit_sha == EXPECTED_SHA. When it matches,
-              post ONE comment on the PR that introduced this sha (find it:
-              `gh pr list --repo ${{ github.repository }} --search "${{ github.sha }}" --state merged`)
-              confirming: deployed version + the matching sha. Then STOP — you are done.
-            - FAILURE = after the full window the deployed sha is still an OLDER sha (stale wheel),
-              or the service stays unreachable. Only then, open ONE issue:
-                gh issue create --repo ${{ github.repository }} --label agent/fix \
-                  --title "Deploy did not land: still serving <short-old-sha>, expected <short-new-sha>" \
-                  --body "<evidence: EXPECTED_SHA, the observed deployed sha + version, the probe
-                          output, and that this persisted for ~12 min past the merge. Likely the
-                          stale-wheel class (Horizon served cached bytes) — a touch-commit + redeploy
-                          usually clears it; the Journeyman should confirm the true cause via a fresh
-                          probe.>"
-              Do NOT open an issue for a mere cold-start or a transient error — only for a
-              persistent sha mismatch after the window. Never open more than one issue.
+          deadline=$(( $(date +%s) + POLL_MINUTES*60 ))
+          deployed_sha=""; version=""
+          while :; do
+            read -r deployed_sha version <<< "$(try_probe)"
+            echo "  probe -> sha='${deployed_sha:0:12}' version='${version}'"
+            if [ "$deployable" = "0" ] && [ -n "$version" ]; then
+              break  # non-deployable change + service healthy = done
+            fi
+            if [ -n "$deployed_sha" ] && [ "$deployed_sha" = "$EXPECTED_SHA" ]; then
+              break  # deploy landed
+            fi
+            [ "$(date +%s)" -ge "$deadline" ] && break
+            echo "  not yet (cold start / rebuilding) — waiting 60s"
+            sleep 60
+          done
 
-            You may ONLY probe (curl), read, comment on the PR, and (on real failure) open the
-            issue. Do not merge, approve, edit code, or push anything.
-          claude_args: |
-            --model ${{ inputs.model }}
-            --max-turns 40
-            --allowedTools "Bash(curl:*),Bash(sleep:*),Bash(gh pr list:*),Bash(gh pr comment:*),Bash(gh pr view:*),Bash(gh issue create:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh api:*),Read,Grep"
+          PR="$(gh api "repos/$REPO/commits/$EXPECTED_SHA/pulls" --jq '.[0].number' 2>/dev/null)"
+          short_new="${EXPECTED_SHA:0:8}"; short_dep="${deployed_sha:0:8}"
+
+          if [ "$deployable" = "0" ] && [ -n "$version" ]; then
+            msg="✅ No redeploy needed (non-deployable change). Service healthy at version ${version}."
+            echo "$msg"
+            [ -n "$PR" ] && gh pr comment "$PR" --repo "$REPO" --body "$msg" || true
+            exit 0
+          fi
+
+          if [ -n "$deployed_sha" ] && [ "$deployed_sha" = "$EXPECTED_SHA" ]; then
+            msg="✅ Deploy verified live: version ${version}, serving \`${short_new}\` (matches the merge)."
+            echo "$msg"
+            [ -n "$PR" ] && gh pr comment "$PR" --repo "$REPO" --body "$msg" || true
+            exit 0
+          fi
+
+          # Persistent mismatch or unreachable after the window → open ONE agent/fix issue.
+          title="Deploy did not land: serving ${short_dep:-<unreachable>}, expected ${short_new}"
+          body="Horizon has not served the merged commit after ~${POLL_MINUTES} min.
+
+          - Expected (merged) sha: \`${EXPECTED_SHA}\`
+          - Observed deployed sha: \`${deployed_sha:-<none — service unreachable>}\`
+          - Observed version: \`${version:-<none>}\`
+          - Service: ${SERVICE_URL}
+
+          This is the stale-wheel class (Horizon serving cached bytes) or a failed rebuild. A
+          touch-commit + redeploy usually clears a stale wheel; confirm the true live cause with a
+          fresh stateless \`*_service_status\` probe before changing code."
+          # Ensure the label exists, then file the issue for the Journeyman.
+          gh label create agent/fix --repo "$REPO" --color d73a4a --force >/dev/null 2>&1 || true
+          gh issue create --repo "$REPO" --label agent/fix --title "$title" --body "$body"
+          echo "Opened agent/fix issue for a stale/failed deploy."

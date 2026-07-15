@@ -19,7 +19,7 @@ on:
       model:
         description: Claude model for review.
         type: string
-        default: claude-opus-4-8
+        default: claude-sonnet-5
     secrets:
       ANTHROPIC_API_KEY:
         required: true

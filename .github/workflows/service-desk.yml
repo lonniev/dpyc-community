@@ -121,6 +121,22 @@ jobs:
             Be decisive. Prefer closing junk over leaving it open. When you are unsure
             whether something is a local vs upstream fix, choose LOCAL FIX (agent/fix) and
             let Engineering escalate — do not guess an upstream repo.
+
+            MANDATORY OUTCOME — you may NOT do nothing. Doing nothing is a failure. Every run
+            must end in exactly one of these, and it must be REAL (an executed tool call, not
+            a narrated intention):
+              (1) A completed triage — you actually called `gh issue edit` to apply the labels
+                  AND took one routing action above. Saying you "would" label does not count;
+                  the command must run.
+              (2) A stated give-up — if something genuinely prevents you from triaging, you MUST
+                  post a comment on the issue with `gh issue comment` explaining precisely what
+                  you attempted and what stopped you (the exact error, the ambiguity you could
+                  not resolve, or the access you lacked). Never stop silently.
+            Then VERIFY before finishing: run
+              gh issue view ${{ github.event.issue.number }} --json labels
+            and if the labels you intended are not present, apply them again. Do not end the run
+            until the issue visibly reflects your decision (labels/close) or carries your
+            give-up comment.
           claude_args: |
             --model ${{ inputs.model }}
             --max-turns 20

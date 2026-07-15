@@ -75,12 +75,23 @@ jobs:
           done <<< "$files"
           echo "Deployable code changed: $deployable"
 
-          # --- probe helper: echoes "<deployed_sha> <version>" or empty on any error --------
-          # The response is SSE; the tool payload is result.content[0].text (itself a JSON
-          # string, parsed with jq's fromjson). jq ships on every GitHub runner.
-          probe() {
-            local body raw text
-            body='{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"'"$1"'_service_status","arguments":{}}}'
+          # --- probe helpers ---------------------------------------------------------------
+          # The MCP status tool is named differently per operator (schwab_service_status,
+          # weather_service_status, or bare service_status), so DISCOVER it from tools/list
+          # rather than guess a slug. Responses are SSE; the tool payload is the JSON string at
+          # result.content[0].text (parsed with jq's fromjson). jq ships on every runner.
+          discover_tool() {
+            curl -s -m 25 -X POST "$SERVICE_URL" \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json, text/event-stream' \
+              -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' 2>/dev/null \
+              | sed -n 's/^data: //p' \
+              | jq -r '.result.tools[].name | select(endswith("service_status"))' 2>/dev/null | head -1
+          }
+          probe() {  # $1 = full status-tool name; echoes "<deployed_sha> <version>" or empty
+            [ -z "$1" ] && return
+            local body raw text sha ver
+            body='{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"'"$1"'","arguments":{}}}'
             raw="$(curl -s -m 25 -X POST "$SERVICE_URL" \
               -H 'Content-Type: application/json' \
               -H 'Accept: application/json, text/event-stream' \
@@ -88,20 +99,16 @@ jobs:
             text="$(printf '%s\n' "$raw" | sed -n 's/^data: //p' \
               | jq -r '.result.content[0].text // empty' 2>/dev/null | head -1)"
             [ -z "$text" ] && return
-            local sha ver
             sha="$(printf '%s' "$text" | jq -r '.build_info.fastmcp_cloud_git_commit_sha // ""' 2>/dev/null)"
             ver="$(printf '%s' "$text" | jq -r '.version // ""' 2>/dev/null)"
             printf '%s %s' "$sha" "$ver"
           }
 
-          # Slug for the status tool is usually the repo minus a trailing -mcp; probe both.
-          SLUG1="${REPO_NAME%-mcp}"
-          try_probe() { local r; r="$(probe "$SLUG1")"; [ -n "$r" ] && { echo "$r"; return; }; probe "$REPO_NAME"; }
-
           deadline=$(( $(date +%s) + POLL_MINUTES*60 ))
-          deployed_sha=""; version=""
+          deployed_sha=""; version=""; status_tool=""
           while :; do
-            read -r deployed_sha version <<< "$(try_probe)"
+            [ -z "$status_tool" ] && status_tool="$(discover_tool)"
+            read -r deployed_sha version <<< "$(probe "$status_tool")"
             echo "  probe -> sha='${deployed_sha:0:12}' version='${version}'"
             if [ "$deployable" = "0" ] && [ -n "$version" ]; then
               break  # non-deployable change + service healthy = done
@@ -126,6 +133,16 @@ jobs:
 
           if [ -n "$deployed_sha" ] && [ "$deployed_sha" = "$EXPECTED_SHA" ]; then
             msg="✅ Deploy verified live: version ${version}, serving \`${short_new}\` (matches the merge)."
+            echo "$msg"
+            [ -n "$PR" ] && gh pr comment "$PR" --repo "$REPO" --body "$msg" || true
+            exit 0
+          fi
+
+          # Service is up (reports a version) but does not expose a deployed git sha — older SDK.
+          # We cannot confirm the exact commit, but a healthy service is NOT a failed deploy: note
+          # it and do NOT open an issue (a false alarm would be worse than a missing confirmation).
+          if [ -n "$version" ] && [ -z "$deployed_sha" ]; then
+            msg="ℹ️ Service healthy at version ${version}, but it does not report a deployed commit sha (older SDK) — cannot confirm the exact live commit. No action."
             echo "$msg"
             [ -n "$PR" ] && gh pr comment "$PR" --repo "$REPO" --body "$msg" || true
             exit 0

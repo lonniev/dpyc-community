@@ -78,14 +78,28 @@ WORKFLOW_FORBIDDEN = {
 CODEOWNERS_MONEY_GATE = "* @lonniev"
 
 # Verbs that must never appear in an agent's --allowedTools: they hand it the power to land
-# its own PR or unlock its own gate. (The deterministic auto-merge.yml legitimately merges,
-# but it is not agent-driven — it has no allowedTools — so it is never checked here.)
+# its own PR or unlock its own gate. (The deterministic auto-merge.yml / approval-merge.yml
+# legitimately merge, but they are not agent-driven — no allowedTools — so never checked here.)
 ALLOWEDTOOLS_FORBIDDEN = {
-    "gh pr merge": "grants self-merge — the agent must never land its own PR.",
     "gh pr review": "grants self-approval — approving reviews are the human's, not the agent's.",
     "Bash(gh pr:*)": "over-broad gh-pr grant (would include 'gh pr merge') — allow specific subcommands only.",
     "Bash(gh:*)": "over-broad gh grant (would include 'gh pr merge') — allow specific subcommands only.",
 }
+# 'gh pr merge' is handled separately: the GATED form `gh pr merge --auto` is allowed (native
+# auto-merge cannot bypass branch protection — it holds on a red check and needs the owner's
+# review), but `--admin` and immediate/bare merge (which DO bypass) are forbidden in an agent's
+# allowedTools. Checked per comma-separated token so a broad grant beside an --auto one is caught.
+def _merge_grant_violation(token: str) -> str | None:
+    if "gh pr merge" not in token:
+        return None
+    if "--admin" in token:
+        return f"'{token.strip()}' grants --admin merge — bypasses branch protection; forbidden."
+    if "--auto" in token:
+        return None  # gated auto-merge: cannot bypass the owner's approval or a red check
+    return (
+        f"'{token.strip()}' grants unqualified 'gh pr merge' (immediate merge) — only "
+        "'gh pr merge --auto' (gated by branch protection) may be granted to an agent."
+    )
 # 'workflows: write' would let the agent rewrite the guardrail YAML itself (permissions,
 # token, allowedTools) — the one permission that would make every other tripwire bypassable.
 WORKFLOW_WRITE_PERM = re.compile(r"workflows:\s*write")
@@ -137,6 +151,11 @@ def lint_workflow(text: str) -> list[str]:
             for verb, advice in ALLOWEDTOOLS_FORBIDDEN.items():
                 if verb in line:
                     hard.append(f"L{i}: '{verb}' in --allowedTools — {advice}")
+            # 'gh pr merge' per-token: allow --auto, forbid --admin / bare immediate merge.
+            for token in re.split(r'[,"]', line):
+                merge_violation = _merge_grant_violation(token)
+                if merge_violation:
+                    hard.append(f"L{i}: {merge_violation}")
         if WORKFLOW_WRITE_PERM.search(line):
             hard.append(
                 f"L{i}: 'workflows: write' would let the factory agent rewrite its own "

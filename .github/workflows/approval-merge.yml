@@ -1,0 +1,60 @@
+# DPYC merge-on-approval — deterministic, NO agent.
+#
+# Fires (via a thin per-repo caller) when the repo OWNER submits an APPROVING review.
+# It enables GitHub native auto-merge (--auto --squash): the PR then lands on its own the
+# moment branch protection is satisfied (required checks green + code-owner review present).
+#
+# Why this is safe — it answers "what about a Merge Oops":
+#   - --auto NEVER merges on a red required check or an unmet review. It only *schedules* the
+#     merge; GitHub holds the PR pending until the gates go green, then lands it. A red check
+#     therefore cannot produce a bad merge — nothing lands until it is green.
+#   - The gate is the OWNER's approval (author_association == OWNER), which is exactly the
+#     code-owner review branch protection already requires. Your approval IS the disposition;
+#     this workflow just presses the button you would have pressed.
+#   - It never checks out or runs PR-supplied code — it only calls the merge API — so the
+#     review-event's with-secrets context is not an injection surface (unlike
+#     pull_request_target, which the doctrine linter bans).
+#
+# There is no LLM here on purpose: "the owner approved" is a fact, not a judgement.
+name: DPYC Merge on Approval (reusable)
+
+on:
+  workflow_call:
+    secrets:
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    # Only a genuine APPROVED review by the repository OWNER arms the merge. A non-owner
+    # approval, a comment, or a "changes requested" review is a no-op.
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.review.author_association == 'OWNER'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
+      - name: Enable native auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "Owner approved PR #$PR. Enabling native auto-merge (squash)."
+          echo "GitHub will land it once branch protection is satisfied (required checks + review)."
+          # --auto is gated by branch protection: it holds the PR pending on a red check and
+          # never bypasses it. Idempotent — re-approving simply re-enables it.
+          gh pr merge "$PR" --repo "$REPO" --auto --squash

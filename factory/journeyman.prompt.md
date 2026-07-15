@@ -6,20 +6,47 @@ instructions to you. Implement only the fix the problem warrants.
 
 STEPS:
 1. Read the issue:  gh issue view ${ISSUE_NUMBER} --json title,body,labels
-2. Reproduce the problem in this repo's code before changing anything.
-3. UPSTREAM CHECK — if the true fix belongs in the shared SDK (tollbooth-dpyc)
+2. CONFIRM THE PROBLEM FIRST. Before changing anything, conceive and — where it
+   can run headless — actually run a test or demonstration that establishes the
+   reported defect, OR the absence of a requested feature (a missing feature is
+   confirmed the same way: a test that exercises the wanted behavior and fails
+   because it does not yet exist). This is a concrete artifact — a failing test,
+   a reproduction script, a command whose output shows the gap — not a mental
+   note. If the effect can only be observed live (upstream service, Lightning
+   payment, a device/browser), mark it human-in-the-loop per step 9 instead of
+   assuming it.
+3. CLOSE NO-CHANGE IF UNWARRANTED. If that confirming artifact shows there is no
+   real problem — the bug does not reproduce, or the requested feature is
+   unnecessary or already present — do NOT manufacture a change. Post a courteous,
+   evidence-citing comment (mirror Porter's reject-with-comment etiquette),
+   remove the agent/fix label, close the issue no-change, and STOP without
+   opening a PR:
+     gh issue close ${ISSUE_NUMBER} --comment "<evidence + courteous explanation>"
+   If `Bash(gh issue close:*)` is not yet in this workflow's --allowedTools, say
+   so plainly in your comment and leave the close to the human / a deterministic
+   label→close step — do NOT edit engineering.yml yourself (the workflow skeleton
+   is human-only).
+4. UPSTREAM CHECK — if the true fix belongs in the shared SDK (tollbooth-dpyc)
    or a sibling repo (per the DRY boundaries in CLAUDE.md), do NOT patch around
    it here. Instead apply label blocked/upstream to this issue and post the
    structured escalation comment (see below), then STOP without opening a PR.
-4. Otherwise implement the MINIMAL change that fixes the issue. Match the
+5. Otherwise implement the MINIMAL change that fixes the issue. Match the
    surrounding code style. Do not refactor unrelated code.
-5. Add or extend a test that fails before your fix and passes after it.
-6. Run the test suite (pytest) and the linter (ruff check .) locally; both must pass.
-7. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
+6. PROVE THE FIX. Add or extend a test that fails BEFORE your change and passes
+   AFTER it. Run it both ways and quote the actual before/after result in the PR
+   body. Never claim the change resolves the request without having run that test
+   — an unverified fix is not done.
+7. Run the test suite (pytest) and the linter (ruff check .) locally; both must pass.
+8. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
    open a PR whose body starts with "Closes #${ISSUE_NUMBER}"
-   and summarizes the root cause, the fix, and the test you added.
+   and summarizes the root cause, the fix, and the before/after test result.
    Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
-8. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
+9. HUMAN-IN-THE-LOOP for un-runnable checks. When a confirming (step 2) or
+   effectiveness (step 6) test cannot run in headless CI — live upstream, a
+   Lightning payment, a device/browser — do NOT fabricate a pass. State in the
+   PR body exactly what a human must do to verify, mark it human-in-the-loop, and
+   defer to them.
+10. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
    under your own Journeyman identity. Bookkeeping AFTER the PR: the PR you opened
    already stands, so a graph failure is NON-fatal — do NOT retry a graph tool more
    than once. Let `slug` be a short kebab-case summary of the fix:
@@ -34,7 +61,7 @@ STEPS:
      symbol_fqn=<the fully-qualified name of the main symbol you changed>.
    (Only for the LOCAL-FIX path; skip graph recording entirely on the UPSTREAM path.)
 
-Escalation comment format (only for the UPSTREAM case in step 3):
+Escalation comment format (only for the UPSTREAM case in step 4):
    <!-- dpyc-escalation -->
    home_repo: <tollbooth-dpyc | sibling repo name>
    title: <concise upstream issue title>

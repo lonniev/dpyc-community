@@ -94,8 +94,10 @@ jobs:
                   source. Apply label: agent/fix. (Downstream Engineering will pick it up.)
                d. UPSTREAM — legitimate, but per the DPYC DRY boundaries the remediation
                   belongs in the shared SDK (tollbooth-dpyc) or a sibling repo, NOT here.
-                  Do NOT apply agent/fix. Apply label: blocked/upstream, then post ONE comment
-                  in EXACTLY this machine-readable format so escalation.yml can route it:
+                  Do NOT apply agent/fix. ORDER MATTERS: FIRST post ONE comment in EXACTLY
+                  this machine-readable format, and ONLY THEN apply label blocked/upstream.
+                  The label is what triggers escalation.yml, so the comment must already exist
+                  when the label lands — never label first:
 
                      <!-- dpyc-escalation -->
                      home_repo: <one of: tollbooth-dpyc | schwab-mcp | thebrain-mcp | excalibur-mcp | cypher-mcp | optionality-mcp | taxsort-mcp | tollbooth-authority | tollbooth-wasmcp | dpyc-oracle | tollbooth-sample>

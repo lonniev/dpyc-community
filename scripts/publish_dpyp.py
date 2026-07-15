@@ -9,7 +9,6 @@ Requires: pip install -r scripts/requirements.txt
 
 from __future__ import annotations
 
-import json
 import os
 import sys
 import time

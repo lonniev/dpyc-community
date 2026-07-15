@@ -81,9 +81,30 @@ def _agent_wf(allowed_tools_line: str = '            --allowedTools "Bash(gh iss
     return _AGENT_WF_HEAD + allowed_tools_line + extra
 
 
-def test_self_merge_in_allowedtools_fails():
+def test_bare_merge_in_allowedtools_fails():
+    # Unqualified 'gh pr merge' can merge immediately — forbidden for an agent.
     wf = _agent_wf('            --allowedTools "Bash(gh issue view:*),Bash(gh pr merge:*)"\n')
     assert any("gh pr merge" in h for h in dl.lint_workflow(wf))
+
+
+def test_admin_merge_in_allowedtools_fails():
+    # --admin bypasses branch protection — forbidden.
+    wf = _agent_wf('            --allowedTools "Bash(gh pr merge --admin:*),Read"\n')
+    assert any("--admin" in h for h in dl.lint_workflow(wf))
+
+
+def test_auto_merge_in_allowedtools_is_allowed():
+    # Native auto-merge cannot bypass the owner's approval or a red check, so an agent MAY be
+    # granted it (e.g. to enable auto-merge on its own PR, which still waits for the human).
+    wf = _agent_wf('            --allowedTools "Bash(gh pr merge --auto:*),Read"\n')
+    assert dl.lint_workflow(wf) == []
+
+
+def test_auto_merge_beside_bare_merge_still_flags_the_bare_one():
+    # Per-token check: a gated --auto grant next to a broad bare grant must still catch the bare.
+    wf = _agent_wf('            --allowedTools "Bash(gh pr merge --auto:*),Bash(gh pr merge:*)"\n')
+    hits = dl.lint_workflow(wf)
+    assert any("immediate merge" in h for h in hits)
 
 
 def test_self_approve_in_allowedtools_fails():

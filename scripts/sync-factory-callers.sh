@@ -82,14 +82,17 @@ for r in "${repos[@]}"; do
 
   mkdir -p "$work/.github/workflows"
   cp "$CALLERS_DIR"/*.yml "$work/.github/workflows/"
+  # Add the money-path CODEOWNERS gate only if the repo doesn't already have one
+  # (never clobber a repo's own ownership rules).
+  [ -f "$work/.github/CODEOWNERS" ] || cp "$SELF/factory-CODEOWNERS" "$work/.github/CODEOWNERS"
 
-  if [ -z "$(git -C "$work" status --porcelain -- .github/workflows)" ]; then
+  if [ -z "$(git -C "$work" status --porcelain -- .github/)" ]; then
     echo "-- $full: already in sync"; uptodate=$((uptodate+1)); continue
   fi
 
   default="$(git -C "$work" symbolic-ref --short HEAD)"
   git -C "$work" checkout -q -b "$BRANCH"
-  git -C "$work" add .github/workflows/agentic-*.yml
+  git -C "$work" add .github/workflows/agentic-*.yml .github/CODEOWNERS
   git -C "$work" -c user.name="DPYC Factory" -c user.email="noreply@anthropic.com" \
     commit -q -m "ci: sync DPYC Software Factory callers
 

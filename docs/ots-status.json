@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-16T15:50:17.011161+00:00",
+  "collected_at": "2026-07-16T16:46:40.097832+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 9,
@@ -158,8 +158,8 @@
       "display_name": "npub1xdv5j2tf769...",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",

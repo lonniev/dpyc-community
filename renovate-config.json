@@ -1,48 +1,54 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate preset for DPYC ecosystem repos",
+  "description": "Shared Renovate preset for DPYC ecosystem repos. Tuned for LOW NOISE: one weekly batch, throttled PR volume, aggressively grouped, and settled-release-only. The ONLY thing that self-merges is the tollbooth-dpyc == pin (patch/minor) — and only where the repo grants the Renovate app a branch-protection bypass. Everything else waits for owner review by design (crypto/PII federation: a human sees every dependency change).",
   "extends": [
     "config:recommended"
   ],
   "dependencyDashboard": false,
   "labels": ["dependencies"],
-  "schedule": ["at any time"],
+  "schedule": ["* 0-6 * * 1"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "minimumReleaseAge": "3 days",
   "packageRules": [
     {
-      "description": "Pin tollbooth-dpyc to exact version; auto-merge patch/minor if CI passes",
+      "description": "SDK pin — the ONE thing that self-merges (via a per-repo Renovate branch-protection bypass). Patch/minor auto-merge on green CI; not delayed by minimumReleaseAge because we trust our own wheel immediately.",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["patch", "minor"],
       "rangeStrategy": "pin",
+      "minimumReleaseAge": "0 days",
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
     },
     {
-      "description": "Pin tollbooth-dpyc major bumps — require manual review",
+      "description": "SDK major bumps — pin, always manual review (breaking changes).",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["major"],
       "rangeStrategy": "pin",
       "automerge": false
     },
     {
-      "description": "Auto-merge GitHub Actions minor/patch bumps",
+      "description": "All GitHub Actions bumps collapsed into ONE PR; owner reviews (only the SDK pin bypasses the money-gate).",
       "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "squash"
+      "groupName": "github actions"
     },
     {
-      "description": "Ignore Python 3.14 — coincurve/cffi not compatible yet",
+      "description": "Ignore Python 3.14 — coincurve/cffi not compatible yet.",
       "matchPackageNames": ["python"],
       "allowedVersions": "<3.14",
       "enabled": true
     },
     {
-      "description": "Group all non-SDK Python dependency bumps into one PR",
+      "description": "Collapse all non-SDK Python dependency bumps into one PR.",
       "matchManagers": ["pip_requirements", "pep621"],
       "excludePackageNames": ["tollbooth-dpyc"],
       "groupName": "python dependencies"
+    },
+    {
+      "description": "Collapse all npm/frontend dependency bumps into one PR (tames the taxsort + excalibur churn).",
+      "matchManagers": ["npm"],
+      "groupName": "frontend dependencies"
     }
   ],
   "pip_requirements": {

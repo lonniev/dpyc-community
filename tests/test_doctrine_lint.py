@@ -33,6 +33,35 @@ def test_real_factory_prompts_are_clean():
         assert dl.lint_factory_prompt(name, text) == []
 
 
+# --- Journeyman test-first discipline (issue #91) -----------------------------
+# The Journeyman prompt must encode a confirm-first / prove-the-fix discipline: prove
+# the problem before changing anything, close no-change when it isn't warranted, prove
+# the fix with a before/after test run, and defer un-runnable checks to a human rather
+# than fabricating a pass. These markers pin those four behaviors into the prompt.
+def test_journeyman_prompt_encodes_test_first_discipline():
+    text = (REPO_ROOT / "factory" / "journeyman.prompt.md").read_text(encoding="utf-8")
+
+    # 1. Confirm the problem (or the missing feature) with a concrete artifact first.
+    assert "CONFIRM THE PROBLEM FIRST" in text
+    assert "missing feature" in text or "absence of a requested feature" in text
+
+    # 2. A close-no-change exit when the confirming artifact shows no real problem.
+    assert "CLOSE NO-CHANGE" in text
+    assert "gh issue close" in text
+
+    # 3. A hard prove-the-fix gate: a test that fails before and passes after the change.
+    assert "PROVE THE FIX" in text
+    assert "fails BEFORE" in text  # the discipline's emphatic phrasing, not incidental words
+
+    # 4. Un-runnable checks are handed to a human, never fabricated as passing.
+    assert "human-in-the-loop" in text
+
+    # 5. The human-in-the-loop determination must be sequenced BEFORE PR creation —
+    #    the workflow grants no `gh pr edit`, so a note conceived after the PR opens
+    #    can never reach the body. Ordering is load-bearing, not cosmetic.
+    assert text.index("HUMAN-IN-THE-LOOP for un-runnable checks") < text.index("gh pr create")
+
+
 def test_real_factory_workflows_are_clean():
     for wf in ("service-desk.yml", "engineering.yml", "qa.yml", "pr-dialogue.yml", "digest.yml"):
         text = (REPO_ROOT / ".github" / "workflows" / wf).read_text(encoding="utf-8")

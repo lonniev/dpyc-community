@@ -85,5 +85,8 @@ jobs:
             for your verdict. Do not attempt other commands.
           claude_args: |
             --model ${{ inputs.model }}
-            --max-turns 20
+            # 30, not 20: an adversarial re-review of a security-nuanced diff can
+            # need more headroom to read history, verify a fix, and post a verdict —
+            # a 20-turn cap once timed out (error_max_turns) and left a stale flag.
+            --max-turns 30
             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(sed:*),Bash(grep:*),Read,Glob,Grep"

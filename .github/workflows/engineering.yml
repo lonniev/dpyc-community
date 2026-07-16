@@ -35,12 +35,39 @@ permissions:
   pull-requests: write
 
 jobs:
-  implement:
+  # Detect the target repo's toolchain so the implement job runs on the right OS.
+  # Xcode/iPadOS projects need macOS + Xcode; everything else builds on ubuntu. macOS
+  # runners bill ~10x ubuntu minutes, so this gate keeps macOS to repos that actually need it.
+  # Callers stay identical (thin) — the language is auto-detected here, not declared per repo.
+  detect:
     runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.stack.outputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect toolchain and pick the runner OS
+        id: stack
+        run: |
+          if find . -maxdepth 3 \( -name '*.xcodeproj' -o -name '*.xcworkspace' -o -name 'Package.swift' \) -print -quit | grep -q .; then
+            echo "runner=macos-latest" >> "$GITHUB_OUTPUT"; echo "Xcode/Swift project detected -> macos-latest"
+          else
+            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"; echo "no Xcode/Swift project -> ubuntu-latest"
+          fi
+
+  implement:
+    needs: detect
+    runs-on: ${{ needs.detect.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # Guarantee `python` + pip exist on BOTH ubuntu and macOS runners — the keyring
+      # install and the graph MCP's `command: python` below both invoke bare `python`,
+      # which macOS runners do not provide by default.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Mint scoped App token
         id: token
@@ -90,4 +117,4 @@ jobs:
             --model ${{ inputs.model }}
             --max-turns 70
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"

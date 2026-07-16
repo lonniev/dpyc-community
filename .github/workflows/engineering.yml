@@ -90,4 +90,4 @@ jobs:
             --model ${{ inputs.model }}
             --max-turns 70
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"

@@ -1,0 +1,89 @@
+# DPYC Housekeeper — backlog hygiene, reusable across the fleet.
+#
+# Fires (via a thin per-repo caller) on a SCHEDULE — deliberately NOT folded into
+# Porter's per-issue triage, which stays bounded and decisive. The Housekeeper wears
+# Porter's identity but is a separate role with its own turn budget: it surveys the
+# repo's OPEN issues/PRs and applies safe, evidence-required tidy actions — close an
+# issue whose fix merged but didn't auto-close, prune stale needs-info, and FLAG
+# stalled agent/fix PRs and aging issues for a human. It never re-runs, rebases, or
+# merges anything (unsticking is deferred to a human or a re-run), and never touches
+# sev/critical or money-path issues. Its final message is a backlog digest.
+#
+# Scoped to THIS repo only: the App token is repo-scoped, and allowedTools are
+# issue/PR read + comment/close only — it cannot merge, approve, or re-run anything —
+# so even a successful injection from an issue body cannot land code or unlock a gate.
+name: DPYC Housekeeper (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: Claude model for housekeeping.
+        type: string
+        default: claude-sonnet-5
+      ref:
+        description: dpyc-community ref to fetch the Housekeeper prompt from.
+        type: string
+        default: main
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Token scoped to THIS repository only (default when repositories/owner omitted).
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
+      # The Housekeeper's signing hand (Porter's identity): records tidy actions to the
+      # memory graph. The nsec lives only in the keyring subprocess's env below.
+      - name: Install the agent keyring
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+
+      # The Housekeeper's behavior lives in factory/housekeeper.prompt.md (agent may evolve
+      # it via PR; this workflow skeleton — schedule, token, tools — stays human-only). We
+      # fetch it from dpyc-community and fill only REPO / REPO_NAME (REPO_NAME derived from
+      # REPO so it is correct on schedule events where github.event.repository may be absent).
+      - name: Render the Housekeeper prompt
+        id: prompt
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          export REPO_NAME="${REPO##*/}"
+          curl -fsSL \
+            "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/housekeeper.prompt.md" \
+            -o /tmp/housekeeper.prompt.md
+          rendered=$(envsubst '${REPO} ${REPO_NAME}' < /tmp/housekeeper.prompt.md)
+          { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
+
+      - name: Tidy the backlog
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: |
+            --model ${{ inputs.model }}
+            --max-turns 40
+            --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2","DPYC_KEYRING_NSEC":"${{ secrets.PORTER_NSEC }}"}}}}'
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh search:*),mcp__graph__cypher_record_triage,mcp__graph__cypher_note_rejection"

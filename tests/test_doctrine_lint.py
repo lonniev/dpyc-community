@@ -62,6 +62,37 @@ def test_journeyman_prompt_encodes_test_first_discipline():
     assert text.index("HUMAN-IN-THE-LOOP for un-runnable checks") < text.index("gh pr create")
 
 
+# --- Journeyman language-agnostic SDLC (issue #94) ----------------------------
+# The Engineering role must not hard-assume Python. The SDLC (spec → test → code →
+# unit test → build → integration test → deploy) is universal; the toolchain is a
+# per-repo detail. The prompt must instruct Journeyman to DETECT the repo's toolchain
+# and run ITS tests/linter/build — covering Python, Swift/Xcode, and Node — while the
+# allowedTools + runner-OS provisioning stays human-only (Journeyman flags, never
+# self-edits engineering.yml). The test-first discipline anchors must be preserved.
+def test_journeyman_prompt_is_language_agnostic():
+    text = (REPO_ROOT / "factory" / "journeyman.prompt.md").read_text(encoding="utf-8")
+    low = text.lower()
+
+    # DETECT the project's toolchain rather than assuming Python.
+    assert "detect" in low
+
+    # Coverage beyond Python: the Swift/Xcode and Node stacks named in the ask.
+    assert "xcodebuild" in low or "package.swift" in low
+    assert "package.json" in low
+
+    # Python remains supported — but as a detected case, not the sole hardcoded one.
+    assert "pyproject" in low
+    assert "pytest" in low and "ruff" in low
+
+    # allowedTools + runner-OS live in the human-only skeleton: Journeyman FLAGS a
+    # toolchain/runner gap, it does not self-edit engineering.yml.
+    assert "allowedtools" in low or "runner" in low or "macos" in low
+
+    # The test-first discipline anchors are preserved (generalized, not removed).
+    assert "CONFIRM THE PROBLEM FIRST" in text
+    assert "PROVE THE FIX" in text
+
+
 def test_real_factory_workflows_are_clean():
     for wf in ("service-desk.yml", "engineering.yml", "qa.yml", "pr-dialogue.yml", "digest.yml"):
         text = (REPO_ROOT / ".github" / "workflows" / wf).read_text(encoding="utf-8")

@@ -42,7 +42,17 @@ STEPS:
    BEFORE the PR exists, exactly what a human must do to verify. This workflow
    grants no `gh pr edit`, so a note conceived after the PR is opened has no way
    into it — you fold these notes into the PR body at creation (step 9).
-8. Run the test suite (pytest) and the linter (ruff check .) locally; both must pass.
+8. Run the project's checks locally; all must pass. The SDLC (spec → test → code →
+   unit test → build → integration test → deploy) is universal; the toolchain is a
+   per-repo detail. DETECT it from the repo and run ITS tests, linter, and build:
+   `pyproject.toml`/`setup.cfg` → `pytest` and `ruff check .`;
+   `Package.swift`/`*.xcodeproj` → `swift test`/`xcodebuild`;
+   `package.json` → its declared `test`/`lint`/`build` scripts; and so on for other
+   stacks. If the detected toolchain's build/test tools are NOT in this workflow's
+   --allowedTools, or the run needs a runner OS other than `ubuntu-latest` (e.g. an
+   Xcode/iPadOS build needs `macos-latest`), FLAG it in the PR body (per the
+   human-in-the-loop notes) — those live in the human-only workflow skeleton
+   (engineering.yml); do NOT self-edit it, and do NOT fabricate a pass.
 9. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
    open a PR whose body starts with "Closes #${ISSUE_NUMBER}" and summarizes the
    root cause, the fix, the before/after test result, AND any human-in-the-loop

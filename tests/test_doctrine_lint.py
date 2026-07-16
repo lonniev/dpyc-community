@@ -51,10 +51,15 @@ def test_journeyman_prompt_encodes_test_first_discipline():
 
     # 3. A hard prove-the-fix gate: a test that fails before and passes after the change.
     assert "PROVE THE FIX" in text
-    assert "before" in text.lower() and "after" in text.lower()
+    assert "fails BEFORE" in text  # the discipline's emphatic phrasing, not incidental words
 
     # 4. Un-runnable checks are handed to a human, never fabricated as passing.
     assert "human-in-the-loop" in text
+
+    # 5. The human-in-the-loop determination must be sequenced BEFORE PR creation —
+    #    the workflow grants no `gh pr edit`, so a note conceived after the PR opens
+    #    can never reach the body. Ordering is load-bearing, not cosmetic.
+    assert text.index("HUMAN-IN-THE-LOOP for un-runnable checks") < text.index("gh pr create")
 
 
 def test_real_factory_workflows_are_clean():

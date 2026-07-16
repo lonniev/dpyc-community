@@ -13,7 +13,7 @@ STEPS:
    because it does not yet exist). This is a concrete artifact — a failing test,
    a reproduction script, a command whose output shows the gap — not a mental
    note. If the effect can only be observed live (upstream service, Lightning
-   payment, a device/browser), mark it human-in-the-loop per step 9 instead of
+   payment, a device/browser), mark it human-in-the-loop per step 7 instead of
    assuming it.
 3. CLOSE NO-CHANGE IF UNWARRANTED. If that confirming artifact shows there is no
    real problem — the bug does not reproduce, or the requested feature is
@@ -36,16 +36,18 @@ STEPS:
    AFTER it. Run it both ways and quote the actual before/after result in the PR
    body. Never claim the change resolves the request without having run that test
    — an unverified fix is not done.
-7. Run the test suite (pytest) and the linter (ruff check .) locally; both must pass.
-8. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
-   open a PR whose body starts with "Closes #${ISSUE_NUMBER}"
-   and summarizes the root cause, the fix, and the before/after test result.
-   Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
-9. HUMAN-IN-THE-LOOP for un-runnable checks. When a confirming (step 2) or
+7. HUMAN-IN-THE-LOOP for un-runnable checks. When a confirming (step 2) or
    effectiveness (step 6) test cannot run in headless CI — live upstream, a
-   Lightning payment, a device/browser — do NOT fabricate a pass. State in the
-   PR body exactly what a human must do to verify, mark it human-in-the-loop, and
-   defer to them.
+   Lightning payment, a device/browser — do NOT fabricate a pass. Decide here,
+   BEFORE the PR exists, exactly what a human must do to verify. This workflow
+   grants no `gh pr edit`, so a note conceived after the PR is opened has no way
+   into it — you fold these notes into the PR body at creation (step 9).
+8. Run the test suite (pytest) and the linter (ruff check .) locally; both must pass.
+9. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
+   open a PR whose body starts with "Closes #${ISSUE_NUMBER}" and summarizes the
+   root cause, the fix, the before/after test result, AND any human-in-the-loop
+   verification notes from step 7.
+   Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
 10. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
    under your own Journeyman identity. Bookkeeping AFTER the PR: the PR you opened
    already stands, so a graph failure is NON-fatal — do NOT retry a graph tool more

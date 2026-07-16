@@ -1,0 +1,65 @@
+# Funding-outage sentinel — DETERMINISTIC, no LLM.
+#
+# A capped/exhausted ANTHROPIC_API_KEY makes claude-code-action fail on turn 1
+# with is_error:true, num_turns<=1, total_cost_usd==0 — it reached Anthropic,
+# was rejected before any work, and billed nothing. That exact shape is the only
+# thing this action treats as an outage; any OTHER failure (a real tool error, a
+# timeout, a genuine bug) does NOT match, so a legitimate agent failure is never
+# mislabeled as "out of money".
+#
+# On a match it tags the affected issue/PR `awaiting-funds` and leaves a one-time
+# breadcrumb. The credit canary (factory-credit-canary.yml) clears the tag and
+# re-fires the agent automatically once the key is healthy again. This runs as a
+# plain shell step because a failing LLM step cannot report its own failure.
+name: Funding-outage sentinel
+description: Tag an issue/PR awaiting-funds when a failed agent run matches the credit-exhaustion signature.
+
+inputs:
+  target:
+    description: Issue or PR number to tag when the outage signature is present.
+    required: true
+  kind:
+    description: "issue or pr (selects the gh subcommand)."
+    required: false
+    default: issue
+  gh-token:
+    description: Token with issues:write / pull-requests:write on this repo.
+    required: true
+  result-file:
+    description: Path to claude-code-action's execution-output JSON.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
+        TARGET: ${{ inputs.target }}
+        KIND: ${{ inputs.kind }}
+        REPO: ${{ github.repository }}
+        RESULT_FILE: ${{ inputs.result-file }}
+      run: |
+        set -euo pipefail
+        here="${{ github.action_path }}"
+        result_file="${RESULT_FILE:-$RUNNER_TEMP/claude-execution-output.json}"
+        if [ ! -f "$result_file" ]; then
+          echo "No execution-output at $result_file — cannot classify; leaving as-is."
+          exit 0
+        fi
+
+        sig="$(python3 "$here/detect_signature.py" "$result_file")"
+        if [ "$sig" != "yes" ]; then
+          echo "Failure did not match the funding-outage signature (real error, not a dry key). Leaving as-is."
+          exit 0
+        fi
+
+        echo "Funding-outage signature detected — tagging $KIND #$TARGET awaiting-funds."
+        gh "$KIND" edit "$TARGET" --repo "$REPO" --add-label awaiting-funds
+
+        # One-time breadcrumb, so a re-run during the same outage does not spam.
+        if ! gh "$KIND" view "$TARGET" --repo "$REPO" --json comments \
+               --jq '.comments[].body' 2>/dev/null | grep -q 'dpyc-awaiting-funds'; then
+          gh "$KIND" comment "$TARGET" --repo "$REPO" --body-file "$here/awaiting_funds_comment.md"
+        fi

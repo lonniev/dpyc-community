@@ -1,0 +1,129 @@
+# DPYC Factory Credit Canary — the awareness + auto-replay brain for the fleet.
+#
+# Every agent node (Porter, Journeyman, QA, Housekeeper) shares one ANTHROPIC_API_KEY.
+# When it is exhausted/capped, those nodes fail INSTANTLY and SILENTLY — a red X in
+# Actions, no signal, the issue skipped. A failing LLM step cannot report its own
+# failure, so this canary is fully DETERMINISTIC: it probes the key with a 1-token
+# Anthropic request and reads the HTTP result — no agent, no LLM judgment.
+#
+#   BROKE   → ensure the tracking issue (#102 / any open `factory/outage`) is open and
+#             labeled, so a human sees "we're out of money" without digging through logs.
+#   HEALTHY → clear the alarm AND replay: sweep every repo the factory App is installed on
+#             for open issues tagged `awaiting-funds`, swap the tag for `agent/retriage`,
+#             which re-fires Porter on each (see the Service Desk caller's labeled trigger).
+#             Nothing opened during the outage stays skipped.
+#
+# The `awaiting-funds` tag is both the outage marker (set per-issue by the funding
+# sentinel when a node dies) and the replay work-list (cleared here on recovery).
+name: Factory Credit Canary
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 min — cheap (1 token) and catches an outage fast
+  workflow_dispatch:          # run on demand right after topping up the key
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: factory-credit-canary
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      # Fleet-scoped token: omitting `repositories` scopes it to EVERY repo the App is
+      # installed on, which is exactly the factory fleet — the DRY source of truth for
+      # both the recovery sweep and writing the hub tracking issue.
+      - name: Mint fleet-scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      # Deterministic health probe: one 1-token message. 200 = healthy. A non-200 whose
+      # body names a credit/billing/quota problem = broke. Anything else (transient 429/529,
+      # network) is "unknown" — we neither raise nor clear, to avoid false alarms and flapping.
+      - name: Probe the shared key
+        id: probe
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/probe.json -w '%{http_code}' \
+            https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d '{"model":"claude-haiku-4-5-20251001","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}' \
+            || echo "000")
+          body="$(cat /tmp/probe.json 2>/dev/null || true)"
+          echo "HTTP $code"
+          state="unknown"
+          if [ "$code" = "200" ]; then
+            state="healthy"
+          elif echo "$body" | grep -qiE 'credit|billing|quota|too low|exceeded|insufficient|spend'; then
+            state="broke"
+          fi
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          echo "Canary verdict: $state"
+
+      - name: Raise the alarm (broke)
+        if: ${{ steps.probe.outputs.state == 'broke' }}
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          HUB: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Idempotent: if an open factory/outage issue already exists, do nothing (no spam).
+          existing=$(gh issue list --repo "$HUB" --state open --label factory/outage \
+            --json number --jq '.[0].number' 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            echo "Outage already tracked in #$existing — not re-alerting."
+            gh issue edit "$existing" --repo "$HUB" --add-label awaiting-funds >/dev/null 2>&1 || true
+            exit 0
+          fi
+          gh issue create --repo "$HUB" \
+            --title "Factory outage: agent nodes failing — ANTHROPIC_API_KEY exhausted/capped" \
+            --label factory/outage --label awaiting-funds --label sev/critical --label type/bug \
+            --body "The credit canary probed the shared \`ANTHROPIC_API_KEY\` and it was rejected for a credit/billing/quota reason. Every LLM-routed factory node is dark until it is topped up or its cap raised. Issues arriving now are tagged \`awaiting-funds\` and will be re-run automatically on recovery. See lonniev/dpyc-community#102 for the pattern."
+
+      # Recovery: clear the alarm and replay everything deferred during the outage.
+      - name: Clear alarm + replay backlog (healthy)
+        if: ${{ steps.probe.outputs.state == 'healthy' }}
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          HUB: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # 1) Close the hub outage alarm, if one is open.
+          for n in $(gh issue list --repo "$HUB" --state open --label factory/outage \
+                       --json number --jq '.[].number' 2>/dev/null || true); do
+            gh issue comment "$n" --repo "$HUB" --body "✅ Credit canary confirms the shared key is healthy again. Replaying deferred work across the fleet." || true
+            gh issue edit "$n" --repo "$HUB" --remove-label awaiting-funds >/dev/null 2>&1 || true
+            gh issue close "$n" --repo "$HUB" --reason completed || true
+          done
+
+          # 2) Sweep every repo the factory App is installed on for deferred issues and
+          #    re-fire Porter by swapping awaiting-funds -> agent/retriage (a labeled event
+          #    the Service Desk caller listens for). Skip PRs; they carry the tag too when
+          #    QA is added later, and Porter is issue-only.
+          replayed=0
+          for repo in $(gh api --paginate /installation/repositories \
+                          --jq '.repositories[].full_name' 2>/dev/null || true); do
+            for n in $(gh issue list --repo "$repo" --state open --label awaiting-funds \
+                         --json number,isPullRequest \
+                         --jq '.[] | select(.isPullRequest == false) | .number' 2>/dev/null || true); do
+              echo "Replaying $repo#$n"
+              gh issue edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
+              # Adding agent/retriage fires the Service Desk caller's labeled trigger.
+              gh issue edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
+              replayed=$((replayed + 1))
+            done
+          done
+          echo "Replayed $replayed deferred issue(s)."

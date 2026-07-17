@@ -47,6 +47,7 @@ jobs:
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
       - name: Adversarially review the PR
+        id: review
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
@@ -65,6 +66,9 @@ jobs:
                and  gh pr diff ${{ github.event.pull_request.number }}
             2. Find the issue it claims to close and confirm the diff ACTUALLY fixes that
                issue — not something adjacent.
+               If the PR carries the `agent/retriage` label, that is a replay marker (the
+               credit canary re-queued you after a funding outage), NOT a signal about the
+               code — remove it now: gh pr edit ${{ github.event.pull_request.number }} --remove-label agent/retriage
             3. Check the test: does the PR add/extend a test that would fail without the fix?
                A fix with no covering test is a qa/flag.
             4. Check DPYC invariants — flag if the diff:
@@ -90,3 +94,15 @@ jobs:
             # a 20-turn cap once timed out (error_max_turns) and left a stale flag.
             --max-turns 30
             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(sed:*),Bash(grep:*),Read,Glob,Grep"
+
+      # If the review died because the shared key is exhausted/capped, tag the PR
+      # awaiting-funds so it re-runs on recovery instead of silently sitting unreviewed
+      # (and blocking auto-merge). The canary re-fires QA by swapping the tag for
+      # agent/retriage. Deterministic; matches only the credit signature.
+      - name: Flag a funding outage (deterministic)
+        if: ${{ failure() && steps.token.outputs.token != '' }}
+        uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+        with:
+          target: ${{ github.event.pull_request.number }}
+          kind: pr
+          gh-token: ${{ steps.token.outputs.token }}

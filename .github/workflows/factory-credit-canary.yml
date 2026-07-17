@@ -109,21 +109,43 @@ jobs:
             gh issue close "$n" --repo "$HUB" --reason completed || true
           done
 
-          # 2) Sweep every repo the factory App is installed on for deferred issues and
-          #    re-fire Porter by swapping awaiting-funds -> agent/retriage (a labeled event
-          #    the Service Desk caller listens for). Skip PRs; they carry the tag too when
-          #    QA is added later, and Porter is issue-only.
+          # 2) Replay everything deferred during the outage, across every repo the factory
+          #    App is installed on. The re-fire tactic depends on which node was skipped —
+          #    the labels on the item say which:
+          #      - Issue WITHOUT agent/fix -> Porter was skipped     -> add agent/retriage
+          #      - Issue WITH    agent/fix -> Engineering was skipped -> re-toggle agent/fix
+          #      - PR (agent/fix-* branch) -> QA was skipped          -> add agent/retriage
+          #    awaiting-funds is cleared first in every case. Adding agent/retriage fires the
+          #    Service Desk (issues) or QA (pull_request) labeled trigger; re-toggling
+          #    agent/fix fires Engineering. Each caller guards against firing on the others.
           replayed=0
           for repo in $(gh api --paginate /installation/repositories \
                           --jq '.repositories[].full_name' 2>/dev/null || true); do
+
+            # Issues — Porter or Engineering, discriminated by agent/fix.
             for n in $(gh issue list --repo "$repo" --state open --label awaiting-funds \
-                         --json number,isPullRequest \
-                         --jq '.[] | select(.isPullRequest == false) | .number' 2>/dev/null || true); do
-              echo "Replaying $repo#$n"
+                         --json number --jq '.[].number' 2>/dev/null || true); do
+              labels=$(gh issue view "$n" --repo "$repo" --json labels \
+                         --jq '.labels[].name' 2>/dev/null || true)
               gh issue edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
-              # Adding agent/retriage fires the Service Desk caller's labeled trigger.
-              gh issue edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
+              if echo "$labels" | grep -qx 'agent/fix'; then
+                echo "Replaying Engineering on $repo#$n"
+                gh issue edit "$n" --repo "$repo" --remove-label agent/fix >/dev/null 2>&1 || true
+                gh issue edit "$n" --repo "$repo" --add-label agent/fix >/dev/null 2>&1 || true
+              else
+                echo "Replaying Porter on $repo#$n"
+                gh issue edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
+              fi
+              replayed=$((replayed + 1))
+            done
+
+            # PRs — QA. Adding agent/retriage fires the QA caller's labeled trigger.
+            for n in $(gh pr list --repo "$repo" --state open --label awaiting-funds \
+                         --json number --jq '.[].number' 2>/dev/null || true); do
+              echo "Replaying QA on $repo#$n"
+              gh pr edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
+              gh pr edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
               replayed=$((replayed + 1))
             done
           done
-          echo "Replayed $replayed deferred issue(s)."
+          echo "Replayed $replayed deferred item(s)."

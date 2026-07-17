@@ -1,0 +1,2 @@
+<!-- dpyc-awaiting-funds -->
+⏳ **Deferred — the factory is out of LLM credits.** This ran while the shared `ANTHROPIC_API_KEY` was exhausted or capped, so the agent was rejected before doing any work (0 turns, $0). It is tagged `awaiting-funds`; the credit canary clears the tag and re-runs the agent automatically once funding is restored — nothing here is skipped for good. Tracking: lonniev/dpyc-community#102.

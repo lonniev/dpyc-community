@@ -16,6 +16,9 @@ STEPS:
 3. Classify and label with EXACTLY one type/*, one sev/*, and one area/* label.
    Apply all three in a SINGLE command to save steps, e.g.:
      gh issue edit ${ISSUE_NUMBER} --add-label type/bug --add-label sev/high --add-label area/auth
+   If the issue carries `agent/retriage`, that is a replay marker (the credit
+   canary re-queued you after a funding outage), NOT a classification — remove it
+   in the same command: `--remove-label agent/retriage`.
    Choices:
    type/{bug,feature,docs,question,chore}
    sev/{critical,high,medium,low}

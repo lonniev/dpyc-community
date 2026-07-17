@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added — factory credit-outage awareness + auto-replay
+
+- **Funding sentinel** (`factory/actions/funding-sentinel`): a deterministic (no-LLM)
+  composite action wired into the Service Desk failure path. When a triage run fails
+  with the credit-exhaustion signature (`is_error:true`, `num_turns<=1`,
+  `total_cost_usd==0` — reached Anthropic, rejected before any work), it tags the issue
+  `awaiting-funds` and leaves a one-time breadcrumb. A genuine agent error (turns burned,
+  money spent) does **not** match, so real failures are never mislabeled.
+- **Credit canary** (`.github/workflows/factory-credit-canary.yml`): scheduled every 30 min.
+  Probes the shared `ANTHROPIC_API_KEY` with a 1-token request and reads the HTTP result —
+  no agent involved (a failing LLM step can't report its own failure). BROKE → opens/keeps
+  a `factory/outage` tracking issue. HEALTHY → closes the alarm and **replays**: sweeps every
+  repo the factory App is installed on for open `awaiting-funds` issues and swaps the tag for
+  `agent/retriage`, re-firing Porter. Nothing opened during an outage stays skipped.
+- **Labels**: `awaiting-funds` (outage marker + replay work-list) and `agent/retriage`
+  (replay trigger) added to the taxonomy in `apply_labels.sh`.
+- **Service Desk caller** now also triggers on `issues.labeled`, guarded to `agent/retriage`
+  so the canary can re-fire Porter without looping on Porter's own labels. The Porter prompt
+  strips `agent/retriage` during triage.
+
+Rollout after merge (see PR): `apply_labels.sh` fleet-wide (the new labels must exist before
+the sentinel/canary can apply them), then `sync-factory-callers.sh` to propagate the caller
+trigger. Wiring the sentinel into Engineering/QA is a fast-follow.
+
 ## [1.3.0] — 2026-06-11
 
 ### Added

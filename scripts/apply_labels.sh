@@ -43,6 +43,9 @@ labels=(
 
   "qa/pass|0e8a16|QA verified the PR"
   "qa/flag|d93f0b|QA raised a concern on the PR"
+
+  "awaiting-funds|b60205|Deferred: factory out of LLM credits; canary re-runs on recovery"
+  "agent/retriage|5319e7|Replay marker: re-fire Porter after a funding outage"
 )
 
 for entry in "${labels[@]}"; do

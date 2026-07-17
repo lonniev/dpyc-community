@@ -77,6 +77,7 @@ jobs:
           { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
 
       - name: Triage the issue
+        id: triage
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
@@ -89,3 +90,16 @@ jobs:
             --max-turns 20
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2","DPYC_KEYRING_NSEC":"${{ secrets.PORTER_NSEC }}"}}}}'
             --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh issue list:*),Bash(gh search:*),mcp__graph__cypher_record_triage,mcp__graph__cypher_note_rejection,mcp__graph__cypher_link_root_cause"
+
+      # If triage died because the shared key is exhausted/capped, DON'T silently
+      # leave a red X — tag the issue awaiting-funds so it re-runs on recovery. The
+      # sentinel matches ONLY the credit-exhaustion signature; a real triage error
+      # falls through untagged. Deterministic (no LLM) because the failing LLM step
+      # cannot report its own failure.
+      - name: Flag a funding outage (deterministic)
+        if: ${{ failure() && steps.token.outputs.token != '' }}
+        uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+        with:
+          target: ${{ github.event.issue.number }}
+          kind: issue
+          gh-token: ${{ steps.token.outputs.token }}

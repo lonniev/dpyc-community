@@ -27,7 +27,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Rollout after merge (see PR): `apply_labels.sh` fleet-wide (the new labels must exist before
 the sentinel/canary can apply them), then `sync-factory-callers.sh` to propagate the caller
-trigger. Wiring the sentinel into Engineering/QA is a fast-follow.
+trigger.
+
+### Added — extend the sentinel to the whole team (Engineering + QA)
+
+- The funding sentinel now also guards the **Engineering** (`engineering.yml`) and **QA**
+  (`qa.yml`) failure paths, so those nodes defer-and-replay instead of failing silently when
+  the key is capped. Engineering tags its `agent/fix` issue; QA tags its PR.
+- The **canary recovery replay** now routes each deferred item to the node that was skipped:
+  an `awaiting-funds` issue *without* `agent/fix` → re-fire Porter (add `agent/retriage`);
+  *with* `agent/fix` → re-fire Engineering (re-toggle `agent/fix`); an `awaiting-funds` PR →
+  re-fire QA (add `agent/retriage`).
+- The **QA caller** gains a `pull_request.labeled` trigger guarded to `agent/retriage` (so the
+  canary can re-fire QA without looping on its own `qa/pass`/`qa/flag` labels); the QA prompt
+  strips the marker on review. Requires a second `sync-factory-callers.sh` pass.
 
 ## [1.3.0] — 2026-06-11
 

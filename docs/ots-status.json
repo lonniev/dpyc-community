@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-17T23:35:30.945870+00:00",
+  "collected_at": "2026-07-18T00:51:00.299158+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 12,
+    "total_notarizations": 13,
     "confirmed": 0,
     "coverage_percent": 18
   },
@@ -166,6 +166,14 @@
       "display_name": "npub1xdv5j2tf769...",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "3",
+          "root_hash": "a163e1849824435f2fb56a830af196ad313921f86d7f09d2f641958ddad801e1",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-07-18 00:35:49.712721+00",
+          "receipt_count": 3
+        },
         {
           "notarization_id": "2",
           "root_hash": "b27c8cfd50af3e8f4d36bc9a8d165cad50d0ff70e5f97579719aeaac5c7d27f1",

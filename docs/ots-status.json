@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-18T10:45:00.010585+00:00",
+  "collected_at": "2026-07-18T11:36:48.354290+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 13,
@@ -35,24 +35,23 @@
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
       "display_name": "schwab-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "9931b04684388ee232bbd0b1cfeaa3fbea61c29921066d1f1b87dea735fbb14a",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-05 23:46:59.58714+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "10",
+          "root_hash": "c35d79d11794f33620b47cea6454e494465d1a70cd82a286cf286c61e548ca76",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-07-18 10:49:13.055886+00",
+          "receipt_count": 1
+        },
         {
           "notarization_id": "9",
           "root_hash": "4f896a6d5bff4d9e3ec5953a48184f9052726e1f98585eb472afbb1580e83457",
@@ -142,8 +141,8 @@
       "display_name": "optionality-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
@@ -158,8 +157,8 @@
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

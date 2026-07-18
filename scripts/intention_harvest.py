@@ -298,6 +298,16 @@ class RoleKey:
     nsec: str
 
 
+def npub_from_nsec(nsec: str) -> str:
+    """Derive the bech32 npub from an nsec — the nsec fully determines it. So the recurring
+    harvester needs only the JOURNEYMAN_NSEC secret (already set fleet-wide by
+    bootstrap-factory-secrets.sh); no separate npub var to configure or drift."""
+    if not nsec:
+        return ""
+    from pynostr.key import PrivateKey
+    return PrivateKey.from_nsec(nsec).public_key.bech32()
+
+
 async def _list_tools(url: str) -> list[dict[str, Any]]:
     from fastmcp import Client
     async with Client(url) as client:
@@ -418,9 +428,13 @@ def main() -> int:
         _print_plan(calls)
         return 0
 
+    # npub defaults to the value derived from the matching nsec (the nsec determines it),
+    # so a CI run needs only the *_NSEC secret — no npub var to set or keep in sync.
+    jnsec = os.environ.get("JOURNEYMAN_NSEC", "")
+    onsec = os.environ.get("OPERATOR_NSEC", "")
     keys = {
-        JOURNEYMAN: RoleKey(args.journeyman_npub, os.environ.get("JOURNEYMAN_NSEC", "")),
-        OPERATOR: RoleKey(args.operator_npub, os.environ.get("OPERATOR_NSEC", "")),
+        JOURNEYMAN: RoleKey(args.journeyman_npub or npub_from_nsec(jnsec), jnsec),
+        OPERATOR: RoleKey(args.operator_npub or npub_from_nsec(onsec), onsec),
     }
     return asyncio.run(_apply(args.url, calls, keys))
 

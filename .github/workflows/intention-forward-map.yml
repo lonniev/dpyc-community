@@ -36,11 +36,11 @@ jobs:
   harvest:
     runs-on: ubuntu-latest
     # Job-level env so the guard below (a step `if`) can see whether the identity exists.
-    # Only the Journeyman's OWN key — no other operator's nsec is ever placed here.
+    # Only the Journeyman's OWN key — no other operator's nsec is ever placed here. That
+    # secret is already set fleet-wide by scripts/bootstrap-factory-secrets.sh; the npub is
+    # DERIVED from it and CYPHER_MCP_URL defaults in the script — so nothing else to configure.
     env:
       JOURNEYMAN_NSEC: ${{ secrets.JOURNEYMAN_NSEC }}
-      JOURNEYMAN_NPUB: ${{ vars.JOURNEYMAN_NPUB }}
-      CYPHER_MCP_URL: ${{ vars.CYPHER_MCP_URL }}
     steps:
       - uses: actions/checkout@v4
 

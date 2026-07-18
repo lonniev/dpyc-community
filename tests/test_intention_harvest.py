@@ -28,6 +28,14 @@ from intention_harvest import (  # noqa: E402
 )
 
 
+def test_npub_from_nsec_round_trips_and_handles_empty():
+    import pytest
+    PrivateKey = pytest.importorskip("pynostr.key").PrivateKey
+    pk = PrivateKey()  # random keypair
+    assert ih.npub_from_nsec(pk.nsec) == pk.public_key.bech32()  # derives the matching npub
+    assert ih.npub_from_nsec("") == ""                            # empty in -> empty out
+
+
 def test_parse_patent_schedule_reads_the_committed_doc(tmp_path):
     md = tmp_path / "sched.md"
     md.write_text(

@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install tools
-        run: pip install ruff pytest pyyaml
+        run: pip install ruff pytest pyyaml pynostr
 
       - name: Lint
         run: ruff check scripts/ tests/

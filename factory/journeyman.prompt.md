@@ -27,9 +27,14 @@ STEPS:
    label→close step — do NOT edit engineering.yml yourself (the workflow skeleton
    is human-only).
 4. UPSTREAM CHECK — if the true fix belongs in the shared SDK (tollbooth-dpyc)
-   or a sibling repo (per the DRY boundaries in CLAUDE.md), do NOT patch around
-   it here. Instead apply label blocked/upstream to this issue and post the
-   structured escalation comment (see below), then STOP without opening a PR.
+   or a sibling repo, do NOT patch around it here. Resolve the owning service from
+   the forward map instead of guessing: call
+   `mcp__graph__cypher_which_service_handles` (keyword = the failing concern, e.g.
+   "npub proof", "vault") and `mcp__graph__cypher_explain_capability` (name = the
+   capability) to read the authoritative owner and its human-authored why. (This is
+   the machine-queryable form of the DRY boundaries in CLAUDE.md.) When it belongs
+   elsewhere, apply label blocked/upstream, post the structured escalation comment
+   (see below), then STOP without opening a PR.
 5. Otherwise implement the MINIMAL change that fixes the issue. Match the
    surrounding code style. Do not refactor unrelated code.
 6. PROVE THE FIX. Add or extend a test that fails BEFORE your change and passes
@@ -71,6 +76,19 @@ STEPS:
      reason=<why this fix, terse>.
    - `mcp__graph__cypher_bind_rationale_to_symbol` with the SAME decision_id and
      symbol_fqn=<the fully-qualified name of the main symbol you changed>.
+   - UPDATE THE INTENTION GRAPH so triage of the next issue is easier. If your change
+     introduced or clarified a cross-cutting capability (a distinct, reusable ability —
+     not a one-off fix), record it so the Porter can find it:
+       · `mcp__graph__cypher_upsert_capability` (name, owner_repo=${REPO_NAME},
+         keywords=<comma-joined search terms a future issue might use>) — the structure.
+       · `mcp__graph__cypher_bind_capability_to_symbol` (name, symbol_fqn=<the symbol that
+         realizes it>) — so which_service_handles resolves to your code.
+       · `mcp__graph__cypher_suggest_capability_why` (name, inferred_why=<one line>) — your
+         ADVICE on why it exists. It records as `llm-inferred-unverified`: trusted, visible,
+         but never doctrine. You cannot and must not write the authoritative human-authored
+         why — you propose into the graph; the human legislates. (Reuse an existing capability
+         name from `cypher_list_capabilities` when the ability already exists — improve it,
+         don't duplicate it.)
    (Only for the LOCAL-FIX path; skip graph recording entirely on the UPSTREAM path.)
 
 Escalation comment format (only for the UPSTREAM case in step 4):

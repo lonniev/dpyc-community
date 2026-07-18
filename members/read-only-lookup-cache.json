@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-07-03T18:16:39Z",
+  "updated_at": "2026-07-18T02:21:02Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -120,10 +120,10 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-05-23",
-      "display_name": "npub1qchpfnuw76g...",
+      "display_name": "optionality-mcp",
       "services": [
         {
-          "name": "npub1qchpfnuw76g...",
+          "name": "optionality-mcp",
           "url": "https://optionality-mcp.fastmcp.app/mcp",
           "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
         }
@@ -136,10 +136,10 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-04-05",
-      "display_name": "npub1sz60evcudpn...",
+      "display_name": "taxsort-mcp",
       "services": [
         {
-          "name": "npub1sz60evcudpn...",
+          "name": "taxsort-mcp",
           "url": "https://taxsort-mcp.fastmcp.app/mcp",
           "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
         }
@@ -168,10 +168,10 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-06-17",
-      "display_name": "npub1xdv5j2tf769...",
+      "display_name": "cypher-mcp",
       "services": [
         {
-          "name": "npub1xdv5j2tf769...",
+          "name": "cypher-mcp",
           "url": "https://cypher-mcp.fastmcp.app/mcp",
           "description": "MCP Operator registered under Authority npub1zummm5awn88..."
         }

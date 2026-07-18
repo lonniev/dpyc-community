@@ -1,0 +1,61 @@
+# Intention Service — forward-map harvester (Task 2). Central + deterministic (no LLM).
+#
+# Writes only the DERIVED forward map — Services + per-service keyword Capabilities — into
+# the cypher-mcp factory graph through the published, parameterized templates (never raw
+# Cypher). It signs as the JOURNEYMAN, using the factory's OWN agent key. It never touches
+# any other operator's nsec.
+#
+# DRY: there is no committed capabilities/patent mirror YAML. Patent element nodes are
+# parsed straight from the committed docs/patent/REFERENCE-NUMERAL-SCHEDULE.md (`--mode
+# patent`, Journeyman-signed, structural). The AUTHORED pass — the human-authored `why` and
+# the Invariants — writes provenance 'human-authored', is gated to the cypher graph owner's
+# key, and is run occasionally BY that human from a secure file, driven by a TRANSIENT,
+# uncommitted manifest (--manifest), never in shared CI:
+#
+#     OPERATOR_NSEC="$(cat <secure-file>)" \
+#       python scripts/intention_harvest.py --mode authored --manifest <scratch>.yaml \
+#         --operator-npub npub1... --url https://cypher-mcp.fastmcp.app/mcp
+#
+# Keeping the operator key out of shared CI is the point: no domain holds another operator's
+# nsec on a recurring basis.
+name: Intention Forward Map
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * 1"   # weekly, Mondays ~05:23 UTC — the map changes only when tools do
+
+permissions:
+  contents: read
+
+concurrency:
+  group: intention-forward-map
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    # Job-level env so the guard below (a step `if`) can see whether the identity exists.
+    # Only the Journeyman's OWN key — no other operator's nsec is ever placed here.
+    env:
+      JOURNEYMAN_NSEC: ${{ secrets.JOURNEYMAN_NSEC }}
+      JOURNEYMAN_NPUB: ${{ vars.JOURNEYMAN_NPUB }}
+      CYPHER_MCP_URL: ${{ vars.CYPHER_MCP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install --quiet pyyaml fastmcp tollbooth-dpyc
+
+      - name: Preview plan (always)
+        run: python scripts/intention_harvest.py --mode derived --dry-run
+
+      - name: Harvest the derived forward map
+        # Skipped unless the Journeyman identity is configured — keeps the scheduled run
+        # green before the secret/var are in place.
+        if: ${{ env.JOURNEYMAN_NSEC != '' }}
+        run: python scripts/intention_harvest.py --mode derived

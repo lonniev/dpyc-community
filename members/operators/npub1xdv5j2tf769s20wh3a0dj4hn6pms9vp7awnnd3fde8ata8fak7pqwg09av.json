@@ -3,10 +3,10 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-06-17",
-  "display_name": "npub1xdv5j2tf769...",
+  "display_name": "cypher-mcp",
   "services": [
     {
-      "name": "npub1xdv5j2tf769...",
+      "name": "cypher-mcp",
       "url": "https://cypher-mcp.fastmcp.app/mcp",
       "description": "MCP Operator registered under Authority npub1zummm5awn88..."
     }

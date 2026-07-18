@@ -3,10 +3,10 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-05-23",
-  "display_name": "npub1qchpfnuw76g...",
+  "display_name": "optionality-mcp",
   "services": [
     {
-      "name": "npub1qchpfnuw76g...",
+      "name": "optionality-mcp",
       "url": "https://optionality-mcp.fastmcp.app/mcp",
       "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
     }

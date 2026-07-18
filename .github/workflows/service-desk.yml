@@ -84,6 +84,15 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
+          # The Porter's whole job is to triage issues opened by strangers, and
+          # Scout field reports (SDK report_issue) arrive from the dedicated
+          # `dpyc-scout` account — deliberately a NON-collaborator with zero write
+          # access. Without this, claude-code-action's default gate ("actor must
+          # have write permission") refuses to run before the LLM even starts, so
+          # no field report can be triaged. Content stays untrusted (the prompt
+          # handles that) and the tools are issue-only; this input also enables the
+          # action's extra subprocess isolation for untrusted actors.
+          allowed_non_write_users: "dpyc-scout"
           prompt: ${{ steps.prompt.outputs.text }}
           claude_args: |
             --model ${{ inputs.model }}

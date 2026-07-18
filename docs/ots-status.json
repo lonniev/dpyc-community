@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-18T19:42:16.425161+00:00",
+  "collected_at": "2026-07-18T20:32:22.151898+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 14,
@@ -207,8 +207,8 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Server error '502 Bad Gateway' for url 'https://personal-brain.fastmcp.app/mcp'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+      "status": "never",
+      "error": null
     }
   ]
 }

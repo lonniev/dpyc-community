@@ -32,6 +32,7 @@ labels=(
   "sev/low|0e8a16|Minor / cosmetic"
 
   "agent/fix|5319e7|Handed to the Engineering agent"
+  "agent/working|1d76db|An agent is actively working this issue right now"
   "blocked/upstream|e99695|Fix belongs in the SDK or a sibling repo"
 
   "rejected/spam|cfd3d7|Advertising / junk; closed"

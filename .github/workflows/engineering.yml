@@ -58,6 +58,16 @@ jobs:
     needs: detect
     runs-on: ${{ needs.detect.outputs.runner }}
     steps:
+      # Deterministic, before the LLM runs: a visible "an agent is on it" signal, present
+      # exactly while this run is live. The clear step at the end (always()) removes it on
+      # any ending, so the agent never has to remember to tidy up — and a stale agent/working
+      # that outlives its run is itself the "the run hung" tell. github.token is enough
+      # (issues: write) and its label writes don't trigger further workflows.
+      - name: Mark the issue agent/working
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-label agent/working || true
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -131,3 +141,12 @@ jobs:
           target: ${{ github.event.issue.number }}
           kind: issue
           gh-token: ${{ steps.token.outputs.token }}
+
+      # Clear the working signal on ANY ending — PR opened, no-change close, or a fast-fail
+      # (the funding step above has already tagged that one awaiting-funds). Only a genuine
+      # hang skips this, leaving agent/working on as the stuck tell.
+      - name: Clear agent/working when the run ends
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --remove-label agent/working || true

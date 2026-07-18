@@ -128,7 +128,15 @@ jobs:
             --model ${{ inputs.model }}
             --max-turns 70
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"
+            # Verbs the Journeyman may run to do and PROVE a fix. The build set
+            # (swift/xcodebuild/xcrun/pytest/…) plus the macOS/Xcode support verbs a real
+            # simulator-boot + xcodebuild-test flow reaches for on a fresh runner: selecting
+            # the toolchain, booting the Simulator, installing missing tooling, and the
+            # ruby/bundle/xcodeproj path that registers a new test file in the .pbxproj. Plus
+            # the everyday file-inspection/plumbing verbs. Deliberately bounded to read/build/
+            # project-file work — NO curl, bash -c, eval, or rm — so a prompt-injected issue
+            # still cannot reach the network or destroy the tree.
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(xcode-select:*),Bash(open:*),Bash(defaults:*),Bash(brew:*),Bash(ruby:*),Bash(gem:*),Bash(bundle:*),Bash(sw_vers:*),Bash(sysctl:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(sed:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"
 
       # If the fix run died because the shared key is exhausted/capped, tag the issue
       # awaiting-funds so it re-runs on recovery instead of silently stalling with no PR.

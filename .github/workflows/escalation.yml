@@ -47,7 +47,7 @@ jobs:
           set -euo pipefail
 
           # Allowlist of DPYC repos that may receive an escalated issue.
-          allow="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks"
+          allow="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks tollbooth-pricing-studio pricing-studio"
 
           # Idempotency: if we already escalated this issue, stop.
           if gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \

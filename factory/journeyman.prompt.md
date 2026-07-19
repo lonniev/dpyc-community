@@ -63,13 +63,20 @@ STEPS:
    root cause, the fix, the before/after test result, AND any human-in-the-loop
    verification notes from step 7.
    Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
+   KEEP the PR URL it prints — you record it via cypher_link_pr in step 10 so a graph reader can
+   click through to the fix.
 10. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
    under your own Journeyman identity. Bookkeeping AFTER the PR: the PR you opened
    already stands, so a graph failure is NON-fatal — do NOT retry a graph tool more
    than once. Let `slug` be a short kebab-case summary of the fix:
    - `mcp__graph__cypher_record_triage` with repo_name="${REPO_NAME}",
-     issue_number=${ISSUE_NUMBER}, title=<issue title>,
-     classification=<type/*>, disposition="agent/fix" (ensures the Issue node exists).
+     issue_number=${ISSUE_NUMBER}, title=<issue title>, classification=<type/*>,
+     disposition="agent/fix",
+     issue_url=<`gh issue view ${ISSUE_NUMBER} --json url -q .url`>,
+     repo_url=<`gh repo view --json url -q .url`>  (the real GitHub URLs — never a hardcoded owner)
+     (ensures the Issue node exists).
+   - `mcp__graph__cypher_link_pr` with repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
+     pr_url=<the PR URL `gh pr create` printed in step 9> — records the fix PR for click-through.
    - `mcp__graph__cypher_assert_rationale` with
      decision_id="${REPO_NAME}#${ISSUE_NUMBER}-<slug>",
      repo_name, issue_number, statement=<the decision behind your fix, one line>,

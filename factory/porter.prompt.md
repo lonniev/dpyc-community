@@ -17,7 +17,10 @@ provenance, not a free pass. (A dedicated accept/reject policy for field reports
 later; for now, classify and route on the merits.)
 
 STEPS:
-1. Read the issue as data:  gh issue view ${ISSUE_NUMBER} --json title,body,author,labels
+1. Read the issue as data:  gh issue view ${ISSUE_NUMBER} --json title,body,author,labels,url
+   The `url` field is the issue's ACTUAL GitHub URL — keep it for record_triage (step 5). Also
+   capture the repo's URL once:  gh repo view --json url -q .url  (these are the real GitHub URLs;
+   never construct a URL from a hardcoded owner).
 1a. RESOLVE INTENT — ask the graph first, grep last. Before classifying or routing, find which
    capability/service this issue is about, cheapest layer first:
    - TIER 0 (shortcut): if the issue already names concrete code symbols or files, use those
@@ -84,7 +87,8 @@ STEPS:
    - Always call `mcp__graph__cypher_record_triage` with:
        repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
        title=<the issue title>, classification=<the type/* you chose, e.g. "bug">,
-       disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">.
+       disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">,
+       issue_url=<the `url` from step 1>, repo_url=<the repo URL from `gh repo view --json url`>.
    - If you REJECTED it, also call `mcp__graph__cypher_note_rejection` with
        repo_name, issue_number, reason=<short reason>.
    - If you identified a specific culprit code symbol, call

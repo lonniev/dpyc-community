@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-19T13:51:21.974243+00:00",
+  "collected_at": "2026-07-19T14:40:21.504234+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 3,
@@ -20,8 +20,8 @@
       "display_name": "Lonnie-Authority",
       "role": "authority",
       "notarizations": [],
-      "status": "unreachable",
-      "error": "Expecting value: line 1 column 1 (char 0)"
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
@@ -60,8 +60,8 @@
       "display_name": "optionality-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",

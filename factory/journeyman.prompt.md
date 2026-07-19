@@ -89,6 +89,12 @@ STEPS:
          why — you propose into the graph; the human legislates. (Reuse an existing capability
          name from `cypher_list_capabilities` when the ability already exists — improve it,
          don't duplicate it.)
+     BACKFILL LEGACY COVERAGE too: if — while working this fix or during your upstream check —
+     you found that EXISTING code already realizes a theme the graph had NO capability for (a
+     Tier-1 miss you had to resolve by reading code), record THAT with the same three calls,
+     binding to the existing symbol. This is how legacy code gets covered: every graph miss you
+     resolve becomes a capability the next triage can find, so fewer questions need code-reading
+     over time. Same provenance rule — `suggest_capability_why` is advice, never doctrine.
    (Only for the LOCAL-FIX path; skip graph recording entirely on the UPSTREAM path.)
 
 Escalation comment format (only for the UPSTREAM case in step 4):

@@ -84,6 +84,14 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
+          # The Service Desk fires on two actors, and BOTH must be allowed or the run is
+          # rejected before the LLM starts. (1) A human/Scout opening an issue — handled by
+          # allowed_non_write_users below. (2) The DPYC Agentic Desk App writing a label —
+          # the credit canary re-fires Porter on recovery by adding `agent/retriage` AS THE
+          # App bot, and escalation.yml files issues as the bot too. Engineering already
+          # lists this bot; the Service Desk must as well, or every canary auto-replay of a
+          # Porter-side issue dies with "Workflow initiated by non-human actor".
+          allowed_bots: "dpyc-agentic-desk[bot]"
           # The Porter's whole job is to triage issues opened by strangers, and
           # Scout field reports (SDK report_issue) arrive from the dedicated
           # `dpyc-scout` account — deliberately a NON-collaborator with zero write

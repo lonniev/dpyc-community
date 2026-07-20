@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-20T20:45:49.771586+00:00",
+  "collected_at": "2026-07-20T21:42:47.392628+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 17,
@@ -150,8 +150,8 @@
       "display_name": "optionality-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",

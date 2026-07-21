@@ -50,9 +50,14 @@ STEPS:
 3. Classify and label with EXACTLY one type/*, one sev/*, and one area/* label.
    Apply all three in a SINGLE command to save steps, e.g.:
      gh issue edit ${ISSUE_NUMBER} --add-label type/bug --add-label sev/high --add-label area/auth
-   If the issue carries `agent/retriage`, that is a replay marker (the credit
-   canary re-queued you after a funding outage), NOT a classification — remove it
-   in the same command: `--remove-label agent/retriage`.
+   If the issue carries `agent/retriage`, that is a replay marker — remove it in the
+   same command: `--remove-label agent/retriage`. It means ONE of two things, and the
+   issue tells you which: (a) the credit canary re-queued you after a funding outage,
+   or (b) a repo you escalated to DECLINED this issue and routed the reason back (look
+   for a `<!-- dpyc-route-back -->` comment naming the decliner and their reason). In
+   case (b) you are re-homing a rejected escalation — read that reason and obey the
+   PASSED-REPOS GUARD in step 4d: route it somewhere NEW, never back to a repo that
+   already declined.
    Choices:
    type/{bug,feature,docs,question,chore}
    sev/{critical,high,medium,low}
@@ -81,7 +86,27 @@ STEPS:
       Resolve `home_repo` from the forward map instead of guessing: call
       `mcp__graph__cypher_which_service_handles` (keyword = the concern) and
       `mcp__graph__cypher_explain_capability` to confirm the owning service and the
-      reason (its authored why is your `reason:` line). ORDER MATTERS: FIRST post ONE
+      reason (its authored why is your `reason:` line).
+
+      PASSED-REPOS GUARD (anti-ping-pong). This issue may be a RE-TRIAGE: a repo you
+      escalated to once already DECLINED it and routed the reason back (you are here
+      because it carries `agent/retriage`, its thread has a `<!-- dpyc-route-back -->`
+      comment with the decliner's reason, and the origin issue holds a
+      `<!-- dpyc-route-history: repoA,repoB -->` marker). Before you pick a home_repo:
+        - Read the decline reason(s) on the issue and call
+          `mcp__graph__cypher_routing_history(repo_name="${REPO_NAME}",
+          issue_number=${ISSUE_NUMBER})` to get the durable `passed_repos` set.
+        - NEVER escalate to a repo in that passed set — that is the ping-pong. Pick a
+          DIFFERENT owner the decline reason points at (the decliner often NAMES the
+          true home — e.g. "rendering is the caller's job → excalibur-mcp"; a Swift/iOS
+          concern → tollbooth-pricing-studio). Let their evidence redirect you.
+        - If the only sensible home is already in the passed set (everyone has punted),
+          do NOT re-escalate. Either keep it LOCAL (agent/fix here, with a handoff
+          explaining the standoff) or, if it genuinely cannot live anywhere, apply
+          `blocked/arbitration` and @-mention the owner for a human decision. Escalating
+          into the passed set is never an option.
+
+      ORDER MATTERS: FIRST post ONE
       comment in EXACTLY this machine-readable format, and ONLY THEN apply label
       blocked/upstream.
       The label is what triggers escalation.yml, so the comment must already exist

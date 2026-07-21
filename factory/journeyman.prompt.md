@@ -41,6 +41,26 @@ STEPS:
    the machine-queryable form of the DRY boundaries in CLAUDE.md.) When it belongs
    elsewhere, apply label blocked/upstream, post the structured escalation comment
    (see below), then STOP without opening a PR.
+
+   ESCALATED-CHILD OVERRIDE (applies to steps 3 and 4). If THIS issue is an
+   escalated child — its body contains `<!-- dpyc-escalated-child -->` and an
+   `Origin: <url>` line — then a no-change close (step 3) or a re-route to yet
+   another repo (step 4) must NOT be done unilaterally: that is how issue
+   ping-pong starts. Instead, route your decision BACK to the origin so ITS Porter
+   re-homes with your reason in hand:
+     - Post a comment on this child beginning `<!-- dpyc-rejection -->` followed by
+       one plain sentence: which repo actually owns it (resolved via
+       `cypher_which_service_handles` / `cypher_explain_capability`), or why it is a
+       no-op. This is the reason the origin will read.
+     - Apply the label `rejected/upstream` (this fires the reverse-routing workflow).
+     - Best-effort, record it in the graph so the origin's passed-repos set is
+       durable: `cypher_route_rejection(origin_repo, origin_issue, by_repo=<this
+       repo>, reason)` — parse origin_repo/origin_issue from the `Origin:` URL.
+     - Then STOP. Do NOT close this child yourself and do NOT open a new issue in a
+       third repo. The deterministic workflow carries your reason to the origin,
+       reactivates its Porter (agent/retriage), and closes this child — or, if the
+       issue has already bounced (a repeat repo or 3+ hops), freezes it
+       (blocked/arbitration) for a human instead of letting it ping-pong.
 5. Otherwise implement the MINIMAL change that fixes the issue. Match the
    surrounding code style. Do not refactor unrelated code.
 6. PROVE THE FIX. Add or extend a test that fails BEFORE your change and passes

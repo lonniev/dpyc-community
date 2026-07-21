@@ -34,6 +34,8 @@ labels=(
   "agent/fix|5319e7|Handed to the Engineering agent"
   "agent/working|1d76db|An agent is actively working this issue right now"
   "blocked/upstream|e99695|Fix belongs in the SDK or a sibling repo"
+  "rejected/upstream|e99695|Target repo declined an escalation; routes the reason back to the origin"
+  "blocked/arbitration|b60205|Routing standoff — two repos disagree on ownership; a human must decide"
 
   "rejected/spam|cfd3d7|Advertising / junk; closed"
   "rejected/out-of-scope|cfd3d7|Out of this repo's scope; closed"

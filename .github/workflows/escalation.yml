@@ -38,6 +38,7 @@ jobs:
           permission-issues: write
 
       - name: Route to the home repo
+        if: github.event.label.name == 'blocked/upstream'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           OWNER: ${{ github.repository_owner }}
@@ -112,3 +113,74 @@ jobs:
 
           gh issue comment "$ISSUE" --repo "$ORIGIN_REPO" --body \
             "$(printf '<!-- dpyc-escalated -->\nRouted upstream to %s — the home repo owns this fix per the DPYC DRY boundaries. This issue stays open (blocked/upstream) and closes when the upstream fix propagates.' "$url")"
+
+      # ── Reverse path — the anti-ping-pong loop ────────────────────────────
+      # When a TARGET repo declines an escalated child (label rejected/upstream),
+      # route the reason BACK to the origin and reactivate its Porter — but never
+      # let the same issue oscillate: a repeat repo or 3+ hops freezes it for a
+      # human instead of bouncing. This is the only way a rejection reaches the
+      # origin's re-triage, so the origin can pick a DIFFERENT home on its own.
+      - name: Route rejection back to origin
+        if: github.event.label.name == 'rejected/upstream'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+          CHILD_REPO: ${{ github.repository }}
+          CHILD: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          child_short="${CHILD_REPO#*/}"
+
+          # Only escalated children route back; a normal rejected issue does not.
+          childbody=$(gh issue view "$CHILD" --repo "$CHILD_REPO" --json body --jq '.body')
+          if ! printf '%s' "$childbody" | grep -q '<!-- dpyc-escalated-child -->'; then
+            echo "Not an escalated child; nothing to route back."
+            exit 0
+          fi
+
+          # Parse the Origin: backlink the forward path stamped into the child body.
+          origin_url=$(printf '%s\n' "$childbody" | grep -m1 -E '^Origin:[[:space:]]' | sed -E 's#^Origin:[[:space:]]*##')
+          origin_path=$(printf '%s' "$origin_url" | sed -E 's#https?://github.com/##; s#/issues/# #')
+          origin_repo=$(printf '%s' "$origin_path" | awk '{print $1}')
+          origin_num=$(printf '%s' "$origin_path" | awk '{print $2}')
+          if [ -z "$origin_repo" ] || [ -z "$origin_num" ]; then
+            echo "Could not parse Origin backlink; leaving for a human."
+            exit 0
+          fi
+
+          # The decline reason: newest <!-- dpyc-rejection --> comment on the child.
+          reason=$(gh issue view "$CHILD" --repo "$CHILD_REPO" --json comments \
+                     --jq '[.comments[].body | select(contains("<!-- dpyc-rejection -->"))] | last // ""' \
+                     | sed -E 's/<!--[^>]*-->//g' | tr -s '[:space:]' ' ' | sed -E 's/^ +| +$//g')
+          [ -n "$reason" ] || reason="(no reason given)"
+
+          # Route-history marker on the origin — which repos have already declined.
+          hist=$(gh issue view "$origin_num" --repo "$origin_repo" --json body,comments \
+                   --jq '[.body] + [.comments[].body] | map(select(contains("dpyc-route-history:"))) | last // ""' \
+                   | sed -nE 's/.*dpyc-route-history:[[:space:]]*([A-Za-z0-9,._-]*).*/\1/p')
+          case ",$hist," in *",$child_short,"*) repeat=1 ;; *) repeat=0 ;; esac
+          newhist="${hist:+$hist,}$child_short"
+          hops=$(printf '%s' "$newhist" | tr ',' '\n' | grep -c .)
+
+          # Always: post the reason back on the origin and close the handled child.
+          gh issue comment "$origin_num" --repo "$origin_repo" --body \
+            "$(printf '<!-- dpyc-route-back -->\n**%s declined** this escalation:\n\n> %s\n\n<!-- dpyc-route-history: %s -->' "$child_short" "$reason" "$newhist")"
+          gh issue close "$CHILD" --repo "$CHILD_REPO" --reason "not planned" >/dev/null 2>&1 || true
+
+          if [ "$repeat" = "1" ] || [ "$hops" -ge 3 ]; then
+            # Ping-pong: freeze for a human. Never bounce again.
+            gh label create "blocked/arbitration" --repo "$origin_repo" --color b60205 \
+              --description "Routing standoff — two repos disagree; a human must decide" --force >/dev/null 2>&1 || true
+            gh issue reopen "$origin_num" --repo "$origin_repo" >/dev/null 2>&1 || true
+            gh issue edit "$origin_num" --repo "$origin_repo" \
+              --remove-label "blocked/upstream" --add-label "blocked/arbitration" >/dev/null 2>&1 || true
+            gh issue comment "$origin_num" --repo "$origin_repo" --body \
+              "$(printf '<!-- dpyc-arbitration -->\n@%s — routing standoff after %s hops (%s). The repos disagree on ownership; a human should decide the home.' "$OWNER" "$hops" "$newhist")"
+          else
+            # Reactivate the origin Porter WITH the reason now on the issue.
+            gh label create "agent/retriage" --repo "$origin_repo" --color 5319e7 \
+              --description "Replay marker: re-fire Porter" --force >/dev/null 2>&1 || true
+            gh issue reopen "$origin_num" --repo "$origin_repo" >/dev/null 2>&1 || true
+            gh issue edit "$origin_num" --repo "$origin_repo" --remove-label "blocked/upstream" >/dev/null 2>&1 || true
+            gh issue edit "$origin_num" --repo "$origin_repo" --add-label "agent/retriage" >/dev/null 2>&1 || true
+          fi

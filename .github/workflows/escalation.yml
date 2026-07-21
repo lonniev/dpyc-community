@@ -50,13 +50,6 @@ jobs:
           # Allowlist of DPYC repos that may receive an escalated issue.
           allow="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks tollbooth-pricing-studio pricing-studio"
 
-          # Idempotency: if we already escalated this issue, stop.
-          if gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \
-               --jq '.comments[].body' | grep -q '<!-- dpyc-escalated -->'; then
-            echo "Already escalated; nothing to do."
-            exit 0
-          fi
-
           # Pull the newest structured escalation block from the issue's comments.
           body=$(gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \
                    --jq '[.comments[].body | select(contains("<!-- dpyc-escalation -->"))] | last // ""')
@@ -82,6 +75,17 @@ jobs:
           esac
           if [ "$home_repo" = "${ORIGIN_REPO#*/}" ]; then
             echo "home_repo equals origin; not a cross-repo escalation. Skipping."
+            exit 0
+          fi
+
+          # Per-home idempotency: bail only if we have ALREADY escalated to THIS home.
+          # A stale escalation to a DIFFERENT home (one that later declined) must NOT
+          # block a re-home — that unscoped "any dpyc-escalated marker → stop" check
+          # was the anti-ping-pong dead end: once declined, an issue could never be
+          # re-routed to a new owner. Each home is still escalated at most once.
+          if gh issue view "$ISSUE" --repo "$ORIGIN_REPO" --json comments \
+               --jq '.comments[].body' | grep -qF "<!-- dpyc-escalated: $home_repo -->"; then
+            echo "Already escalated to $home_repo; nothing to do."
             exit 0
           fi
 
@@ -112,7 +116,7 @@ jobs:
           echo "Opened upstream issue: $url"
 
           gh issue comment "$ISSUE" --repo "$ORIGIN_REPO" --body \
-            "$(printf '<!-- dpyc-escalated -->\nRouted upstream to %s — the home repo owns this fix per the DPYC DRY boundaries. This issue stays open (blocked/upstream) and closes when the upstream fix propagates.' "$url")"
+            "$(printf '<!-- dpyc-escalated: %s -->\nRouted upstream to %s — the home repo owns this fix per the DPYC DRY boundaries. This issue stays open (blocked/upstream) and closes when the upstream fix propagates.' "$home_repo" "$url")"
 
       # ── Reverse path — the anti-ping-pong loop ────────────────────────────
       # When a TARGET repo declines an escalated child (label rejected/upstream),

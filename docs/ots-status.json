@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-21T08:01:30.479724+00:00",
+  "collected_at": "2026-07-21T09:11:54.251786+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 18,
@@ -12,8 +12,8 @@
       "display_name": "Tollbooth Authority New England",
       "role": "authority",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -28,8 +28,8 @@
       "display_name": "Tollbooth-Authority-NorthAmerica",
       "role": "authority",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",

@@ -21,6 +21,12 @@ STEPS:
    The `url` field is the issue's ACTUAL GitHub URL — keep it for record_triage (step 5). Also
    capture the repo's URL once:  gh repo view --json url -q .url  (these are the real GitHub URLs;
    never construct a URL from a hardcoded owner).
+1·claim. IMMEDIATELY mark the graph that you are on it — BEFORE the locate/triage work below,
+   so the dashboard shows this issue as actively worked, not only after you finish. Call
+   `mcp__graph__cypher_claim_issue` with repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
+   activity="triaging", worked_by="porter", title=<the issue title from step 1>,
+   issue_url=<the `url` from step 1>. Best-effort heartbeat — a graph failure is non-fatal; do
+   NOT retry more than once, and never let it change your triage decision.
 1a. TRANSLATE & LOCATE — turn the rough issue into an actionable spec, then let the graph SCOPE
    your search so you grep a few files, never the whole repo (that re-tokenizing is the cost we are
    cutting). Track HOW you located the code in `resolved_via` (recorded in step 5).

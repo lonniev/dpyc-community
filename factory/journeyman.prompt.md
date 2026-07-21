@@ -12,6 +12,13 @@ STEPS:
    treat the listed invariants as hard constraints. If the block is absent (older issue), locate
    the code yourself, cheapest layer first: `mcp__graph__cypher_context_pack` → grep only within
    the files it returns.
+1b. CLAIM IT IN THE GRAPH — before the (often long) confirm/implement/test work below, mark that
+   Engineering is actively on this issue so the dashboard shows it as work-in-progress, not only
+   after your PR lands. Call `mcp__graph__cypher_claim_issue` with repo_name="${REPO_NAME}",
+   issue_number=${ISSUE_NUMBER}, activity="fixing", worked_by="journeyman", title=<the issue
+   title>, issue_url=<`gh issue view ${ISSUE_NUMBER} --json url -q .url`>. Best-effort heartbeat —
+   non-fatal; do NOT retry more than once. (This is also what makes an escalation-minted child —
+   which never saw the Porter — appear in the graph the moment you start.)
 2. CONFIRM THE PROBLEM FIRST. Before changing anything, conceive and — where it
    can run headless — actually run a test or demonstration that establishes the
    reported defect, OR the absence of a requested feature (a missing feature is

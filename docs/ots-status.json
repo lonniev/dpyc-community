@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-07-22T20:46:29.980057+00:00",
+  "collected_at": "2026-07-22T21:40:50.412793+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 19,
+    "total_notarizations": 17,
     "confirmed": 0,
-    "coverage_percent": 27
+    "coverage_percent": 18
   },
   "operators": [
     {
@@ -150,24 +150,24 @@
       "display_name": "optionality-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
@@ -230,26 +230,9 @@
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
       "display_name": "thebrain-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "2",
-          "root_hash": "bb0cb7c636eb5643de25b3d5a9a2093d3eb06341b4d4b1a002a8781051d41eb5",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-18 23:59:10.039043+00",
-          "receipt_count": 2
-        },
-        {
-          "notarization_id": "1",
-          "root_hash": "50332ab5843c26be53e260e0453a0ecc755f209817977bcbf1de7395da7e8ca0",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-18 21:14:09.744465+00",
-          "receipt_count": 1
-        }
-      ],
-      "status": "submitted",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-22T18:42:50.128307+00:00",
+  "collected_at": "2026-07-22T19:48:14.415942+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 19,
@@ -53,6 +53,14 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "12",
+          "root_hash": "67eedb49aa4d1b52cee649b4f9dfb9cf8b4944477611e52d1216eb48a8bd4db5",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-22 19:08:53.95707+00",
+          "receipt_count": 2
+        },
         {
           "notarization_id": "11",
           "root_hash": "dfb8503af3acd9b1cdf263b72e4170f719e0c07e60a8b2897f35061742cb9559",
@@ -124,14 +132,6 @@
           "status": "submitted",
           "created_at": "2026-07-06 10:27:32.72048+00",
           "receipt_count": 3
-        },
-        {
-          "notarization_id": "2",
-          "root_hash": "9c250391c51a8e55905b12d4f93843437ff209af2de970cf05af0c3ad3e9e4d6",
-          "leaf_count": 1,
-          "status": "submitted",
-          "created_at": "2026-07-02 12:02:05.533633+00",
-          "receipt_count": 2
         }
       ],
       "status": "submitted",

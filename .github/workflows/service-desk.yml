@@ -39,7 +39,7 @@ permissions:
 
 jobs:
   triage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # pinned: ubuntu-24.04 breaks the agent bash sandbox (bwrap/AppArmor userns)
     steps:
       - uses: actions/checkout@v4
 

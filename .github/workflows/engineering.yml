@@ -51,7 +51,7 @@ jobs:
           if find . -maxdepth 3 \( -name '*.xcodeproj' -o -name '*.xcworkspace' -o -name 'Package.swift' \) -print -quit | grep -q .; then
             echo "runner=macos-latest" >> "$GITHUB_OUTPUT"; echo "Xcode/Swift project detected -> macos-latest"
           else
-            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"; echo "no Xcode/Swift project -> ubuntu-latest"
+            echo "runner=ubuntu-22.04" >> "$GITHUB_OUTPUT"; echo "no Xcode/Swift project -> ubuntu-22.04 (24.04 breaks the agent bash sandbox)"
           fi
 
   implement:

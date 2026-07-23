@@ -33,7 +33,7 @@ jobs:
           permission-issues: write
 
       - name: Sweep the fleet and update the digest
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@v1.0.179  # pinned: v1.0.180+ broke the bash sandbox (bwrap "/home/.mcp.json" denied); floating @v1 regressed the whole factory
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:

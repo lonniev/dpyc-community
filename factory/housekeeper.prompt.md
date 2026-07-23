@@ -16,11 +16,29 @@ STEPS:
 1. Survey open issues and their linked PRs:
      gh issue list --state open --limit 100 --json number,title,labels,updatedAt
      gh pr list   --state open --limit 100 --json number,title,headRefName,labels,updatedAt
-2. CLOSE-THE-LOOP — an open issue whose fix already MERGED but did not auto-close
-   (a `Closes #N` that never fired — a cross-repo escalation, or the issue was
-   reopened after the merge). Evidence REQUIRED: confirm the PR is merged
-   (`gh pr view <pr> --json state,mergedAt` shows state MERGED). Only then:
-     gh issue close <n> --comment "Fixed by #<pr> (merged <date>) — the fix has landed. Closing; reopen if this recurs."
+2. CLOSE-THE-LOOP — an open issue whose fix already landed but did not auto-close.
+   Two shapes; BOTH require OBJECTIVE evidence (merge/close state, never prose):
+
+   (a) Same-repo PR merged — a `Closes #N` that never fired, or the issue was
+       reopened after the merge. Confirm the PR is merged
+       (`gh pr view <pr> --json state,mergedAt` shows state MERGED). Only then:
+         gh issue close <n> --comment "Fixed by #<pr> (merged <date>) — the fix has landed. Closing; reopen if this recurs."
+
+   (b) Cross-repo escalation passthrough — an open `blocked/upstream` issue whose
+       upstream fix has now COMPLETED. These stay open by design until the home
+       repo finishes, and often NO PR in this repo will ever close them, so shape
+       (a) alone leaves them stale. Resolve by following the escalation link:
+         - Take the NEWEST comment containing "Routed upstream to" — it names the
+           current home child (e.g. https://github.com/<owner>/<home>/issues/<m>).
+           A re-homed issue has several; always use the LAST one.
+         - Inspect that child:
+             gh issue view <m> --repo <owner>/<home> --json state,stateReason
+         - Close THIS passthrough ONLY when the child is state CLOSED and
+           stateReason COMPLETED:
+             gh issue close <n> --comment "Upstream fix completed in <owner>/<home>#<m> — the home repo owns and has shipped this fix. Closing this blocked/upstream passthrough; reopen if it recurs."
+         - LEAVE it open otherwise: child still OPEN (genuinely blocked), or child
+           CLOSED as NOT PLANNED (a decline — the reverse route-back path owns that;
+           do not touch `blocked/upstream`).
 3. UNSTICK-BY-FLAGGING — an open `agent/fix-*` PR that has stalled: QA failed or
    never ran, a `qa/flag` left unaddressed, or the branch is behind main / no
    progress for 2+ days. Do NOT re-run, rebase, or merge it. Post ONE comment on

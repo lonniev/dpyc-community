@@ -30,6 +30,21 @@ no-provenance / advice templates; only the Operator key reaches the 'human-autho
 This script merely signs each call with the right role's nsec; the cypher-mcp gate is the
 enforcer. See ``cypher-mcp/scripts/factory_vocabulary.py``.
 
+MANIFEST — link generously, never gate. Each authored node carries OPTIONAL connection
+fields; populate one whenever the code or the patent doc makes it derivable, and simply
+OMIT it (authoring the node anyway) when it does not. A good invariant or capability is
+NEVER withheld just because a link can't be made 100% — the graph is allowed to be
+partially connected.
+
+  capabilities: [{name, keywords, owners[], consumers[], symbols[<fqn>], why, patent_refs[<int>]}]
+  invariants:   [{name, rule, guards[<fqn>], patent_refs[<int>]}]
+
+The harvest already reflects this: ``assert_invariant`` needs only name+rule, and
+``guard_invariant_symbol`` / ``link_invariant_to_patent`` / ``bind_capability_to_symbol`` /
+``link_capability_to_patent`` fire ONLY when their array is populated. Every run prints a
+``connection_coverage`` summary listing nodes still missing a derivable link — a nudge to
+connect what's connectable, never a failure or a blocked write.
+
 OPSEC — the two passes run in different places, with different keys:
   * ``--mode derived`` is the RECURRING job (scheduled CI), signed with the factory's OWN
     ``JOURNEYMAN_NSEC``. No other operator's nsec is ever placed in that CI.
@@ -357,6 +372,46 @@ async def _apply(url: str, calls: list[Call], keys: dict[str, RoleKey]) -> int:
     return 0 if ok == len(calls) else 1
 
 
+def connection_coverage(manifest: dict[str, Any]) -> list[str]:
+    """Non-fatal coverage nudges for an authored manifest: which nodes still carry no
+    derivable link, so the author can add one WHEN the code/patent makes it available.
+
+    This is advice, never a gate. An invariant that guards nothing, or a capability with
+    no symbol/patent, is authored all the same — we surface the gap so a connectable link
+    isn't forgotten, but we never deny a good node just because it can't be fully connected.
+    """
+    invs = manifest.get("invariants", []) or []
+    caps = manifest.get("capabilities", []) or []
+    lines: list[str] = []
+
+    def note(label: str, names: list[str]) -> None:
+        if names:
+            shown = ", ".join(names[:8]) + (" …" if len(names) > 8 else "")
+            lines.append(f"  ~ {len(names)} {label}: {shown}")
+
+    note("invariant(s) guard no symbol (add guards[] when derivable)",
+         [i["name"] for i in invs if i.get("name") and not (i.get("guards") or [])])
+    note("invariant(s) trace no patent (add patent_refs[] when derivable)",
+         [i["name"] for i in invs if i.get("name") and not (i.get("patent_refs") or [])])
+    note("capability(ies) bind no symbol (add symbols[] when derivable)",
+         [c["name"] for c in caps if c.get("name") and not (c.get("symbols") or [])])
+    note("capability(ies) trace no patent (add patent_refs[] when derivable)",
+         [c["name"] for c in caps if c.get("name") and not (c.get("patent_refs") or [])])
+    note("capability(ies) carry no authored why (add why when known)",
+         [c["name"] for c in caps if c.get("name") and not c.get("why")])
+    return lines
+
+
+def _print_coverage(manifest: dict[str, Any]) -> None:
+    cov = connection_coverage(manifest)
+    if not cov:
+        return
+    print("Connection coverage — connect these WHEN the code/patent makes it derivable; "
+          "never omit a good node just because a link is missing:", file=sys.stderr)
+    for line in cov:
+        print(line, file=sys.stderr)
+
+
 def _print_plan(calls: list[Call]) -> None:
     by_role: dict[str, int] = {}
     for c in calls:
@@ -423,6 +478,11 @@ def main() -> int:
                 print(f"  ! tools/list failed for {svc.name}: {exc}", file=sys.stderr)
 
     calls = build_plan(args.mode, services, tools_by_service, manifest, patent_elements)
+
+    # Non-fatal nudge: surface authored nodes still missing a derivable link, so the
+    # author connects what's connectable — without ever blocking a good node.
+    if manifest:
+        _print_coverage(manifest)
 
     if args.dry_run:
         _print_plan(calls)

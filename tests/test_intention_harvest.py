@@ -216,3 +216,31 @@ def test_provenance_is_never_a_call_param():
         [Service("s", "npub1", "u", "d")], {"s": [{"name": "s_do"}]})
     for c in calls:
         assert "provenance" not in c.params, c.tool
+
+
+def test_connection_coverage_is_a_nudge_never_a_gate():
+    # A fully-linked node is silent; a node missing a derivable link is surfaced as a
+    # nudge — but the harvester still plans/authors it (assert_invariant needs only
+    # name+rule). Coverage never removes a call or raises.
+    manifest = {
+        "invariants": [
+            {"name": "fully linked", "rule": "MUST", "guards": ["a.b"], "patent_refs": [610]},
+            {"name": "bare invariant", "rule": "renew"},  # no guards, no patent
+        ],
+        "capabilities": [
+            {"name": "linked cap", "symbols": ["x.y"], "patent_refs": [400], "why": "because"},
+            {"name": "bare cap", "owners": ["r"]},  # no symbols/patent/why
+        ],
+    }
+    cov = ih.connection_coverage(manifest)
+    # The linked nodes are NOT nagged.
+    assert not any("fully linked" in line for line in cov)
+    assert not any("linked cap" in line for line in cov)
+    # The unlinked nodes ARE surfaced (as advice).
+    assert any("bare invariant" in line for line in cov)
+    assert any("bare cap" in line for line in cov)
+    # And the bare invariant is still authored — coverage does not gate the write.
+    calls = ih.plan_authored(manifest)
+    assert any(c.tool == "assert_invariant" and c.params.get("name") == "bare invariant" for c in calls)
+    # Empty manifest: no nudges, no crash.
+    assert ih.connection_coverage({}) == []

@@ -75,7 +75,7 @@ jobs:
           { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
 
       - name: Tidy the backlog
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@v1.0.179  # pinned: v1.0.180+ broke the bash sandbox (bwrap "/home/.mcp.json" denied); floating @v1 regressed the whole factory
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:

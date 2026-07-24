@@ -46,6 +46,16 @@ jobs:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
+      # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
+      # /home (not /home/runner), so it can't create /home/.mcp.json and every agent
+      # Bash command dies. Make /home writable + seed the file. Linux-only (bwrap is
+      # not used on the macOS Journeyman runs).
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
       - name: Adversarially review the PR
         id: review
         uses: anthropics/claude-code-action@v1

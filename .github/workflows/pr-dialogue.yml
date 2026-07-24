@@ -91,6 +91,16 @@ jobs:
       - name: Install the agent keyring
         run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
 
+      # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
+      # /home (not /home/runner), so it can't create /home/.mcp.json and every agent
+      # Bash command dies. Make /home writable + seed the file. Linux-only (bwrap is
+      # not used on the macOS Journeyman runs).
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
       - name: Investigate and answer
         uses: anthropics/claude-code-action@v1
         env:

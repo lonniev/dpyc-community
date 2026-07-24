@@ -146,7 +146,7 @@ jobs:
               labels=$(gh issue view "$n" --repo "$repo" --json labels \
                          --jq '.labels[].name' 2>/dev/null || true)
               gh issue edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
-              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind issue --number "$n" --state clear || true
+              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind issue --number "$n" --state clear --url "$GITHUB_SERVER_URL/$repo/issues/$n" || true
               if echo "$labels" | grep -qx 'agent/fix'; then
                 echo "Replaying Engineering on $repo#$n"
                 gh issue edit "$n" --repo "$repo" --remove-label agent/fix >/dev/null 2>&1 || true
@@ -163,7 +163,7 @@ jobs:
                          --json number --jq '.[].number' 2>/dev/null || true); do
               echo "Replaying QA on $repo#$n"
               gh pr edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
-              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind pr --number "$n" --state clear || true
+              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind pr --number "$n" --state clear --url "$GITHUB_SERVER_URL/$repo/pull/$n" || true
               gh pr edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
               replayed=$((replayed + 1))
             done

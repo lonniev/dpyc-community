@@ -92,7 +92,7 @@ jobs:
         run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
 
       - name: Investigate and answer
-        uses: anthropics/claude-code-action@v1.0.179  # pinned: v1.0.180+ broke the bash sandbox (bwrap "/home/.mcp.json" denied); floating @v1 regressed the whole factory
+        uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:

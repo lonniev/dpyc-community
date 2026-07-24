@@ -43,14 +43,14 @@ def _npub_from_nsec(nsec: str) -> str:
 
 
 async def _stamp(upstream: str, nsec: str,
-                 repo: str, kind: str, number: int, state: str) -> None:
+                 repo: str, kind: str, number: int, state: str, url: str) -> None:
     # Lazy imports: the SDK primitive that mints the proof, and the MCP client. Reusing
     # PatronSigner keeps proof-signing DRY (never reimplement crypto).
     from tollbooth.patron_signer import PatronSigner
     from fastmcp import Client
 
     npub = _npub_from_nsec(nsec)
-    params = {"repo_name": repo, "kind": kind, "number": number, "state": state}
+    params = {"repo_name": repo, "kind": kind, "number": number, "state": state, "url": url}
     signed = PatronSigner(npub, nsec).authenticate(TOOL, params)  # injects npub + fresh kind-27235 proof
     async with Client(upstream) as client:
         res = await client.call_tool(TOOL, signed)
@@ -64,6 +64,7 @@ def main() -> int:
     ap.add_argument("--kind", required=True, choices=["issue", "pr"])
     ap.add_argument("--number", required=True, type=int)
     ap.add_argument("--state", required=True, choices=["awaiting-funds", "clear"])
+    ap.add_argument("--url", required=True, help="Canonical GitHub URL of the issue/PR (built from CI env at runtime).")
     ap.add_argument("--upstream", default=os.environ.get("DPYC_KEYRING_UPSTREAM", DEFAULT_UPSTREAM))
     args = ap.parse_args()
 
@@ -73,7 +74,7 @@ def main() -> int:
         return 0
 
     try:
-        asyncio.run(_stamp(args.upstream, nsec, args.repo, args.kind, args.number, args.state))
+        asyncio.run(_stamp(args.upstream, nsec, args.repo, args.kind, args.number, args.state, args.url))
     except Exception as e:  # noqa: BLE001 — a catch handler must never throw; the label already carries the fact.
         print(f"stamp_cypher: graph stamp failed (best-effort, ignored): {e}", file=sys.stderr)
     return 0

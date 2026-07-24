@@ -87,10 +87,14 @@ runs:
         TARGET: ${{ inputs.target }}
         KIND: ${{ inputs.kind }}
         REPO: ${{ github.repository }}
+        SERVER_URL: ${{ github.server_url }}
       run: |
         set +e  # best-effort — the catch must never throw
         python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]" \
           || { echo "stamp: pip install failed; graph stamp skipped (label already carries the fact)."; exit 0; }
+        # Canonical GitHub URL, built from CI runtime env — never a hardcoded owner.
+        gh_path="issues"; [ "$KIND" = "pr" ] && gh_path="pull"
+        item_url="$SERVER_URL/$REPO/$gh_path/$TARGET"
         python3 "${{ github.action_path }}/stamp_cypher.py" \
-          --repo "${REPO##*/}" --kind "$KIND" --number "$TARGET" --state awaiting-funds
+          --repo "${REPO##*/}" --kind "$KIND" --number "$TARGET" --state awaiting-funds --url "$item_url"
         exit 0

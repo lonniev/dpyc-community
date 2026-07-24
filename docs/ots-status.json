@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-24T08:01:52.657986+00:00",
+  "collected_at": "2026-07-24T09:08:05.704902+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 20,
@@ -158,16 +158,16 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

@@ -1,0 +1,68 @@
+# DPYC funding-block retire — deterministic, NO agent.
+#
+# Fires (via a thin per-repo caller) when a PR/issue is CLOSED while still carrying
+# `awaiting-funds` — i.e. an item that a credit outage deferred, then shipped or was
+# closed before funds returned, so its deferred agentic pass never ran and now never
+# will. This resolves the stale state: it drops the `awaiting-funds` label and retires
+# the FundingBlock to a historical record (breaks its BLOCKS edge, keeps the node).
+#
+# No LLM runs here — the retire is a plain sats-rail graph write, best-effort: the label
+# drop is authoritative; a graph miss (no nsec, cold start, Cypher 402) never fails the
+# close handler. Distinct from the credit canary's recovery-`clear` (funds restored,
+# work replayed on a still-open item).
+name: DPYC Funding Block Retire (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      number:
+        description: The closed issue/PR number.
+        required: true
+        type: string
+      kind:
+        description: "'pr' or 'issue'."
+        required: true
+        type: string
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint token (issues + PRs, this repo)
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: write
+
+      # stamp_cypher.py lives in dpyc-community, not the caller repo — fetch it.
+      - name: Fetch the retire helper
+        uses: actions/checkout@v4
+        with:
+          repository: lonniev/dpyc-community
+          path: _factory
+
+      - name: Drop the label and retire the block (deterministic)
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ inputs.number }}
+          KIND: ${{ inputs.kind }}
+          STAMP_NSEC: ${{ secrets.PORTER_NSEC }}
+        run: |
+          set +e  # best-effort — a graph miss must never fail the close handler
+          # The label is the authoritative resolution; do it first.
+          gh "$KIND" edit "$NUMBER" --repo "$REPO" --remove-label awaiting-funds || true
+          [ -n "${STAMP_NSEC:-}" ] || { echo "no nsec; label dropped, graph left as-is."; exit 0; }
+          python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]" \
+            || { echo "pip install failed; label dropped, graph left as-is."; exit 0; }
+          # 'historical' retires the block: breaks BLOCKS, marks it historical, keeps the node.
+          python3 _factory/factory/actions/funding-sentinel/stamp_cypher.py \
+            --repo "${REPO##*/}" --kind "$KIND" --number "$NUMBER" --state historical
+          exit 0

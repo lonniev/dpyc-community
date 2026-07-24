@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-24T18:48:58.148017+00:00",
+  "collected_at": "2026-07-24T19:49:14.973054+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 20,
@@ -158,8 +158,8 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",

@@ -30,7 +30,6 @@ import asyncio
 import os
 import sys
 
-TOOL = "cypher_mark_funding_state"
 DEFAULT_UPSTREAM = "https://cypher-mcp.fastmcp.app/mcp"
 
 
@@ -50,11 +49,18 @@ async def _stamp(upstream: str, nsec: str,
     from fastmcp import Client
 
     npub = _npub_from_nsec(nsec)
-    params = {"repo_name": repo, "kind": kind, "number": number, "state": state, "url": url}
-    signed = PatronSigner(npub, nsec).authenticate(TOOL, params)  # injects npub + fresh kind-27235 proof
+    # 'historical' retires the block (breaks its BLOCKS edge, keeps the node) when its item
+    # closed while awaiting funds; awaiting-funds/clear set the state on an active block.
+    if state == "historical":
+        tool = "cypher_retire_funding_block"
+        params = {"repo_name": repo, "kind": kind, "number": number}
+    else:
+        tool = "cypher_mark_funding_state"
+        params = {"repo_name": repo, "kind": kind, "number": number, "state": state, "url": url}
+    signed = PatronSigner(npub, nsec).authenticate(tool, params)  # injects npub + fresh kind-27235 proof
     async with Client(upstream) as client:
-        res = await client.call_tool(TOOL, signed)
-        print(f"stamp_cypher: {TOOL}({repo} {kind}#{number} -> {state}) ok: "
+        res = await client.call_tool(tool, signed)
+        print(f"stamp_cypher: {tool}({repo} {kind}#{number} -> {state}) ok: "
               f"{getattr(res, 'data', res)}")
 
 
@@ -63,8 +69,10 @@ def main() -> int:
     ap.add_argument("--repo", required=True, help="Repository name (short, e.g. 'tollbooth-sample').")
     ap.add_argument("--kind", required=True, choices=["issue", "pr"])
     ap.add_argument("--number", required=True, type=int)
-    ap.add_argument("--state", required=True, choices=["awaiting-funds", "clear"])
-    ap.add_argument("--url", required=True, help="Canonical GitHub URL of the issue/PR (built from CI env at runtime).")
+    ap.add_argument("--state", required=True, choices=["awaiting-funds", "clear", "historical"])
+    ap.add_argument("--url", default="",
+                    help="Canonical GitHub URL of the issue/PR (built from CI env; required for "
+                         "awaiting-funds/clear, unused for historical).")
     ap.add_argument("--upstream", default=os.environ.get("DPYC_KEYRING_UPSTREAM", DEFAULT_UPSTREAM))
     args = ap.parse_args()
 

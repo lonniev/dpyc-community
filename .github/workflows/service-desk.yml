@@ -143,3 +143,4 @@ jobs:
           target: ${{ github.event.issue.number }}
           kind: issue
           gh-token: ${{ steps.token.outputs.token }}
+          cypher-nsec: ${{ secrets.PORTER_NSEC }}

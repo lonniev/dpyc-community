@@ -116,3 +116,4 @@ jobs:
           target: ${{ github.event.pull_request.number }}
           kind: pr
           gh-token: ${{ steps.token.outputs.token }}
+          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}

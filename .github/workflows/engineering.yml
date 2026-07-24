@@ -111,6 +111,16 @@ jobs:
           rendered=$(envsubst '${REPO} ${REPO_NAME} ${ISSUE_NUMBER}' < /tmp/journeyman.prompt.md)
           { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
 
+      # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
+      # /home (not /home/runner), so it can't create /home/.mcp.json and every agent
+      # Bash command dies. Make /home writable + seed the file. Linux-only (bwrap is
+      # not used on the macOS Journeyman runs).
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
       - name: Implement the fix and open a PR
         id: implement
         uses: anthropics/claude-code-action@v1

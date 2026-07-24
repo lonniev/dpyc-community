@@ -116,12 +116,27 @@ STEPS:
      reason=<why this fix, terse>.
    - `mcp__graph__cypher_bind_rationale_to_symbol` with the SAME decision_id and
      symbol_fqn=<the fully-qualified name of the main symbol you changed>.
-   - ANCHOR WHAT YOU TOUCHED — for each symbol you edited, call `mcp__graph__cypher_anchor_symbol`
-     with symbol_fqn, file_path=<the repo-relative path of that file>, and
-     verified_at_sha=<the commit sha, `git rev-parse HEAD`>. You just edited it, so this is the
-     authoritative `journeyman-verified` anchor: it is what lets the NEXT triage grep a narrow
-     scope (or skip grep) instead of re-tokenizing the repo. This is the freshness update — do it
-     for every file your fix changed.
+   - ANCHOR & CONNECT WHAT YOU TOUCHED — for each symbol you edited, record what you now know
+     about how it couples to the rest of the system. You just read and changed this code, so you
+     know its real coupling better than any later reader will — and the more of it you record, the
+     better the next "how do I safely morph this symbol?" question is answered (its blast radius
+     becomes a graph lookup, not a repo re-read):
+       · `mcp__graph__cypher_anchor_symbol` (symbol_fqn, file_path=<the repo-relative path>,
+         verified_at_sha=<the commit sha, `git rev-parse HEAD`>) — the authoritative
+         `journeyman-verified` file anchor that lets the NEXT triage grep a narrow scope (or skip
+         grep). Do this for EVERY file your fix changed — the freshness update.
+       · `mcp__graph__cypher_index_symbol` (repo_name="${REPO_NAME}", symbol_fqn,
+         lang=<the file's language, e.g. swift | python | typescript>) — links the symbol to its
+         OWNING SERVICE (IN_SERVICE) and records its language. This is the coupling that was missing
+         whenever a symbol showed empty `services` / null `lang`; record it for every symbol you touch.
+       · `mcp__graph__cypher_bind_capability_to_symbol` (name, symbol_fqn) — if the symbol
+         REALIZES a capability the graph already knows (from your context_pack / list_capabilities
+         reads), bind it too, so `which_service_handles` resolves to your code. (You do the same
+         for a NEW capability in the next block; here it's for an existing one you recognized.)
+     You already attached your DECISION to the main symbol above via `bind_rationale_to_symbol`.
+     Invariant↔symbol coupling (`GUARDS`) is human doctrine the Operator authors — you never write
+     it, but if your fix revealed a genuine invariant the code must hold, name it in your PR body
+     so the human can legislate it.
    - UPDATE THE INTENTION GRAPH so triage of the next issue is easier. If your change
      introduced or clarified a cross-cutting capability (a distinct, reusable ability —
      not a one-off fix), record it so the Porter can find it:

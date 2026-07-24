@@ -48,6 +48,11 @@ jobs:
       # Deterministic health probe: one 1-token message. 200 = healthy. A non-200 whose
       # body names a credit/billing/quota problem = broke. Anything else (transient 429/529,
       # network) is "unknown" — we neither raise nor clear, to avoid false alarms and flapping.
+      # Needed by the healthy branch to reach factory/actions/funding-sentinel/stamp_cypher.py,
+      # which clears each FundingBlock in the graph in lockstep with its awaiting-funds label.
+      - name: Check out the factory (for the graph-clear helper)
+        uses: actions/checkout@v4
+
       - name: Probe the shared key
         id: probe
         env:
@@ -98,8 +103,21 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           HUB: ${{ github.repository }}
+          STAMP_NSEC: ${{ secrets.PORTER_NSEC }}
+          DPYC_KEYRING_UPSTREAM: https://cypher-mcp.fastmcp.app/mcp
         run: |
           set -euo pipefail
+
+          # 0) Ready the graph-clear helper — BEST-EFFORT (sats rail, not LLM). If the nsec is
+          #    absent or the SDK install fails, every GitHub label-clear + replay below still
+          #    runs; only the graph mirror is skipped. Never let it break recovery.
+          STAMP="$GITHUB_WORKSPACE/factory/actions/funding-sentinel/stamp_cypher.py"
+          stamp_ready=0
+          if [ -n "${STAMP_NSEC:-}" ] && python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]"; then
+            stamp_ready=1
+          else
+            echo "graph clear disabled (no nsec or pip install failed); GitHub labels still cleared."
+          fi
 
           # 1) Close the hub outage alarm, if one is open.
           for n in $(gh issue list --repo "$HUB" --state open --label factory/outage \
@@ -128,6 +146,7 @@ jobs:
               labels=$(gh issue view "$n" --repo "$repo" --json labels \
                          --jq '.labels[].name' 2>/dev/null || true)
               gh issue edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
+              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind issue --number "$n" --state clear || true
               if echo "$labels" | grep -qx 'agent/fix'; then
                 echo "Replaying Engineering on $repo#$n"
                 gh issue edit "$n" --repo "$repo" --remove-label agent/fix >/dev/null 2>&1 || true
@@ -144,6 +163,7 @@ jobs:
                          --json number --jq '.[].number' 2>/dev/null || true); do
               echo "Replaying QA on $repo#$n"
               gh pr edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
+              [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind pr --number "$n" --state clear || true
               gh pr edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
               replayed=$((replayed + 1))
             done

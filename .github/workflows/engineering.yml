@@ -159,6 +159,7 @@ jobs:
           target: ${{ github.event.issue.number }}
           kind: issue
           gh-token: ${{ steps.token.outputs.token }}
+          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
 
       # Clear the working signal on ANY ending — PR opened, no-change close, or a fast-fail
       # (the funding step above has already tagged that one awaiting-funds). Only a genuine

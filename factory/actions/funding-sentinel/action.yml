@@ -29,11 +29,20 @@ inputs:
     description: Path to claude-code-action's execution-output JSON.
     required: false
     default: ""
+  cypher-nsec:
+    description: "Patron nsec (Porter/Journeyman) that stamps the outage onto the cypher graph; the npub is derived from it. Held only for the signing call, never emitted. Omit to tag GitHub only."
+    required: false
+    default: ""
+  cypher-upstream:
+    description: "Operator MCP URL for the graph stamp."
+    required: false
+    default: "https://cypher-mcp.fastmcp.app/mcp"
 
 runs:
   using: composite
   steps:
-    - shell: bash
+    - id: flag
+      shell: bash
       env:
         GH_TOKEN: ${{ inputs.gh-token }}
         TARGET: ${{ inputs.target }}
@@ -46,10 +55,12 @@ runs:
         result_file="${RESULT_FILE:-$RUNNER_TEMP/claude-execution-output.json}"
         if [ ! -f "$result_file" ]; then
           echo "No execution-output at $result_file — cannot classify; leaving as-is."
+          echo "sig=no" >> "$GITHUB_OUTPUT"
           exit 0
         fi
 
         sig="$(python3 "$here/detect_signature.py" "$result_file")"
+        echo "sig=$sig" >> "$GITHUB_OUTPUT"
         if [ "$sig" != "yes" ]; then
           echo "Failure did not match the funding-outage signature (real error, not a dry key). Leaving as-is."
           exit 0
@@ -63,3 +74,23 @@ runs:
                --jq '.comments[].body' 2>/dev/null | grep -q 'dpyc-awaiting-funds'; then
           gh "$KIND" comment "$TARGET" --repo "$REPO" --body-file "$here/awaiting_funds_comment.md"
         fi
+
+    # Reflect the same fact in the intention graph — BEST-EFFORT, and only when the outage
+    # signature matched and a patron identity was supplied. The GitHub label above is the
+    # authoritative breadcrumb; this stamp pays sats (an orthogonal rail to the exhausted LLM
+    # credits) and must NEVER fail the catch. `set +e` + the script's own exit-0 guarantee it.
+    - if: ${{ steps.flag.outputs.sig == 'yes' && inputs.cypher-nsec != '' }}
+      shell: bash
+      env:
+        STAMP_NSEC: ${{ inputs.cypher-nsec }}
+        DPYC_KEYRING_UPSTREAM: ${{ inputs.cypher-upstream }}
+        TARGET: ${{ inputs.target }}
+        KIND: ${{ inputs.kind }}
+        REPO: ${{ github.repository }}
+      run: |
+        set +e  # best-effort — the catch must never throw
+        python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]" \
+          || { echo "stamp: pip install failed; graph stamp skipped (label already carries the fact)."; exit 0; }
+        python3 "${{ github.action_path }}/stamp_cypher.py" \
+          --repo "${REPO##*/}" --kind "$KIND" --number "$TARGET" --state awaiting-funds
+        exit 0

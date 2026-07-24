@@ -76,6 +76,17 @@ jobs:
           rendered=$(envsubst '${REPO} ${REPO_NAME} ${ISSUE_NUMBER}' < /tmp/porter.prompt.md)
           { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
 
+      # The action runs the agent's Bash inside a bubblewrap sandbox (enabled by
+      # allowed_non_write_users). A recent GitHub runner-image change left the
+      # sandbox's HOME pointing at /home instead of /home/runner, so bwrap can't
+      # create its MCP config and EVERY Bash command dies with
+      # "bwrap: Can't create file at /home/.mcp.json: Permission denied".
+      # Make /home writable and pre-seed the file so the sandbox can bind it.
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
       - name: Triage the issue
         id: triage
         uses: anthropics/claude-code-action@v1

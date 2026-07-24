@@ -144,9 +144,14 @@ STEPS:
        actionable_text as precedent.
    - If you REJECTED it, also call `mcp__graph__cypher_note_rejection` with
        repo_name, issue_number, reason=<short reason>.
-   - If you identified a specific culprit code symbol, call
-       `mcp__graph__cypher_link_root_cause` with repo_name, issue_number,
-       symbol_fqn=<fully-qualified symbol name>.
+   - If you identified a specific culprit code symbol, record its coupling so a future
+       "what does this symbol touch?" is a graph lookup, not a re-read:
+       · `mcp__graph__cypher_link_root_cause` (repo_name, issue_number,
+         symbol_fqn=<fully-qualified symbol name>) — the Issue→Symbol edge.
+       · `mcp__graph__cypher_index_symbol` (repo_name="${REPO_NAME}", symbol_fqn,
+         lang=<the language, inferred from the file extension>) — links the symbol to its OWNING
+         SERVICE (IN_SERVICE), the coupling that leaves `services` empty when skipped. (The
+         Journeyman adds the file anchor + capability binding when it fixes it.)
    - BACKFILL ON MISS — if Tier 1 (step 1a) returned NO capability for this issue's theme yet
      you resolved the owning service via Tier 2/3 (docs/code), the graph has a gap. Fill it so the
      NEXT triage of this theme resolves at Tier 1 rather than grepping — this is how legacy code

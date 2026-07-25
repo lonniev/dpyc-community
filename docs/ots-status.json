@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-07-25T21:35:13.158631+00:00",
+  "collected_at": "2026-07-25T22:36:21.577833+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 20,
@@ -53,6 +53,14 @@
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "13",
+          "root_hash": "ae34c68d2663cbd1bca2d45b4969537435197775b22f6865696cea8a9c34c350",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-25 22:30:27.413358+00",
+          "receipt_count": 4
+        },
         {
           "notarization_id": "12",
           "root_hash": "67eedb49aa4d1b52cee649b4f9dfb9cf8b4944477611e52d1216eb48a8bd4db5",
@@ -124,14 +132,6 @@
           "status": "submitted",
           "created_at": "2026-07-08 10:00:37.028428+00",
           "receipt_count": 1
-        },
-        {
-          "notarization_id": "3",
-          "root_hash": "f231bad0a806f8ec631627c95714f391ab9789f68e9a63131f931e9ec3f49027",
-          "leaf_count": 1,
-          "status": "submitted",
-          "created_at": "2026-07-06 10:27:32.72048+00",
-          "receipt_count": 3
         }
       ],
       "status": "submitted",
@@ -166,8 +166,8 @@
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-07-26T13:52:42.311742+00:00",
+  "collected_at": "2026-07-26T14:46:26.320233+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 28,
+    "total_notarizations": 27,
     "confirmed": 0,
-    "coverage_percent": 82
+    "coverage_percent": 73
   },
   "operators": [
     {
@@ -184,18 +184,9 @@
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
       "display_name": "optionality-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "1066b2c7c4ec02ccd8c1a540ffaea5c6e99b9bdaf079c62b37381bd84ab78d35",
-          "leaf_count": 7,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:26:29.467837+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "submitted",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",

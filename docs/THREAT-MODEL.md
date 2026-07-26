@@ -10,7 +10,7 @@
 
 ## 1. System Overview
 
-DPYC is a federated micropayment network for MCP tool monetization. Identity is a Nostr keypair (npub/nsec). Payment is Bitcoin Lightning. Storage is Neon Postgres with field-level encryption. Transport is SSE over HTTPS via FastMCP Cloud.
+DPYC is a federated micropayment network for MCP tool monetization. Identity is a Nostr keypair (npub/nsec). Payment is Bitcoin Lightning. Storage is Neon Postgres with field-level encryption. Transport is SSE over HTTPS via Horizon.
 
 ### 1.1 Actor Profiles
 
@@ -30,7 +30,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 | Nostr Relays | DM transport, event gossip | Untrusted — all events are signed; relays see metadata only |
 | BTCPay Server | Lightning invoice creation/settlement | Untrusted — API key auth; no cryptographic settlement proof at MCP layer |
 | Neon Postgres | Persistent vault storage | Untrusted for plaintext — field-level AES-256-GCM encryption; Neon sees ciphertext only |
-| FastMCP Cloud | SSE transport, OAuth tenant | Partially trusted — TLS + OAuth; operator identity tokens held by platform |
+| Horizon | SSE transport, OAuth tenant | Partially trusted — TLS + OAuth; operator identity tokens held by platform |
 | PyPI | SDK distribution | Untrusted — supply chain risk mitigated by pinned versions + Renovate |
 | OpenTimestamps | Bitcoin-anchored audit proofs | Untrusted — append-only Merkle inclusion; verifiable independently |
 
@@ -67,7 +67,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 - **TB4:** Operator MCP ↔ Nostr Relays (WebSocket, signed events)
 - **TB5:** Operator MCP ↔ BTCPay (HTTPS, token auth)
 - **TB6:** Patron ↔ Nostr Relays (WebSocket, patron signs DMs)
-- **TB7:** FastMCP Cloud ↔ Operator code (platform boundary)
+- **TB7:** Horizon ↔ Operator code (platform boundary)
 
 ### 2.2 DFD Level 1 — Patron Tool Call (Hot Path)
 
@@ -209,7 +209,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 |----|--------|--------|------------|---------------|
 | I-1 | Nsec exposure in logs/responses | Operator runtime | CLAUDE.md absolute prohibition; `SecureCourier.receive()` strips credentials before return | Human error — a code change could accidentally log nsec. **No runtime scanner enforces this.** |
 | I-2 | Nostr DM metadata leakage | TB4/TB6 | NIP-44 encrypts content; metadata (timestamp, sender npub, recipient npub) visible to relays | **Relays know who communicates with whom and when** — traffic analysis possible |
-| I-3 | Neon connection string exposure | TB3/TB7 | Stored in env var; passed via HTTPS header | **If FastMCP Cloud env is compromised**, full DB access is possible (ciphertext only, but still) |
+| I-3 | Neon connection string exposure | TB3/TB7 | Stored in env var; passed via HTTPS header | **If Horizon env is compromised**, full DB access is possible (ciphertext only, but still) |
 | I-4 | Credential template reveals expected fields | TB4 | Template sent in NIP-44 DM (encrypted) | Only patron and operator see it; but template structure is in source code (public repo) |
 | I-5 | Timing side-channel on proof verification | TB1 | Schnorr verification is constant-time in secp256k1 library | Python-level timing may leak proof validity before full verification completes |
 | I-6 | Balance inference from error messages | TB1 | `debit_or_deny` returns "Insufficient credit balance" without revealing exact balance | Attacker can binary-search balance by varying tool cost (if tool pricing varies by kwargs) |
@@ -221,7 +221,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 | ID | Threat | Target | Mitigation | Residual Risk |
 |----|--------|--------|------------|---------------|
 | D-1 | Proof flooding (many valid proofs) | Operator runtime | `_consumed_proofs` cleanup every 120s; proof window is 60s | **Memory exhaustion** if attacker generates thousands of valid proofs (requires nsec, so self-DoS or compromised key) |
-| D-2 | Tool call flooding (zero-balance patron) | Operator runtime | `debit_or_deny` rejects quickly on zero balance; constraint gates (SurgeConstraint) can throttle | **No IP-level rate limiting** at MCP layer — depends on FastMCP Cloud |
+| D-2 | Tool call flooding (zero-balance patron) | Operator runtime | `debit_or_deny` rejects quickly on zero balance; constraint gates (SurgeConstraint) can throttle | **No IP-level rate limiting** at MCP layer — depends on Horizon |
 | D-3 | Neon unavailability | Vault/ledger | Operator returns "warming up, retry in 10-15s" — serverless cold start pattern | Extended Neon outage = full service outage; **no local cache fallback for ledger** |
 | D-4 | Relay unavailability | Secure Courier | Vault-first fast path bypasses relay; `resolve_relays()` tries multiple relays | If all relays are down simultaneously, Courier onboarding fails (but existing sessions survive via vault) |
 | D-5 | BTCPay unavailability | Payments | `BTCPayConnectionError` / `BTCPayTimeoutError` surfaced to patron | **Cannot purchase credits during outage** — existing balance continues to work |
@@ -356,7 +356,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-7** | D-2, D-7 | Add per-npub rate limiting at the MCP layer (token bucket or sliding window) independent of FastMCP Cloud |
+| **R-7** | D-2, D-7 | Add per-npub rate limiting at the MCP layer (token bucket or sliding window) independent of Horizon |
 | **R-8** | I-6, Chain 5 | Normalize error messages — return identical error for "insufficient balance" and "tool not found" to prevent balance probing |
 | **R-9** | R-1 | Consider patron-signed receipts (kind event) for non-repudiable purchase records |
 | **R-10** | R-4 | Retain Nostr DM event ID + signature hash in vault after NIP-09 deletion, as proof of credential delivery |

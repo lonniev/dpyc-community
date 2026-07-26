@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/lonniev/dpyc-community/schemas/member.schema.json",
-  "title": "DPYC Honor Chain Member Record",
+  "title": "DPYC Social Contract Member Record",
   "description": "Schema for an individual member file in the members/ directory.",
   "type": "object",
   "required": ["npub", "role", "status", "member_since"],
@@ -14,7 +14,7 @@
     "role": {
       "type": "string",
       "enum": ["prime_authority", "authority", "operator", "advocate", "citizen"],
-      "description": "Member's role in the Honor Chain."
+      "description": "Member's role in the Social Contract."
     },
     "status": {
       "type": "string",

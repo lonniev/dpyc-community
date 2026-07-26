@@ -161,6 +161,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | Repository | Purpose |
 |-----------|---------|
 | [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) | The shared Python SDK — all crypto, vault, proof, pricing, courier, and runtime bootstrap |
+| [tollbooth-wasmcp](https://github.com/lonniev/tollbooth-wasmcp) | Shared Spin/WASI host adapter — `SpinOperatorHost`, the Spin peer of FastMCP |
 | [tollbooth-authority](https://github.com/lonniev/tollbooth-authority) | Prime Authority — certification and fee collection |
 | [tollbooth-authority-northamerica](https://github.com/lonniev/tollbooth-authority-northamerica) | Regional Authority (North America) |
 | [tollbooth-authority-newengland](https://github.com/lonniev/tollbooth-authority-newengland) | Sub-regional Authority (New England) |
@@ -175,6 +176,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [cypher-mcp](https://github.com/lonniev/cypher-mcp) | Monetized graph answers — named Cypher templates over Neo4j/AuraDB |
 | [taxsort-mcp](https://github.com/lonniev/taxsort-mcp) | Tax-transaction classification MCP with a hosted frontend |
 | [optionality-mcp](https://github.com/lonniev/optionality-mcp) | AI-judged options-trading practice MCP |
+| [tollbooth-fermyon](https://github.com/lonniev/tollbooth-fermyon) | Spin/WASI edge Operator — the tollbooth-sample operator running in WebAssembly |
 | [tollbooth-sample](https://github.com/lonniev/tollbooth-sample) | Reference Operator — the canonical template for new servers |
 
 **Advocates (community utilities)**

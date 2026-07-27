@@ -130,9 +130,10 @@ jobs:
           # 2) Replay everything deferred during the outage, across every repo the factory
           #    App is installed on. The re-fire tactic depends on which node was skipped —
           #    the labels on the item say which:
-          #      - Issue WITHOUT agent/fix -> Porter was skipped     -> add agent/retriage
-          #      - Issue WITH    agent/fix -> Engineering was skipped -> re-toggle agent/fix
-          #      - PR (agent/fix-* branch) -> QA was skipped          -> add agent/retriage
+          #      - Issue WITHOUT agent/fix    -> Porter was skipped      -> add agent/retriage
+          #      - Issue WITH    agent/fix    -> Engineering was skipped -> re-toggle agent/fix
+          #      - PR WITH  agent/revising    -> Revision was skipped    -> comment; owner re-requests
+          #      - PR WITHOUT agent/revising  -> QA was skipped          -> add agent/retriage
           #    awaiting-funds is cleared first in every case. Adding agent/retriage fires the
           #    Service Desk (issues) or QA (pull_request) labeled trigger; re-toggling
           #    agent/fix fires Engineering. Each caller guards against firing on the others.
@@ -158,13 +159,28 @@ jobs:
               replayed=$((replayed + 1))
             done
 
-            # PRs — QA. Adding agent/retriage fires the QA caller's labeled trigger.
+            # PRs — QA, unless a revision was mid-flight. agent/revising is cleared only
+            # on a COMPLETED revision, so its presence means PR Revision (not QA) was the
+            # node the outage cut. Replaying QA there would re-review un-revised code and
+            # could stamp qa/pass on work the owner already sent back.
+            #
+            # We deliberately do NOT auto-re-fire Revision: it is gated on a human OWNER
+            # review, and letting the bot re-trigger a write-capable role would dissolve
+            # exactly the boundary that gate exists to hold. The owner re-requests instead,
+            # so we clear the funding flag and say so on the record.
             for n in $(gh pr list --repo "$repo" --state open --label awaiting-funds \
                          --json number --jq '.[].number' 2>/dev/null || true); do
-              echo "Replaying QA on $repo#$n"
+              pr_labels=$(gh pr view "$n" --repo "$repo" --json labels \
+                            --jq '.labels[].name' 2>/dev/null || true)
               gh pr edit "$n" --repo "$repo" --remove-label awaiting-funds >/dev/null 2>&1 || true
               [ "$stamp_ready" = 1 ] && python3 "$STAMP" --repo "${repo##*/}" --kind pr --number "$n" --state clear --url "$GITHUB_SERVER_URL/$repo/pull/$n" || true
-              gh pr edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
+              if echo "$pr_labels" | grep -qx 'agent/revising'; then
+                echo "Deferred revision on $repo#$n — owner must re-request"
+                gh pr comment "$n" --repo "$repo" --body "✅ Factory credits are healthy again. This PR was mid-revision when the outage hit, so QA was not replayed onto un-revised code. Re-request the change (submit a **Request changes** review, or comment \`@journeyman revise\`) and the bench will pick it up." || true
+              else
+                echo "Replaying QA on $repo#$n"
+                gh pr edit "$n" --repo "$repo" --add-label agent/retriage >/dev/null 2>&1 || true
+              fi
               replayed=$((replayed + 1))
             done
           done

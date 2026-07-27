@@ -71,7 +71,7 @@ CONTEXTS: dict[str, list[str]] = {
 def gh_json(path: str) -> tuple[int, dict | list | None]:
     """GET a gh api path; return (status, parsed json or None). status 0 == success."""
     proc = subprocess.run(
-        ["gh", "api", path], capture_output=True, text=True
+        ["gh", "api", path], capture_output=True, text=True, check=False
     )
     if proc.returncode != 0:
         # gh prints the API error JSON to stdout for 4xx; try to parse a message.
@@ -174,6 +174,7 @@ def put_protection(repo: str, payload: dict) -> bool:
         input=json.dumps(payload),
         capture_output=True,
         text=True,
+        check=False,
     )
     if proc.returncode != 0:
         print(f"    ERROR applying {repo}: {proc.stderr.strip() or proc.stdout.strip()}")

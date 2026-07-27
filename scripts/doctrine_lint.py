@@ -184,8 +184,10 @@ def lint_codeowners(text: str) -> list[str]:
         if parts and parts[0] == "*" and "@lonniev" in parts[1:]:
             return []
     return [
-        f"CODEOWNERS is missing the money-gate rule '{CODEOWNERS_MONEY_GATE}'. Every path must "
-        "require @lonniev review — the factory may not remove its own human merge gate."
+        (
+            f"CODEOWNERS is missing the money-gate rule '{CODEOWNERS_MONEY_GATE}'. Every path "
+            "must require @lonniev review — the factory may not remove its own human merge gate."
+        )
     ]
 
 

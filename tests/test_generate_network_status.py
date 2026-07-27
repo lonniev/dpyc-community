@@ -18,11 +18,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from generate_network_status import (  # noqa: E402
+from generate_network_status import (
     assemble_network_status,
     latest_version,
 )
-
 
 EXISTING = {
     "components": {

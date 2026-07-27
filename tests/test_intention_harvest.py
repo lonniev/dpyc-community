@@ -20,11 +20,18 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import intention_harvest as ih  # noqa: E402
-from intention_harvest import (  # noqa: E402
-    JOURNEYMAN, OPERATOR, Service,
-    canonical_service_name, keywords_from_tools, load_operators, parse_patent_schedule,
-    plan_authored, plan_derived, plan_patent,
+import intention_harvest as ih
+from intention_harvest import (
+    JOURNEYMAN,
+    OPERATOR,
+    Service,
+    canonical_service_name,
+    keywords_from_tools,
+    load_operators,
+    parse_patent_schedule,
+    plan_authored,
+    plan_derived,
+    plan_patent,
 )
 
 

@@ -89,7 +89,7 @@ def main() -> None:
         try:
             resp = _publish_to_relay(relay_url, message)
             print(f"  {relay_url} -> {resp}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — one relay refusing must not stop the rest
             print(f"  {relay_url} -> ERROR: {e}")
 
     print("\nDone. Verify with:")

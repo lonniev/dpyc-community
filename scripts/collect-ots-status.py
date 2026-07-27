@@ -12,7 +12,7 @@ Usage:
 import asyncio
 import json
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:
@@ -108,7 +108,7 @@ async def call_list_notarizations(endpoint: str) -> list[dict]:
 
 async def collect_all() -> dict:
     """Collect OTS status from all operators."""
-    with open(REGISTRY) as f:
+    with open(REGISTRY) as f:  # noqa: ASYNC230 — one-shot local read before any await
         registry = json.load(f)
 
     members = registry.get("members", [])
@@ -159,7 +159,7 @@ async def collect_all() -> dict:
                     entry["status"] = "stale"
                 else:
                     entry["status"] = latest_status
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — one operator's failure is recorded, not fatal
             entry["error"] = str(e)[:200]
 
         results.append(entry)
@@ -192,7 +192,7 @@ async def main():
     status = await collect_all()
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT, "w") as f:
+    with open(OUTPUT, "w") as f:  # noqa: ASYNC230 — one-shot local write after all awaits
         json.dump(status, f, indent=2)
 
     s = status["summary"]

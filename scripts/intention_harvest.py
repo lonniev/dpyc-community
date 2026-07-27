@@ -74,9 +74,10 @@ import asyncio
 import json
 import os
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 try:
     import yaml
@@ -474,7 +475,7 @@ def main() -> int:
                 continue
             try:
                 tools_by_service[svc.name] = asyncio.run(_list_tools(svc.url))
-            except Exception as exc:  # a cold/unreachable service is skipped, not fatal
+            except Exception as exc:  # a cold/unreachable service is skipped, not fatal  # noqa: BLE001
                 print(f"  ! tools/list failed for {svc.name}: {exc}", file=sys.stderr)
 
     calls = build_plan(args.mode, services, tools_by_service, manifest, patent_elements)

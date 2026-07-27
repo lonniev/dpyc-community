@@ -1,0 +1,196 @@
+# DPYC Agentic PR Revision — the Journeyman returns to the bench and applies the
+# owner's requested changes to a PR already under review. Reusable across the fleet.
+#
+# Fires (via a thin per-repo caller) when the OWNER submits a changes-requested review,
+# or comments "@journeyman revise", on a pull request. It checks out the PR's own head
+# branch, makes the requested change, re-runs the project's checks, and pushes onto that
+# same branch. It never force-pushes, never rebases, never merges, and never submits a
+# review — landing stays the owner's decision or the QA + auto-merge pipeline's.
+#
+# WHY THIS ROLE NEEDS A TRUST GATE. Every other agent here is either read-only
+# (pr-dialogue, qa) or triggered by a bot-written label (engineering). This is the first
+# role that is BOTH human-triggered AND write-capable, so "no write tools, read-only
+# tokens" — the mitigation that makes pr-dialogue safe against an injected comment —
+# is not available. The replacement is the caller's `author_association == 'OWNER'`
+# guard: a stranger's comment can still summon the read-only dialogue, but only the
+# repository owner can command commits. That guard expression is a permission boundary;
+# review it as carefully as a token scope.
+#
+# The app token is scoped to THIS repo only — Revision never writes code elsewhere. If
+# the requested change belongs in the SDK or a sibling repo, it says so in a comment
+# rather than patching around it here.
+name: DPYC PR Revision (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: The pull request the owner sent back for changes.
+        type: number
+        required: true
+      model:
+        description: Claude model for the revision. This role writes code, so it
+          matches Engineering's tier rather than the read-only roles' Sonnet.
+        type: string
+        default: claude-opus-4-8
+      ref:
+        description: dpyc-community ref to fetch the PR Revision prompt from.
+        type: string
+        default: main
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  # Same toolchain sniff as engineering.yml: this role RUNS the project's tests before
+  # pushing, so it needs the right runner OS. macOS bills ~10x, so only Xcode/Swift repos
+  # get it. Callers stay thin — the language is detected here, never declared per repo.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.stack.outputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect toolchain and pick the runner OS
+        id: stack
+        run: |
+          if find . -maxdepth 3 \( -name '*.xcodeproj' -o -name '*.xcworkspace' -o -name 'Package.swift' \) -print -quit | grep -q .; then
+            echo "runner=macos-latest" >> "$GITHUB_OUTPUT"; echo "Xcode/Swift project detected -> macos-latest"
+          else
+            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"; echo "no Xcode/Swift project -> ubuntu-latest"
+          fi
+
+  revise:
+    needs: detect
+    runs-on: ${{ needs.detect.outputs.runner }}
+    steps:
+      # Minted FIRST (unlike engineering.yml, which checks out first): the checkout below
+      # must carry this token so the agent's `git push` to the PR branch authenticates as
+      # the App. No permission-* narrowing — it inherits the installation's scope for THIS
+      # repo, which is what contents:write requires.
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
+      # Deterministic, before the LLM runs: a visible "the bench is working" signal.
+      # Unlike engineering's agent/working this is cleared ONLY on success — so a run that
+      # died (credit exhaustion, a hang) leaves the marker behind, which is both the stuck
+      # tell and how factory-credit-canary.yml knows this PR was mid-revision and must NOT
+      # be replayed as a QA re-review.
+      - name: Mark the PR agent/revising
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: gh pr edit ${{ inputs.pr_number }} --repo ${{ github.repository }} --add-label agent/revising || true
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+
+      # Move onto the PR's OWN head branch. No other role does this — QA and pr-dialogue
+      # both read the default branch and never check out head code. `gh pr checkout` sets
+      # the branch up with its upstream, so the agent's plain `git push` lands on the PR.
+      - name: Check out the PR head branch
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh pr checkout ${{ inputs.pr_number }} --repo ${{ github.repository }}
+          git config user.name  "dpyc-agentic-desk[bot]"
+          git config user.email "dpyc-agentic-desk[bot]@users.noreply.github.com"
+          git status --short --branch
+
+      # Guarantee `python` + pip on BOTH ubuntu and macOS — the keyring install and the
+      # graph MCP's `command: python` both invoke bare `python`, which macOS lacks.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # The Journeyman's signing hand: records the revision rationale to the memory graph
+      # under its own Nostr identity. The nsec lives only in the keyring subprocess's env
+      # (the --mcp-config block below), never in the agent's shell.
+      - name: Install the agent keyring
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+
+      # Behavior lives in factory/pr-revision.prompt.md (the agent may evolve it via PR;
+      # this skeleton — permissions, token, tools — stays human-only). Fetched from
+      # dpyc-community because this reusable workflow's checkout is the CALLER's repo.
+      # envsubst's restricted form fills only the three named placeholders.
+      - name: Render the PR Revision prompt
+        id: prompt
+        env:
+          REPO: ${{ github.repository }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/pr-revision.prompt.md" \
+            -o /tmp/pr-revision.prompt.md
+          rendered=$(envsubst '${REPO} ${REPO_NAME} ${PR_NUMBER}' < /tmp/pr-revision.prompt.md)
+          { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
+
+      # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
+      # /home (not /home/runner), so it can't create /home/.mcp.json and every agent
+      # Bash command dies. Linux-only (bwrap is not used on the macOS runs).
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
+      - name: Apply the requested changes
+        id: revise
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.token.outputs.token }}
+          # The PR under review was opened by our bot, so the action must accept it as
+          # the initiating actor. The OWNER guard on the caller is the real gate.
+          allowed_bots: "dpyc-agentic-desk[bot]"
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: |
+            --model ${{ inputs.model }}
+            --max-turns 70
+            --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
+            # Engineering's build/prove set, with the PR verbs this bench needs and the
+            # issue verbs it does not. Each gh subcommand is enumerated because a broad
+            # Bash(gh pr:*) would smuggle in `gh pr merge`. Notably absent: `gh pr create`
+            # (the PR already exists) and `gh pr review` (self-approval is never an agent's
+            # to grant). No curl, bash -c, eval, or rm — an injected review still cannot
+            # reach the network or destroy the tree.
+            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh pr checkout:*),Bash(gh pr checks:*),Bash(gh repo view:*),Bash(gh issue view:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(mypy:*),Bash(uv:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(xcode-select:*),Bash(open:*),Bash(defaults:*),Bash(brew:*),Bash(ruby:*),Bash(gem:*),Bash(bundle:*),Bash(sw_vers:*),Bash(sysctl:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(sed:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_which_service_handles,mcp__graph__cypher_explain_capability,mcp__graph__cypher_list_capabilities,mcp__graph__cypher_context_pack,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol,mcp__graph__cypher_anchor_symbol,mcp__graph__cypher_index_symbol"
+
+      # If the revision died because the shared key is exhausted/capped, tag the PR
+      # awaiting-funds. agent/revising stays on (it is only cleared on success), which is
+      # how the canary tells a stalled revision from a PR merely awaiting QA.
+      - name: Flag a funding outage (deterministic)
+        if: ${{ failure() && steps.token.outputs.token != '' }}
+        uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+        with:
+          target: ${{ inputs.pr_number }}
+          kind: pr
+          gh-token: ${{ steps.token.outputs.token }}
+          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
+
+      # Cleared ONLY on success — deliberately not always(). A failed or hung run leaves
+      # agent/revising on the PR as the stuck tell and the canary's discriminator.
+      - name: Clear agent/revising on a completed revision
+        if: ${{ success() }}
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: gh pr edit ${{ inputs.pr_number }} --repo ${{ github.repository }} --remove-label agent/revising || true

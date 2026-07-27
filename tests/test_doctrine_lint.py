@@ -14,7 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import doctrine_lint as dl  # noqa: E402
+import doctrine_lint as dl
 
 
 # --- guard-the-guard: the invariant tables must never be silently emptied ----

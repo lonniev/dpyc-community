@@ -5,6 +5,67 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — PR Revision role + REUSE BEFORE BUILD
+
+- **PR Revision** (`factory/pr-revision.prompt.md`, `.github/workflows/pr-revision.yml`,
+  `scripts/factory-callers/agentic-pr-revision.yml`): the Journeyman returns to the bench
+  and applies the owner's requested changes to a PR already under review. Previously there
+  was no path from a review to a code change — `@journeyman` reached only the read-only PR
+  Dialogue, and Engineering fired solely on `issues.labeled == agent/fix`, so the owner's
+  only lever was re-labeling the issue and discarding the review. Revision checks out the
+  PR's own head branch (no other role checks out head code), makes the change, re-runs the
+  project's checks, and pushes onto that branch. It never force-pushes, rebases, merges, or
+  submits a review.
+- **Trust gate — the first human-triggered, write-capable role.** Dialogue is safe against
+  an injected comment because it has no write tools and read-only tokens; Revision cannot
+  keep that mitigation, so it substitutes `author_association == 'OWNER'` on the caller
+  (the same association `approval-merge.yml` gates the merge on). Two owner-only entry
+  points: a **Request changes** review, or a comment carrying `@journeyman revise`. A plain
+  `@journeyman` still reaches the read-only Dialogue, which anyone may summon.
+- **Dialogue yields**: `agentic-pr-dialogue.yml` gains negative guards
+  (`!contains(…, '@journeyman revise')`, `review.state != 'changes_requested'`) so the two
+  roles never fire on the same event.
+- **Declines on an approved PR**: if a PR already carries an OWNER approval, Revision posts
+  a comment and pushes nothing — auto-merge may be armed, and where branch protection lacks
+  dismiss-stale-reviews a push could otherwise land code the owner never read.
+- **QA re-verdict fix**: Revision strips `qa/pass`/`qa/flag` before pushing. QA re-reviews
+  on `synchronize`, but re-applying a label it already carries emits no `labeled` event, so
+  `auto-merge` would never re-arm and the PR would sit silently passed-but-unmerged.
+- **Label**: `agent/revising`, cleared only on a *completed* revision — so it doubles as the
+  stuck tell and as the credit canary's discriminator.
+- **Canary**: a PR carrying `agent/revising` is no longer replayed as a QA re-review (which
+  would re-review un-revised code and could stamp `qa/pass` on work the owner sent back).
+  It clears the funding flag and asks the owner to re-request. Revision is deliberately NOT
+  bot-re-fireable — letting the bot re-trigger a write-capable role would dissolve the very
+  boundary the OWNER gate exists to hold.
+
+### Added — REUSE BEFORE BUILD (Journeyman step 5)
+
+- `factory/journeyman.prompt.md` gains a step between the upstream check and implementation.
+  Step 4 asks *"does this fix belong in another repo?"*; step 5 asks the different question
+  *"does this ability already exist in code I should be calling?"* — resolve via
+  `cypher_which_service_handles` / `cypher_list_capabilities`, then grep the installed
+  `tollbooth` package, and if new protocol/crypto/transport code is written anyway the PR
+  body must name what was searched and why the wheel cannot carry it. Steps 5–10 renumbered
+  to 6–11. Nothing previously told the agent to reuse before building; QA caught DRY
+  violations only after the fact.
+
+### Added — factory documentation
+
+- `factory/README.md`: the crew table, the Dialogue-vs-Revision split, the trust model, and
+  a step-by-step **adding a new role** procedure (prompt → doctrine-lint anchors → reusable
+  skeleton → caller gate → canary discriminator → label → sync → document). None of this was
+  written down before; role knowledge lived only in prompt files and shell-script headers.
+- `scripts/doctrine_lint.py`: `pr-revision.prompt.md` registered in `FACTORY_PROMPT_ANCHORS`
+  (`SECURITY`, `UNTRUSTED`, `MANDATORY OUTCOME`) — unregistered prompts are silently unlinted.
+
+Rollout after merge: `apply_labels.sh` fleet-wide (the `agent/revising` label must exist
+before the workflow can apply it), then `sync-factory-callers.sh` to propagate the new caller
+and the Dialogue guards. The callers reference the reusable workflows `@main`, so this must
+merge first. The same sync also repairs stale callers in `dpyc-oracle`,
+`tollbooth-shortlinks`, and `tollbooth-wasmcp` (older model pins; missing `agent/retriage`
+replay triggers; escalation missing `rejected/upstream`).
+
 ### Added — factory credit-outage awareness + auto-replay
 
 - **Funding sentinel** (`factory/actions/funding-sentinel`): a deterministic (no-LLM)
@@ -123,7 +184,7 @@ trigger.
 - Add Tollbooth whitepaper, competitive landscape analysis, and README links
 - Merge pull request #25 from lonniev/feat/readme-update
 - Resolve merge conflict — keep both Economic Model and DPYP-01 link
-- Add excalibur-mcp to Honor Chain and link certificate protocol
+- Add excalibur-mcp to the Certification Chain and link certificate protocol
 - Merge pull request #24 from lonniev/feat/economics-svg
 - Merge pull request #23 from lonniev/feat/logo-url
 - Add 5-Authority network economics SVG and README section
@@ -156,7 +217,7 @@ trigger.
 - Add network-status.json and ADVISORY.md for version discovery (#10)
 - Add "Why Tollbooth?" section positioning value vs x402/L402 (#9)
 - Merge pull request #8 from lonniev/fix/readme-operator-npub
-- Fix stale operator npub in README Honor Chain diagram
+- Fix stale operator npub in README Certification Chain diagram
 - Fix publish script: pynostr 0.7 API + websocket-client
 - Merge pull request #7 from lonniev/feat/dpyp-01-spec
 - Add DPYP-01 base certificate spec and NIP-78 publish script
@@ -172,6 +233,6 @@ trigger.
 - Rotate Operator (thebrain-mcp) npub after lost private key
 - Merge pull request #1 from lonniev/fix/rotate-authority-npub
 - Rotate Prime Authority npub after lost private key
-- Found the DPYC Honor Chain — membership registry, governance, and CI
+- Found the DPYC Social Contract — membership registry, governance, and CI
 - Initial commit
 

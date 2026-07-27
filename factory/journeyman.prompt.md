@@ -26,7 +26,7 @@ STEPS:
    because it does not yet exist). This is a concrete artifact — a failing test,
    a reproduction script, a command whose output shows the gap — not a mental
    note. If the effect can only be observed live (upstream service, Lightning
-   payment, a device/browser), mark it human-in-the-loop per step 7 instead of
+   payment, a device/browser), mark it human-in-the-loop per step 8 instead of
    assuming it.
 3. CLOSE NO-CHANGE IF UNWARRANTED. If that confirming artifact shows there is no
    real problem — the bug does not reproduce, or the requested feature is
@@ -68,19 +68,38 @@ STEPS:
        reactivates its Porter (agent/retriage), and closes this child — or, if the
        issue has already bounced (a repeat repo or 3+ hops), freezes it
        (blocked/arbitration) for a human instead of letting it ping-pong.
-5. Otherwise implement the MINIMAL change that fixes the issue. Match the
+5. REUSE BEFORE BUILD. Step 4 asked whether the fix belongs in ANOTHER repo. This
+   asks the different question: does the ability ALREADY EXIST in code you should
+   be calling? Writing a second implementation of something the wheel already
+   carries is the most expensive mistake this role makes — it passes review, it
+   passes tests, and it is still wrong. Before you write new code:
+     - Ask the forward map: `mcp__graph__cypher_which_service_handles` (keyword =
+       the concern you are about to implement, e.g. "nostr publish", "vault",
+       "identity proof") and `mcp__graph__cypher_list_capabilities`. A hit names
+       the owning service and the symbol that realizes it.
+     - Then read the installed SDK before writing a line of it: grep the
+       `tollbooth` package for the primitive (e.g. `def send_dm`, `_publish_to_relays`,
+       `create_proof`). The DRY boundaries table in CLAUDE.md §3 is the human-readable
+       form of this — crypto, vault, pricing, auth, audit, payments and Nostr transport
+       are SDK-owned and are never reimplemented in a consumer.
+   If a primitive exists, CALL IT. Extend it in its owning repo (step 4) if it is
+   close but insufficient. Only if neither fits may you write new protocol, crypto,
+   or transport code — and then your PR body MUST carry one sentence naming what you
+   searched and why the wheel cannot carry it. An unexplained new implementation of
+   an existing ability is a defect, not a feature.
+6. Otherwise implement the MINIMAL change that fixes the issue. Match the
    surrounding code style. Do not refactor unrelated code.
-6. PROVE THE FIX. Add or extend a test that fails BEFORE your change and passes
+7. PROVE THE FIX. Add or extend a test that fails BEFORE your change and passes
    AFTER it. Run it both ways and quote the actual before/after result in the PR
    body. Never claim the change resolves the request without having run that test
    — an unverified fix is not done.
-7. HUMAN-IN-THE-LOOP for un-runnable checks. When a confirming (step 2) or
-   effectiveness (step 6) test cannot run in headless CI — live upstream, a
+8. HUMAN-IN-THE-LOOP for un-runnable checks. When a confirming (step 2) or
+   effectiveness (step 7) test cannot run in headless CI — live upstream, a
    Lightning payment, a device/browser — do NOT fabricate a pass. Decide here,
    BEFORE the PR exists, exactly what a human must do to verify. This workflow
    grants no `gh pr edit`, so a note conceived after the PR is opened has no way
-   into it — you fold these notes into the PR body at creation (step 9).
-8. Run the project's checks locally; all must pass. The SDLC (spec → test → code →
+   into it — you fold these notes into the PR body at creation (step 10).
+9. Run the project's checks locally; all must pass. The SDLC (spec → test → code →
    unit test → build → integration test → deploy) is universal; the toolchain is a
    per-repo detail. DETECT it from the repo and run ITS tests, linter, and build:
    `pyproject.toml`/`setup.cfg` → `pytest` and `ruff check .`;
@@ -91,14 +110,14 @@ STEPS:
    Xcode/iPadOS build needs `macos-latest`), FLAG it in the PR body (per the
    human-in-the-loop notes) — those live in the human-only workflow skeleton
    (engineering.yml); do NOT self-edit it, and do NOT fabricate a pass.
-9. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
+10. Create a branch agent/fix-${ISSUE_NUMBER}, commit, push, and
    open a PR whose body starts with "Closes #${ISSUE_NUMBER}" and summarizes the
-   root cause, the fix, the before/after test result, AND any human-in-the-loop
-   verification notes from step 7.
+   root cause, the fix, the before/after test result, the step-5 reuse finding when
+   you wrote new code anyway, AND any human-in-the-loop verification notes from step 8.
    Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
-   KEEP the PR URL it prints — you record it via cypher_link_pr in step 10 so a graph reader can
+   KEEP the PR URL it prints — you record it via cypher_link_pr in step 11 so a graph reader can
    click through to the fix.
-10. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
+11. RECORD your reasoning in the DPYC memory graph — the `mcp__graph__*` tools write
    under your own Journeyman identity. Bookkeeping AFTER the PR: the PR you opened
    already stands, so a graph failure is NON-fatal — do NOT retry a graph tool more
    than once. Let `slug` be a short kebab-case summary of the fix:
@@ -109,7 +128,7 @@ STEPS:
      repo_url=<`gh repo view --json url -q .url`>  (the real GitHub URLs — never a hardcoded owner)
      (ensures the Issue node exists).
    - `mcp__graph__cypher_link_pr` with repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
-     pr_url=<the PR URL `gh pr create` printed in step 9> — records the fix PR for click-through.
+     pr_url=<the PR URL `gh pr create` printed in step 10> — records the fix PR for click-through.
    - `mcp__graph__cypher_assert_rationale` with
      decision_id="${REPO_NAME}#${ISSUE_NUMBER}-<slug>",
      repo_name, issue_number, statement=<the decision behind your fix, one line>,

@@ -108,6 +108,10 @@ WORKFLOW_WRITE_PERM = re.compile(r"workflows:\s*write")
 FACTORY_PROMPT_ANCHORS: dict[str, tuple[str, ...]] = {
     "porter.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
     "journeyman.prompt.md": ("SECURITY", "UNTRUSTED"),
+    # PR Revision is the only human-triggered role that can write code, so it carries
+    # the MANDATORY OUTCOME anchor too: a run that silently pushes nothing and says
+    # nothing is indistinguishable from a run that never fired.
+    "pr-revision.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
 }
 
 
@@ -180,8 +184,10 @@ def lint_codeowners(text: str) -> list[str]:
         if parts and parts[0] == "*" and "@lonniev" in parts[1:]:
             return []
     return [
-        f"CODEOWNERS is missing the money-gate rule '{CODEOWNERS_MONEY_GATE}'. Every path must "
-        "require @lonniev review — the factory may not remove its own human merge gate."
+        (
+            f"CODEOWNERS is missing the money-gate rule '{CODEOWNERS_MONEY_GATE}'. Every path "
+            "must require @lonniev review — the factory may not remove its own human merge gate."
+        )
     ]
 
 

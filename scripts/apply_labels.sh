@@ -33,7 +33,7 @@ labels=(
 
   "agent/fix|5319e7|Handed to the Engineering agent"
   "agent/working|1d76db|An agent is actively working this issue right now"
-  "agent/revising|1d76db|The owner sent a PR back for changes; the Journeyman is revising it (persists if the run did not finish)"
+  "agent/revising|1d76db|Journeyman is revising this PR; persists if the run did not finish"
   "blocked/upstream|e99695|Fix belongs in the SDK or a sibling repo"
   "rejected/upstream|e99695|Target repo declined an escalation; routes the reason back to the origin"
   "blocked/arbitration|b60205|Routing standoff — two repos disagree on ownership; a human must decide"

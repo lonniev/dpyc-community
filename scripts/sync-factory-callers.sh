@@ -98,7 +98,13 @@ for r in "${repos[@]}"; do
 
   default="$(git -C "$work" symbolic-ref --short HEAD)"
   git -C "$work" checkout -q -b "$BRANCH"
-  git -C "$work" add .github/workflows/agentic-*.yml .github/CODEOWNERS
+  # QUOTE the pathspec. Unquoted, the shell expands agentic-*.yml against the CWD (the
+  # dpyc-community checkout) before git ever sees it — `git -C` redirects git, not the
+  # glob — so only callers that ALREADY exist here get staged, and a brand-new caller is
+  # copied into every clone and then silently never committed. Quoted, git expands it
+  # inside $work, which is the whole point. This bites only when adding a NEW role, which
+  # is exactly what factory/README.md tells you to use this script for.
+  git -C "$work" add '.github/workflows/agentic-*.yml' '.github/CODEOWNERS'
   git -C "$work" -c user.name="DPYC Factory" -c user.email="noreply@anthropic.com" \
     commit -q -m "ci: sync DPYC Software Factory callers
 

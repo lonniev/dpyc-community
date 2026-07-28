@@ -87,11 +87,23 @@ jobs:
           sudo chmod 0777 /home
           sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
 
+      - name: Resolve the model tier
+        id: model
+        uses: lonniev/dpyc-community/factory/actions/resolve-model@main
+        with:
+          tier: ${{ inputs.model }}
+
       - name: Triage the issue
         id: triage
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
+          # The Factory routes through OpenRouter. ANTHROPIC_API_KEY carries the
+          # OpenRouter key: its Anthropic-compatible endpoint reads x-api-key, which
+          # is the header this variable produces, so the secret NAME stays put and
+          # only its value changed. With the base URL overridden there is no
+          # api.anthropic.com left to fall back to.
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
@@ -114,7 +126,7 @@ jobs:
           allowed_non_write_users: "dpyc-scout"
           prompt: ${{ steps.prompt.outputs.text }}
           claude_args: |
-            --model ${{ inputs.model }}
+            --model ${{ steps.model.outputs.slug }}
             --max-turns 20
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2","DPYC_KEYRING_NSEC":"${{ secrets.PORTER_NSEC }}"}}}}'
             --allowedTools "Bash(gh issue view:*),Bash(gh repo view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh issue list:*),Bash(gh search:*),Read,Grep,Glob,mcp__graph__cypher_context_pack,mcp__graph__cypher_which_service_handles,mcp__graph__cypher_list_capabilities,mcp__graph__cypher_explain_capability,mcp__graph__cypher_claim_issue,mcp__graph__cypher_record_triage,mcp__graph__cypher_record_scope,mcp__graph__cypher_link_issue_to_capability,mcp__graph__cypher_note_rejection,mcp__graph__cypher_link_root_cause,mcp__graph__cypher_index_symbol,mcp__graph__cypher_upsert_capability,mcp__graph__cypher_bind_capability_to_symbol,mcp__graph__cypher_suggest_capability_why,mcp__graph__cypher_routing_history"

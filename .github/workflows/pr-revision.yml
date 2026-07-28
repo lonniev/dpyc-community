@@ -151,11 +151,23 @@ jobs:
           sudo chmod 0777 /home
           sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
 
+      - name: Resolve the model tier
+        id: model
+        uses: lonniev/dpyc-community/factory/actions/resolve-model@main
+        with:
+          tier: ${{ inputs.model }}
+
       - name: Apply the requested changes
         id: revise
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
+          # The Factory routes through OpenRouter. ANTHROPIC_API_KEY carries the
+          # OpenRouter key: its Anthropic-compatible endpoint reads x-api-key, which
+          # is the header this variable produces, so the secret NAME stays put and
+          # only its value changed. With the base URL overridden there is no
+          # api.anthropic.com left to fall back to.
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
@@ -164,7 +176,7 @@ jobs:
           allowed_bots: "dpyc-agentic-desk[bot]"
           prompt: ${{ steps.prompt.outputs.text }}
           claude_args: |
-            --model ${{ inputs.model }}
+            --model ${{ steps.model.outputs.slug }}
             --max-turns 70
             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
             # Engineering's build/prove set, with the PR verbs this bench needs and the

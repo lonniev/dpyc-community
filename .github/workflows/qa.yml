@@ -56,11 +56,23 @@ jobs:
           sudo chmod 0777 /home
           sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
 
+      - name: Resolve the model tier
+        id: model
+        uses: lonniev/dpyc-community/factory/actions/resolve-model@main
+        with:
+          tier: ${{ inputs.model }}
+
       - name: Adversarially review the PR
         id: review
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
+          # The Factory routes through OpenRouter. ANTHROPIC_API_KEY carries the
+          # OpenRouter key: its Anthropic-compatible endpoint reads x-api-key, which
+          # is the header this variable produces, so the secret NAME stays put and
+          # only its value changed. With the base URL overridden there is no
+          # api.anthropic.com left to fall back to.
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.token.outputs.token }}
@@ -98,7 +110,7 @@ jobs:
             git diff/log/show, cat/head/grep, Read/Glob/Grep) plus gh pr edit and gh pr comment
             for your verdict. Do not attempt other commands.
           claude_args: |
-            --model ${{ inputs.model }}
+            --model ${{ steps.model.outputs.slug }}
             # 30, not 20: an adversarial re-review of a security-nuanced diff can
             # need more headroom to read history, verify a fix, and post a verdict —
             # a 20-turn cap once timed out (error_max_turns) and left a stale flag.

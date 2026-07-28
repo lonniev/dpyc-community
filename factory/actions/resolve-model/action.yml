@@ -14,8 +14,28 @@
 #
 #   writer  — Journeyman, PR-Revision. Writes code, so it gets the stronger tier.
 #             x-ai/grok-4.5              $2 / $6      (was anthropic/claude-opus-4.8  $5 / $25)
-#   reader  — Porter, QA, Housekeeper, PR-Dialogue, Digest. Reads, judges, reports.
+#   reader  — Porter, QA, Housekeeper, PR-Dialogue. Reads, judges, reports.
 #             x-ai/grok-4.3              $1.25 / $2.50 (was anthropic/claude-sonnet-5 $2 / $10)
+#   free    — Digest only. Costs nothing and is rate-capped, not priced.
+#             nvidia/nemotron-3-ultra-550b-a55b:free
+#
+# Why a free tier is safe HERE and nowhere else. Free models are free because the
+# provider may log and train on the traffic — which would matter if the traffic were
+# secret. Every one of the 18 Factory repos is public, so the agents only ever see
+# world-readable issue text and source; secrets travel in env and CLI args, never in
+# model context. What free costs instead is a ceiling: 20 requests/minute and 1000
+# per day across ALL :free models on the account. Roughly one request per turn, so a
+# 140-turn Journeyman run would spend ~14% of the day's allowance and, worse, a
+# mid-run 429 discards the whole partial run — the exact waste this Factory keeps
+# paying for. Digest is the one role where that is harmless: it is a scheduled sweep,
+# no PR rides on it, and a failed run simply happens again on the next tick.
+#
+# NOTE: enabling the account-wide "disable providers that train on inputs" toggle in
+# OpenRouter's privacy settings makes :free models unroutable. That toggle buys this
+# fleet nothing (the repos are public) but it WILL silently strand this tier.
+#
+# If the free pool proves flaky, `openrouter/free` auto-routes across it for
+# resilience at the cost of a predictable model.
 #
 # ROLLBACK: set WRITER_SLUG to anthropic/claude-opus-4.8 and READER_SLUG to
 # anthropic/claude-sonnet-5, and re-run the key rollout with an Anthropic key.
@@ -43,6 +63,7 @@ runs:
         TIER: ${{ inputs.tier }}
         WRITER_SLUG: x-ai/grok-4.5
         READER_SLUG: x-ai/grok-4.3
+        FREE_SLUG: nvidia/nemotron-3-ultra-550b-a55b:free
       run: |
         set -euo pipefail
 
@@ -52,6 +73,7 @@ runs:
           */*) slug="$TIER" ;;
           claude-opus-4-8|claude-opus-4.8|opus|writer)   slug="$WRITER_SLUG" ;;
           claude-sonnet-5|claude-sonnet-5.0|sonnet|reader) slug="$READER_SLUG" ;;
+          free)                                          slug="$FREE_SLUG" ;;
           *)
             echo "::error::Unknown model tier '$TIER'. Add it to factory/actions/resolve-model, or pass a provider slug like x-ai/grok-4.5." >&2
             exit 1

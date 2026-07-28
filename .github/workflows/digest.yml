@@ -46,7 +46,11 @@ jobs:
         id: model
         uses: lonniev/dpyc-community/factory/actions/resolve-model@main
         with:
-          tier: claude-sonnet-5
+          # The fleet's free-tier pilot. Digest is the only role where a rate-limit
+          # miss is harmless: nothing merges on it and the next scheduled tick just
+          # runs again. If it holds here, Porter and Housekeeper are the next
+          # candidates; Journeyman never is.
+          tier: free
 
       - name: Sweep the fleet and update the digest
         uses: anthropics/claude-code-action@v1

@@ -10,32 +10,32 @@
 # or rolling the whole Factory back to direct Anthropic — is an edit HERE, and
 # every role in every repo follows on its next run.
 #
+# The rule is cost minimisation without loss of quality. A tier is the cheapest
+# route measured to still produce an acceptable artifact for its roles — nothing
+# here is required to be free, and price alone never decides.
+#
 # Current tiers (prices per million tokens, in/out, as listed by OpenRouter):
 #
 #   writer  — Journeyman, PR-Revision. Writes code, so it gets the stronger tier.
 #             x-ai/grok-4.5              $2 / $6      (was anthropic/claude-opus-4.8  $5 / $25)
 #   reader  — Porter, QA, Housekeeper, PR-Dialogue. Reads, judges, reports.
 #             x-ai/grok-4.3              $1.25 / $2.50 (was anthropic/claude-sonnet-5 $2 / $10)
-#   free    — Digest only. Costs nothing and is rate-capped, not priced.
+#   budget  — Digest only. Cheapest route measured to still do the job.
 #             nvidia/nemotron-3-ultra-550b-a55b:free
 #
-# Why a free tier is safe HERE and nowhere else. Free models are free because the
-# provider may log and train on the traffic — which would matter if the traffic were
-# secret. Every one of the 18 Factory repos is public, so the agents only ever see
-# world-readable issue text and source; secrets travel in env and CLI args, never in
-# model context. What free costs instead is a ceiling: 20 requests/minute and 1000
-# per day across ALL :free models on the account. Roughly one request per turn, so a
-# 140-turn Journeyman run would spend ~14% of the day's allowance and, worse, a
-# mid-run 429 discards the whole partial run — the exact waste this Factory keeps
-# paying for. Digest is the one role where that is harmless: it is a scheduled sweep,
-# no PR rides on it, and a failed run simply happens again on the next tick.
+# The budget route is NOT free, despite the `:free` suffix. Its first real run — a
+# 67-turn fleet sweep — billed $0.1155, against roughly $1 for the same work on the
+# reader tier. Nine times cheaper for an artifact that was fit for purpose, which is
+# why it stays; but a `:free` slug only means "prefer the free pool", and OpenRouter
+# bills the paid variant when that pool is unavailable. Enforcing zero would need a
+# per-request `provider: {allow_fallbacks: false}`, and claude-code-action cannot
+# inject marketplace-specific body fields — so the cheapness is best-effort and must
+# be verified from the ledger, never assumed from the slug.
 #
-# NOTE: enabling the account-wide "disable providers that train on inputs" toggle in
-# OpenRouter's privacy settings makes :free models unroutable. That toggle buys this
-# fleet nothing (the repos are public) but it WILL silently strand this tier.
-#
-# If the free pool proves flaky, `openrouter/free` auto-routes across it for
-# resilience at the cost of a predictable model.
+# Its other cost is latency: 25 minutes wall clock for that sweep, against ~45s for a
+# 10-turn reader run. Fine where nobody waits on the result. Disqualifying for triage
+# on a fresh issue or a review gating a merge — which is what limits this route to
+# Digest, not any property of the model.
 #
 # ROLLBACK: set WRITER_SLUG to anthropic/claude-opus-4.8 and READER_SLUG to
 # anthropic/claude-sonnet-5, and re-run the key rollout with an Anthropic key.
@@ -63,7 +63,7 @@ runs:
         TIER: ${{ inputs.tier }}
         WRITER_SLUG: x-ai/grok-4.5
         READER_SLUG: x-ai/grok-4.3
-        FREE_SLUG: nvidia/nemotron-3-ultra-550b-a55b:free
+        BUDGET_SLUG: nvidia/nemotron-3-ultra-550b-a55b:free
       run: |
         set -euo pipefail
 
@@ -73,7 +73,7 @@ runs:
           */*) slug="$TIER" ;;
           claude-opus-4-8|claude-opus-4.8|opus|writer)   slug="$WRITER_SLUG" ;;
           claude-sonnet-5|claude-sonnet-5.0|sonnet|reader) slug="$READER_SLUG" ;;
-          free)                                          slug="$FREE_SLUG" ;;
+          budget)                                        slug="$BUDGET_SLUG" ;;
           *)
             echo "::error::Unknown model tier '$TIER'. Add it to factory/actions/resolve-model, or pass a provider slug like x-ai/grok-4.5." >&2
             exit 1

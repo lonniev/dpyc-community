@@ -46,11 +46,10 @@ jobs:
         id: model
         uses: lonniev/dpyc-community/factory/actions/resolve-model@main
         with:
-          # The fleet's free-tier pilot. Digest is the only role where a rate-limit
-          # miss is harmless: nothing merges on it and the next scheduled tick just
-          # runs again. If it holds here, Porter and Housekeeper are the next
-          # candidates; Journeyman never is.
-          tier: free
+          # Measured: a 67-turn sweep on this route billed $0.1155 and produced a
+          # correct digest, against roughly $1 on the reader tier. It took 25 minutes,
+          # which is why it stays here and nowhere a human waits on the answer.
+          tier: budget
 
       - name: Sweep the fleet and update the digest
         uses: anthropics/claude-code-action@v1

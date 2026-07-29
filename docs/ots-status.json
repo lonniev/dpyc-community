@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-07-29T22:37:27.123495+00:00",
+  "collected_at": "2026-07-29T23:38:49.852154+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 31,
+    "total_notarizations": 32,
     "confirmed": 0,
     "coverage_percent": 82
   },
@@ -63,6 +63,14 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "3",
+          "root_hash": "1dae4578c41f918144276864c911f4444173d7183242ce251746480b5acf8d09",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-29 23:15:12.856295+00",
+          "receipt_count": 2
+        },
         {
           "notarization_id": "2",
           "root_hash": "09a8a4cd24062b7f95d532f6f1bccdc9fba2cfb91014e99742ce093e4e5580e3",

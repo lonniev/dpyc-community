@@ -50,6 +50,13 @@ permissions:
   issues: write
   pull-requests: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: Revision commits to the PR's head branch. Two concurrent revisions interleave
+# pushes; cancelling one mid-push can leave the branch half-written, so serialise.
+concurrency:
+  group: dpyc-revision-${{ github.repository }}-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   # Same toolchain sniff as engineering.yml: this role RUNS the project's tests before
   # pushing, so it needs the right runner OS. macOS bills ~10x, so only Xcode/Swift repos

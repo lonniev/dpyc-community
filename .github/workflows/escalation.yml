@@ -23,6 +23,15 @@ on:
 permissions:
   issues: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: Deterministic, but it read-modify-writes: it checks for an existing
+# `dpyc-escalated:` marker before filing. Two runs can both read 'not yet' and
+# both file, which is a duplicate issue in someone else's repo — the one place
+# this pipeline writes across a repository boundary.
+concurrency:
+  group: dpyc-escalation-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   escalate:
     runs-on: ubuntu-latest

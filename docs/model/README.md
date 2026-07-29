@@ -12,6 +12,7 @@ that govern an issue, a pull request, and an outage.
 | [`factory-model.html`](./factory-model.html) | The two above, plus the model source, as one print-ready page. **Generated — never hand-edit.** |
 | `build_page.py`, `page.css` | The generator. `python3 build_page.py` rewrites `factory-model.html` from the sources beside it. |
 | `check.mjs`, `package.json` | Diagram checks. `npm install && node check.mjs` parses and renders every mermaid block; exits non-zero on failure. |
+| `check_states.py` | State-machine completeness. Asks which *ambient* events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap. |
 
 Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the
 diagrams stay readable in the same place the source they describe lives.
@@ -107,6 +108,25 @@ until the indexer grows those relationship kinds.
 
 With thanks to [Nomograph Labs](https://nomograph.ai/) for the tool — a hand-authored model
 is only a claim until something with a real grammar agrees with it.
+
+**The state machines** are checked for completeness by `check_states.py`. Its first run
+found six gaps, and acting on them changed the *workflows*, not just the model:
+
+- **No mutual exclusion existed anywhere.** Not one role workflow had a `concurrency:`
+  block, so two Journeymen could branch the same `agent/fix-<n>` and race pushes — with the
+  credit canary's `agent/fix` re-toggle as the likeliest trigger. `agent/working` was a
+  beacon being read as a lock. Every role now carries a per-item concurrency group
+  (guard G15); QA is the only one that cancels in flight, because it would otherwise
+  review a head that a new push already replaced.
+- **A PR closed without merging stranded its issue.** It kept `agent/fix` while no agent
+  was coming back, and nothing in the pipeline noticed. The Housekeeper gained an UNSTRAND
+  sweep that returns such issues to triage.
+- **An owner approval overrides `qa/flag`,** because `approval-merge.yml` reads no `qa/*`
+  label at all. That is the intended ordering — QA advises the human rather than vetoing
+  them — but it was undocumented, and is now stated in the workflow itself.
+
+The other three were model drift from workflows that already handled the case, and the
+check now holds the model to them.
 
 **The diagrams** all parse and render under Mermaid's own engine —
 `check.mjs` in this directory runs `mermaid.parse()` then `mermaid.render()` over every

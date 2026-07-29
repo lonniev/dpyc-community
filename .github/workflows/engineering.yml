@@ -34,6 +34,16 @@ permissions:
   issues: write
   pull-requests: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: THE important one. Both runs branch `agent/fix-<n>`, so two Journeymen race
+# pushes to the same ref and open competing PRs. The canary's recovery path
+# re-toggles `agent/fix` to resume deferred work, which is exactly the trigger
+# most likely to land on an issue a slow run is still working. `agent/working`
+# was only ever a beacon — this is the lock it was mistaken for.
+concurrency:
+  group: dpyc-journeyman-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   # Detect the target repo's toolchain so the implement job runs on the right OS.
   # Xcode/iPadOS projects need macOS + Xcode; everything else builds on ubuntu. macOS

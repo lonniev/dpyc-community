@@ -37,6 +37,15 @@ permissions:
   contents: read
   issues: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: Two Porters on one issue would both triage and both label it. The canary's
+# recovery adds `agent/retriage` to items that may already be mid-triage, so this
+# is a live path, not a theoretical one. Queue rather than cancel: a cancelled
+# triage leaves the issue unlabelled and looks like the silent no-op we fixed.
+concurrency:
+  group: dpyc-porter-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   triage:
     runs-on: ubuntu-latest

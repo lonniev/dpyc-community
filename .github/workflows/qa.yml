@@ -33,6 +33,15 @@ permissions:
   pull-requests: write
   issues: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: The ONLY role that cancels: QA fires on `synchronize`, so a new push means the
+# review in flight is reading a stale head. Finishing it would stamp a verdict on
+# code that no longer exists — worse than no verdict, because `qa/pass` arms
+# auto-merge. A cancelled run leaves no label, and the new one supplies it.
+concurrency:
+  group: dpyc-qa-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
     runs-on: ubuntu-latest

@@ -201,6 +201,11 @@ stateDiagram-v2
     Funds --> Closed: closed while deferred — block retired as historical
 
     PRRaised --> Closed: PR merged
+    PRRaised --> Triaging: PR closed unmerged — Housekeeper unstrands it
+    Working --> Funds: key exhausted
+    Working --> Closed: a human closes it mid-run
+    Closed --> Triaging: reopened — the reverse escalation path does this
+    Rejected --> Triaging: reopened
     Closed --> [*]
 ```
 
@@ -226,6 +231,7 @@ stateDiagram-v2
     state "Auto-merge armed — GitHub holds it pending" as Armed
     state "Merged" as Merged
     state "awaiting-funds" as PRFunds
+    state "Closed unmerged — the waiting issue is unstranded by the Housekeeper" as Abandoned
 
     AwaitingQA --> Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --> Flagged: any concern
@@ -244,12 +250,20 @@ stateDiagram-v2
     Revising --> AwaitingQA: revision pushed to the head branch
 
     Armed --> Merged: branch protection satisfied — required checks green + code-owner review
+    Armed --> Revising: OWNER later requests changes — --auto keeps holding
+    Flagged --> Armed: OWNER approves anyway — QA advises, it does not veto
 
     AwaitingQA --> PRFunds: key exhausted
     Revising --> PRFunds: key exhausted
     PRFunds --> AwaitingQA: canary recovery
     PRFunds --> Revising: mid-revision — the owner re-requests, never the bot
+    AwaitingQA --> Abandoned: closed without merging
+    Flagged --> Abandoned
+    Passed --> Abandoned
+    Human --> Abandoned
+    Revising --> Abandoned
     Merged --> [*]
+    Abandoned --> [*]
 ```
 
 ---
@@ -382,4 +396,5 @@ escalated at most once while a re-home stays possible.
 | G11 | Prompts keep their safety anchors | `doctrine_lint` | `SECURITY` + `UNTRUSTED` everywhere, plus `MANDATORY OUTCOME` for Porter and PR Revision |
 | G12 | Containment is funding | Per-agent patron balance | Fund the Porter thin, the Journeyman thicker; a drained agent degrades, it does not stall the pipeline |
 | G13 | An outage defers, it does not fail | Funding sentinel signature | Only `is_error && turns ≤ 1 && cost == 0` counts as an outage |
+| G15 | One run per role per work-item | GitHub `concurrency` group | Group is (role, repo, item number). Two Journeymen would branch the same `agent/fix-<n>` and race pushes; the canary's `agent/fix` re-toggle is the likeliest trigger. Only QA cancels in flight — it would otherwise stamp a verdict on a head that a new push replaced |
 | G14 | Judgement gets an agent, policy gets bash | Role roster | Every merge, escalation, lint and verify gate is LLM-free, and therefore immune to injection and to a dry key |

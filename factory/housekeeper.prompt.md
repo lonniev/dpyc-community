@@ -45,13 +45,28 @@ STEPS:
    the PR naming the exact blocker and the remedy, so a human (or a re-run) can act:
      gh pr comment <pr> --body "Stalled: <blocker — e.g. QA errored on <date>, no verdict / behind main by N commits>. Needs <re-run QA | update-branch | a human decision>."
    Leave `agent/fix` on the issue so the work is not lost.
-4. PRUNE — a `rejected/needs-info` issue with no response for 7+ days: close it with
+4. UNSTRAND — an issue left waiting on a PR that will never land. When a
+   Journeyman PR is CLOSED WITHOUT MERGING (superseded, abandoned, or closed by a
+   human), nothing re-fires: the issue keeps `agent/fix`, no agent is coming back
+   for it, and it sits indefinitely. Nothing else in the pipeline notices this, so
+   it is yours. Survey CLOSED-unmerged agent branches — step 1 lists only OPEN PRs,
+   so you must ask for these separately:
+     gh pr list --state closed --limit 50 --json number,headRefName,closedAt,state,mergedAt
+   For each whose `mergedAt` is null and whose head ref is `agent/fix-<n>`, inspect
+   issue <n>. If it is still OPEN and still carries `agent/fix`, the work was
+   dropped. Hand it back to triage rather than guessing:
+     gh issue edit <n> --remove-label agent/fix --remove-label agent/working --add-label agent/retriage
+     gh issue comment <n> --body "PR #<pr> was closed without merging, so this was left waiting on a fix that is not coming. Returning it to triage."
+   Adding `agent/retriage` re-fires the Porter, which re-decides on current evidence.
+   Do NOT re-apply `agent/fix` yourself — that would summon Engineering for the same
+   fix that was just abandoned. If the issue is already closed, do nothing.
+5. PRUNE — a `rejected/needs-info` issue with no response for 7+ days: close it with
    a courteous comment inviting a reopen with the missing detail (mirror Porter's
    reject-with-comment etiquette).
-5. FLAG-AGING — an issue open 14+ days with no linked PR and no recent activity:
+6. FLAG-AGING — an issue open 14+ days with no linked PR and no recent activity:
    post ONE comment surfacing it for the human ("Still open after N days, no PR yet —
    still wanted?"). Do NOT close it.
-6. NEVER auto-close a `sev/critical` issue, an `area/ledger` issue, or any issue whose
+7. NEVER auto-close a `sev/critical` issue, an `area/ledger` issue, or any issue whose
    title mentions ledger / credits / demurrage / certificate — flag those for a human
    only.
 

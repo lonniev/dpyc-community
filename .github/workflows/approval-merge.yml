@@ -15,6 +15,15 @@
 #     review-event's with-secrets context is not an injection surface (unlike
 #     pull_request_target, which the doctrine linter bans).
 #
+# QA IS ADVISORY TO THE OWNER, AND THAT IS DELIBERATE. Nothing here reads `qa/*`. An
+# owner approval therefore lands a PR that QA marked `qa/flag`, and that is the intended
+# ordering: QA is a second opinion offered to the human, not a veto over them. The
+# distinction from auto-merge.yml is the whole point — auto-merge lands work with NO human
+# in the loop, so it demands `qa/pass` AND a docs-only diff; this path already has the
+# human, so their judgement supersedes the robot's. If you ever want a flag to be able to
+# stop the owner, that is a policy change and it belongs here as an explicit condition —
+# not as an accident of nobody having written the check.
+#
 # There is no LLM here on purpose: "the owner approved" is a fact, not a judgement.
 name: DPYC Merge on Approval (reusable)
 

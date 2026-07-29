@@ -494,6 +494,22 @@ a:focus-visible, .toc-part a:focus-visible {
   .prose h2, .prose h3 { break-after: avoid; }
   .diagram, table, pre.code { break-inside: avoid; }
   .attribution { break-inside: avoid; border-top-width: 2px; }
+  /* mermaid sizes each svg to its own intrinsic width via an inline max-width, which on
+     paper leaves the smaller state machines marooned in the middle of a wide figure box.
+     On screen that is fine; in print the page IS the measure, so override it and let each
+     diagram scale to the column. */
+  .mermaid svg {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 200mm;
+  }
+  /* The screen layout centres each figure in a flex row, which shrink-wraps the <pre> to
+     its content — so a width:100% svg was resolving against a box that was already small.
+     On paper, let the figure block fill the column instead. */
+  .diagram .scroll { display: block; }
+  .mermaid { width: 100%; }
+  .diagram { padding: 0.75rem 0.5rem; }
   .part-rule { break-before: page; }
   .masthead { break-after: avoid; }
   .listing { break-before: page; }
@@ -531,7 +547,7 @@ a:focus-visible, .toc-part a:focus-visible {
 
   <nav class="contents">
     <h2 class="contents-title">Contents</h2>
-    <section class="toc-part"><h3>Part I &mdash; Overview</h3><ol><li><a href="#i-1"><span class="n">I.1</span>What is deliberately *not* in the model</a></li><li><a href="#i-2"><span class="n">I.2</span>Provenance — element → source map</a></li><li><a href="#i-3"><span class="n">I.3</span>Reading the model</a></li><li><a href="#i-4"><span class="n">I.4</span>Verification</a></li><li><a href="#i-5"><span class="n">I.5</span>Caveats</a></li></ol></section>
+    <section class="toc-part"><h3>Part I &mdash; Overview</h3><ol><li><a href="#i-1"><span class="n">I.1</span>Read it</a></li><li><a href="#i-2"><span class="n">I.2</span>What is deliberately not in the model</a></li><li><a href="#i-3"><span class="n">I.3</span>Provenance — element → source map</a></li><li><a href="#i-4"><span class="n">I.4</span>Reading the model</a></li><li><a href="#i-5"><span class="n">I.5</span>Verification</a></li><li><a href="#i-6"><span class="n">I.6</span>Caveats</a></li></ol></section>
     <section class="toc-part"><h3>Part II &mdash; Views</h3><ol><li><a href="#ii-1"><span class="n">II.1</span>Tech stack</a></li><li><a href="#ii-2"><span class="n">II.2</span>The crew, and who is allowed to fire it</a></li><li><a href="#ii-3"><span class="n">II.3</span>Issue lifecycle</a></li><li><a href="#ii-4"><span class="n">II.4</span>Pull request lifecycle</a></li><li><a href="#ii-5"><span class="n">II.5</span>Funding — two independent rails</a></li><li><a href="#ii-6"><span class="n">II.6</span>Escalation and the anti-ping-pong loop</a></li><li><a href="#ii-7"><span class="n">II.7</span>Guard map — who can change what</a></li></ol></section>
     <section class="toc-part"><h3>Appendix</h3><ol>
       <li><a href="#attribution"><span class="n">&mdash;</span>Validated with nomograph-sysml</a></li>
@@ -541,17 +557,20 @@ a:focus-visible, .toc-part a:focus-visible {
 
   <div class="part-rule"><span>Part I</span><h2>Overview</h2></div>
   <div class="prose"><p>A formal model of the agentic pipeline that triages, fixes, reviews and lands work across the fleet: its crew, the common behavior every repo inherits from this repository, the guards on who may change what, both funding rails, the tech stack, and the state machines that govern an issue, a pull request, and an outage.</p>
+<h2 id="i-1"><span class="mark">I.1</span><span>Read it</span></h2>
+<p><strong><a href="https://lonniev.github.io/dpyc-community/model/factory-model.html">The article, rendered</a></strong> — model, diagrams and source as one page, published by GitHub Pages straight from <code>main</code>. Nothing to build and no URL to hunt for; it updates when this directory does.</p>
+<p>For a PDF, open that page and print it — it has a print stylesheet, so the rail collapses and diagrams stay whole. GitHub also renders <code>diagrams.md</code> natively, mermaid and all, if you only want the pictures.</p>
 <div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr><tr><td><code>check_states.py</code></td><td>State-machine completeness. Asks which <em>ambient</em> events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap.</td></tr></tbody></table></div>
 <p>Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the diagrams stay readable in the same place the source they describe lives.</p>
-<h2 id="i-1"><span class="mark">I.1</span><span>What is deliberately <em>not</em> in the model</span></h2>
+<h2 id="i-2"><span class="mark">I.2</span><span>What is deliberately <em>not</em> in the model</span></h2>
 <ul><li><strong>The Digest&#x27;s prose output and the Housekeeper&#x27;s tidy heuristics.</strong> Both are inline prompts whose specifics change often; the model captures their trigger, scope, token and tier, which is what governs their blast radius.</li><li><strong>Per-repo CI internals</strong> beyond runner OS and required-check name. Each repo&#x27;s <code>ci.yml</code> is its own concern; the Factory only cares that a green context exists and is required.</li><li><strong>The DPYC network&#x27;s own economics</strong> — Authorities, certification, demurrage. The Factory <em>consumes</em> that network as a patron; it does not define it.</li></ul>
-<h2 id="i-2"><span class="mark">I.2</span><span>Provenance — element → source map</span></h2>
+<h2 id="i-3"><span class="mark">I.3</span><span>Provenance — element → source map</span></h2>
 <p>Every modelled element traces to code in this repository. Where a comment in the model explains <em>why</em> something is shaped the way it is, that rationale came from the source file&#x27;s own header comments, which are unusually rich.</p>
 <div class="scroll"><table><thead><tr><th>Model element</th><th>Source</th></tr></thead><tbody><tr><td><code>Roles::Porter</code>, <code>Behavior::IssueLifecycle</code> triage branches</td><td><code>factory/porter.prompt.md</code>, <code>.github/workflows/service-desk.yml</code></td></tr><tr><td><code>Roles::Journeyman</code>, no-change close, reuse-before-build, prove-the-fix</td><td><code>factory/journeyman.prompt.md</code>, <code>.github/workflows/engineering.yml</code></td></tr><tr><td><code>Roles::QA</code>, the invariant checklist</td><td><code>.github/workflows/qa.yml</code> (inline prompt)</td></tr><tr><td><code>Roles::PRDialogue</code> / <code>PRRevision</code>, and the split between them</td><td><code>.github/workflows/pr-dialogue.yml</code>, <code>pr-revision.yml</code>, <code>factory/pr-revision.prompt.md</code>, <code>factory/README.md</code></td></tr><tr><td><code>Roles::Housekeeper</code></td><td><code>.github/workflows/housekeeper.yml</code>, <code>factory/housekeeper.prompt.md</code></td></tr><tr><td><code>Roles::Digest</code></td><td><code>.github/workflows/digest.yml</code></td></tr><tr><td><code>Roles::Escalation</code>, <code>Guards::G6</code>, <code>G7</code>, escalation sequence</td><td><code>.github/workflows/escalation.yml</code></td></tr><tr><td><code>Roles::AutoMerge</code> + the low-risk path pattern</td><td><code>.github/workflows/auto-merge.yml</code></td></tr><tr><td><code>Roles::ApprovalMerge</code></td><td><code>.github/workflows/approval-merge.yml</code></td></tr><tr><td><code>Roles::DoctrineLint</code>, <code>Guards::G1</code>–<code>G4</code>, <code>G11</code></td><td><code>scripts/doctrine_lint.py</code>, <code>.github/workflows/doctrine-lint.yml</code></td></tr><tr><td><code>Roles::DeployVerify</code></td><td><code>.github/workflows/deploy-verify.yml</code>, <code>scripts/deploy-verify-caller.yml</code></td></tr><tr><td><code>Roles::FundingSentinel</code>, <code>Guards::G13</code></td><td><code>factory/actions/funding-sentinel/{action.yml,detect_signature.py}</code></td></tr><tr><td><code>Roles::CreditCanary</code>, <code>Behavior::FundingLifecycle</code>, the replay table</td><td><code>.github/workflows/factory-credit-canary.yml</code></td></tr><tr><td><code>Roles::BlockRetire</code>, <code>Behavior::FundingBlockLifecycle</code></td><td><code>.github/workflows/block-retire.yml</code>, <code>factory/actions/funding-sentinel/stamp_cypher.py</code></td></tr><tr><td><code>Roles::Scout</code>, <code>Identity::ScoutReporter</code></td><td><code>tollbooth-dpyc/src/tollbooth/tools/report_issue.py</code>, the FIELD REPORTS clause in <code>factory/porter.prompt.md</code>, <code>allowed_non_write_users</code> in <code>service-desk.yml</code></td></tr><tr><td><code>Identity::AgentKeyring</code>, <code>Guards::G9</code></td><td>the <code>--mcp-config</code> blocks in <code>service-desk.yml</code> / <code>engineering.yml</code>; <code>tollbooth.agent_keyring</code> in the SDK</td></tr><tr><td><code>Platform::OpenRouter</code>, the tier map</td><td><code>factory/actions/resolve-model/action.yml</code></td></tr><tr><td><code>Vocabulary::*</code> — all 32 labels</td><td><code>scripts/apply_labels.sh</code></td></tr><tr><td><code>Distribution::ThinCaller</code> and every caller guard</td><td><code>scripts/factory-callers/agentic-*.yml</code></td></tr><tr><td><code>Distribution::SyncFactoryCallers</code>, <code>ApplyLabels</code>, <code>RequireCICChecks</code></td><td><code>scripts/sync-factory-callers.sh</code>, <code>apply_labels.sh</code>, <code>require_ci_checks.py</code></td></tr><tr><td><code>Guards::G3</code> (branch protection profile)</td><td><code>scripts/require_ci_checks.py</code>, <code>scripts/factory-CODEOWNERS</code></td></tr><tr><td><code>IntentionGraph::*</code>, <code>Guards::G10</code></td><td>cypher-mcp&#x27;s <code>scripts/factory_vocabulary.py</code> write templates; the <code>mcp__graph__*</code> grants in the role workflows</td></tr><tr><td><code>Fleet::*</code></td><td>the escalation allowlist in <code>escalation.yml</code>, cross-checked against the working-directory checkouts</td></tr></tbody></table></div>
-<h2 id="i-3"><span class="mark">I.3</span><span>Reading the model</span></h2>
+<h2 id="i-4"><span class="mark">I.4</span><span>Reading the model</span></h2>
 <p>Three ideas explain most of its shape, and they are worth holding while reading:</p>
 <ol><li><strong>Behavior is data; powers are not.</strong> Role prompts live in <code>factory/*.prompt.md</code> and the crew may evolve them by PR. The workflow skeleton that grants permissions, mints tokens and sets <code>--allowedTools</code> is human-only — and that separation is <em>structural</em>, because the GitHub App carries no <code>workflows: write</code>, so an agent token cannot push such an edit even under a successful injection.</li><li><strong>Judgement gets an agent; policy gets bash.</strong> Every gate that could actually land code — merge, escalation, lint, deploy verification — is LLM-free, which makes it immune both to prompt injection and to an exhausted key at the moment it matters.</li><li><strong>Containment is funding, not policy.</strong> Each agent is a DPYC patron holding its own nsec and buying its own memory-graph writes with sats. The human&#x27;s routine oversight is topping up balances; a drained agent degrades gracefully rather than stalling.</li></ol>
-<h2 id="i-4"><span class="mark">I.4</span><span>Verification</span></h2>
+<h2 id="i-5"><span class="mark">I.5</span><span>Verification</span></h2>
 <p>Everything here is machine-checked, and the checks run in CI — the <code>model</code> job in <code>.github/workflows/ci.yml</code>. That job always reports, deliberately without a <code>paths:</code> filter: a path-filtered workflow posts no status on PRs that miss the filter, and a required context that sometimes never posts leaves merges pending forever, which is the trap <code>scripts/require_ci_checks.py</code> exists to refuse. It skips its own expensive steps when <code>docs/model</code> is untouched, so it stays cheap while remaining safe to require.</p>
 <p>Three gates run there:</p>
 <ol><li><strong><code>check_states.py</code></strong> — state-machine completeness.</li><li><strong>The page is current</strong> — <code>build_page.py</code> is re-run and the result diffed against the committed <code>factory-model.html</code>, so editing a source without rebuilding cannot land.</li><li><strong><code>check.mjs</code></strong> — every mermaid block parses <em>and</em> renders.</li></ol>
@@ -573,7 +592,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <ul><li><strong>No mutual exclusion existed anywhere.</strong> Not one role workflow had a <code>concurrency:</code> block, so two Journeymen could branch the same <code>agent/fix-&lt;n&gt;</code> and race pushes — with the credit canary&#x27;s <span class="chip" style="--chip:#5319e7">agent/fix</span> re-toggle as the likeliest trigger. <span class="chip" style="--chip:#1d76db">agent/working</span> was a beacon being read as a lock. Every role now carries a per-item concurrency group (guard G15); QA is the only one that cancels in flight, because it would otherwise review a head that a new push already replaced.</li><li><strong>A PR closed without merging stranded its issue.</strong> It kept <span class="chip" style="--chip:#5319e7">agent/fix</span> while no agent was coming back, and nothing in the pipeline noticed. The Housekeeper gained an UNSTRAND sweep that returns such issues to triage.</li><li><strong>An owner approval overrides <span class="chip" style="--chip:#d93f0b">qa/flag</span>,</strong> because <code>approval-merge.yml</code> reads no <code>qa/*</code> label at all. That is the intended ordering — QA advises the human rather than vetoing them — but it was undocumented, and is now stated in the workflow itself.</li></ul>
 <p>The other three were model drift from workflows that already handled the case, and the check now holds the model to them.</p>
 <p><strong>The diagrams</strong> all parse and render under Mermaid&#x27;s own engine — <code>check.mjs</code> in this directory runs <code>mermaid.parse()</code> then <code>mermaid.render()</code> over every fenced block in <code>diagrams.md</code>. Two constructs to avoid in a <strong>sequence</strong> diagram, both of which bit this document: a literal <code>--</code> in message text is lexed as the start of an arrow token, and a <code>;</code> anywhere in a note ends the statement early.</p>
-<h2 id="i-5"><span class="mark">I.5</span><span>Caveats</span></h2>
+<h2 id="i-6"><span class="mark">I.6</span><span>Caveats</span></h2>
 <p>Both files are a snapshot of <code>main</code> as read on 2026-07-29. The Factory changes itself by PR, so re-derive rather than trust this model when the answer matters — <code>factory/README.md</code> is the crew&#x27;s own living table, and the workflow headers are the authoritative rationale.</p>
 <p>The assurance case in §12 is written for a conformant reader. Because nomograph 0.2.0 does not extract those relationships, its traceability is currently legible to humans and to other SysML v2 tooling, but invisible to the checker.</p></div>
 
@@ -2237,6 +2256,30 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">    }</span>
 <span class="ln">}</span>
 </pre></div>
+
+  <script type="module">
+    // Diagrams are mermaid SOURCE, not pictures, so something has to draw them.
+    // On the artifact host that happens natively and this CDN is blocked by CSP — the
+    // import throws and is caught, which is the whole story there. On GitHub Pages there
+    // is no such host, so the page fetches a renderer itself.
+    // The wait-then-check means whichever draws first wins and nothing is drawn twice.
+    window.addEventListener('load', async () => {
+      await new Promise(r => setTimeout(r, 400));
+      const pending = [...document.querySelectorAll('pre.mermaid')]
+        .filter(el => !el.querySelector('svg'));
+      if (!pending.length) return;
+      try {
+        const { default: mermaid } =
+          await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
+        await mermaid.run({ querySelector: 'pre.mermaid' });
+      } catch (e) {
+        // Offline, or blocked. The source stays legible as text — a degraded page, not a
+        // broken one.
+        console.warn('mermaid renderer unavailable:', e);
+      }
+    });
+  </script>
 
   <footer class="colophon-end">
     <p>Generated from the repository&rsquo;s own sources: the 32-label taxonomy is

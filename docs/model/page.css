@@ -492,6 +492,22 @@ a:focus-visible, .toc-part a:focus-visible {
   .prose h2, .prose h3 { break-after: avoid; }
   .diagram, table, pre.code { break-inside: avoid; }
   .attribution { break-inside: avoid; border-top-width: 2px; }
+  /* mermaid sizes each svg to its own intrinsic width via an inline max-width, which on
+     paper leaves the smaller state machines marooned in the middle of a wide figure box.
+     On screen that is fine; in print the page IS the measure, so override it and let each
+     diagram scale to the column. */
+  .mermaid svg {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 200mm;
+  }
+  /* The screen layout centres each figure in a flex row, which shrink-wraps the <pre> to
+     its content — so a width:100% svg was resolving against a box that was already small.
+     On paper, let the figure block fill the column instead. */
+  .diagram .scroll { display: block; }
+  .mermaid { width: 100%; }
+  .diagram { padding: 0.75rem 0.5rem; }
   .part-rule { break-before: page; }
   .masthead { break-after: avoid; }
   .listing { break-before: page; }

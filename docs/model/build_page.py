@@ -236,9 +236,14 @@ sysml_lines = "".join(
     for ln in sysml.splitlines()
 )
 
+def _plain(text: str) -> str:
+    """A contents entry wants the words, not the markup: convert, then drop the tags."""
+    return re.sub(r"<[^>]+>", "", inline(text))
+
+
 def toc_html(part, title, entries):
     items = "".join(
-        f'<li><a href="#{a}"><span class="n">{part.upper()}.{k}</span>{html.escape(t)}</a></li>'
+        f'<li><a href="#{a}"><span class="n">{part.upper()}.{k}</span>{_plain(t)}</a></li>'
         for k, a, t in entries
     )
     return f'<section class="toc-part"><h3>{title}</h3><ol>{items}</ol></section>'
@@ -331,6 +336,30 @@ HTML = f"""<title>DPYC Software Factory — architecture model</title>
     paraphrasing it.</p>
   </div>
   <div class="scroll listing"><pre class="code sysml">{sysml_lines}</pre></div>
+
+  <script type="module">
+    // Diagrams are mermaid SOURCE, not pictures, so something has to draw them.
+    // On the artifact host that happens natively and this CDN is blocked by CSP — the
+    // import throws and is caught, which is the whole story there. On GitHub Pages there
+    // is no such host, so the page fetches a renderer itself.
+    // The wait-then-check means whichever draws first wins and nothing is drawn twice.
+    window.addEventListener('load', async () => {{
+      await new Promise(r => setTimeout(r, 400));
+      const pending = [...document.querySelectorAll('pre.mermaid')]
+        .filter(el => !el.querySelector('svg'));
+      if (!pending.length) return;
+      try {{
+        const {{ default: mermaid }} =
+          await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        mermaid.initialize({{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }});
+        await mermaid.run({{ querySelector: 'pre.mermaid' }});
+      }} catch (e) {{
+        // Offline, or blocked. The source stays legible as text — a degraded page, not a
+        // broken one.
+        console.warn('mermaid renderer unavailable:', e);
+      }}
+    }});
+  </script>
 
   <footer class="colophon-end">
     <p>Generated from the repository&rsquo;s own sources: the 32-label taxonomy is

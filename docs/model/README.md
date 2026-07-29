@@ -5,6 +5,16 @@ the fleet: its crew, the common behavior every repo inherits from this repositor
 guards on who may change what, both funding rails, the tech stack, and the state machines
 that govern an issue, a pull request, and an outage.
 
+## Read it
+
+**[The article, rendered](https://lonniev.github.io/dpyc-community/model/factory-model.html)** —
+model, diagrams and source as one page, published by GitHub Pages straight from `main`.
+Nothing to build and no URL to hunt for; it updates when this directory does.
+
+For a PDF, open that page and print it — it has a print stylesheet, so the rail collapses
+and diagrams stay whole. GitHub also renders [`diagrams.md`](./diagrams.md) natively,
+mermaid and all, if you only want the pictures.
+
 | File | What it is |
 |---|---|
 | [`dpyc-factory.sysml`](./dpyc-factory.sysml) | The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance. |

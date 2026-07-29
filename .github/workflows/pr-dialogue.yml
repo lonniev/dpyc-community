@@ -40,6 +40,13 @@ permissions:
   issues: write
   pull-requests: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: Read-only, so nothing corrupts — but two agents answering the same thread at once
+# is noise, and each answer costs tokens. Queue them.
+concurrency:
+  group: dpyc-dialogue-${{ github.repository }}-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   answer:
     runs-on: ubuntu-latest

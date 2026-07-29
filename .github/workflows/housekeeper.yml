@@ -38,6 +38,13 @@ permissions:
   issues: write
   pull-requests: write
 
+# One run per role per work-item. Nothing in this pipeline was mutually exclusive
+# before: A sweep is repo-wide, so the group is the repo. An overlapping sweep would
+# double-comment on the same stalled items.
+concurrency:
+  group: dpyc-housekeeper-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   tidy:
     runs-on: ubuntu-latest

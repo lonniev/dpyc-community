@@ -373,6 +373,18 @@ package DPYCSoftwareFactory {
             attribute promptFile : String;
             attribute modelTier : String;         // writer | reader | budget
             part harness : AgentHarness;
+
+            doc /* MUTUAL EXCLUSION. Every role is keyed to one run per work-item by a
+                 * GitHub `concurrency` group of (role, caller repo, issue-or-PR number).
+                 * This was missing entirely until a state/event completeness pass went
+                 * looking for it: `agent/working` and `agent/revising` are BEACONS that
+                 * say a run is live, and were being read as locks, which they never
+                 * were. Only QA cancels an in-flight run — it reviews a head that a new
+                 * push has already replaced. Every other role queues, because these runs
+                 * push commits and open PRs, and a half-killed one leaves worse state
+                 * than a late one. */
+            attribute concurrencyGroup : String;
+            attribute cancelInProgress : Boolean = false;
         }
 
         abstract part def DeterministicRole :> FactoryRole {
@@ -448,6 +460,7 @@ package DPYCSoftwareFactory {
             attribute redefines canWriteCode = false;
             attribute redefines modelTier = "reader";
             attribute maxTurns : Integer = 30;
+            attribute redefines cancelInProgress = true;
         }
 
         part def PRDialogue :> AgenticRole {
@@ -676,6 +689,8 @@ package DPYCSoftwareFactory {
             attribute def CreditOutage;        attribute def CreditRestored;
             attribute def ItemClosed;          attribute def RetriageApplied;
             attribute def QAPasses;            attribute def QAFlags;
+            attribute def IssueReopened;       attribute def PRAbandoned;
+            attribute def QAStarts;
             attribute def OwnerApproves;       attribute def OwnerRequestsChanges;
             attribute def RevisionPushed;      attribute def ProtectionSatisfied;
             attribute def LowRiskPathsOnly;    attribute def CodePathTouched;
@@ -744,6 +759,35 @@ package DPYCSoftwareFactory {
             transition first AwaitingFunds       accept ItemClosed    then Closed;
 
             transition first PRRaised accept FixPropagated then Closed;
+
+            /* --- paths the model missed, found by the state/event completeness
+             * pass and confirmed against the workflows (see check_states.py) --- */
+
+            /* An outage can cut Engineering mid-fix, not only before it starts —
+             * engineering.yml has carried the funding sentinel all along. */
+            transition first Working accept CreditOutage then AwaitingFunds;
+
+            /* Closed is not the end. escalation.yml calls `gh issue reopen` on the
+             * reverse path, and the Service Desk caller fires on `reopened`. */
+            transition first Closed accept IssueReopened then Triaging;
+            transition first Rejected accept IssueReopened then Triaging;
+
+            /* A PR closed WITHOUT merging used to strand the issue here forever:
+             * nothing re-fired, and it kept agent/fix while no agent was coming
+             * back. The Housekeeper's UNSTRAND sweep now hands it to triage. */
+            transition first PRRaised accept PRAbandoned then Triaging;
+
+            /* A human may close anything at any time. */
+            transition first Triaging accept ItemClosed then Closed;
+            transition first NeedsInfo accept ItemClosed then Closed;
+            transition first ReadyForEngineering accept ItemClosed then Closed;
+            transition first BlockedUpstream accept ItemClosed then Closed;
+            transition first Arbitration accept ItemClosed then Closed;
+
+            /* A human can close an issue out from under a running Journeyman. The run
+             * is not killed — it finishes and may open a PR against a closed issue —
+             * but the issue's own state is settled the moment the human acts. */
+            transition first Working accept ItemClosed then Closed;
         }
 
         // ---------------------------------------------------------------------
@@ -765,6 +809,9 @@ package DPYCSoftwareFactory {
             state AutoMergeArmed { doc /* native --auto enabled; GitHub holds it pending */ }
             state Merged;
             state PRAwaitingFunds;
+            state ClosedUnmerged { doc /* Ended without landing. The issue that was waiting on
+                                       * it is unstranded by the Housekeeper, not by this
+                                       * machine — nothing else in the pipeline notices. */ }
 
             transition first AwaitingQA  accept QAPasses then Passed;
             transition first AwaitingQA  accept QAFlags  then Flagged;
@@ -788,6 +835,32 @@ package DPYCSoftwareFactory {
             transition first AwaitingQA  accept CreditOutage   then PRAwaitingFunds;
             transition first Revising    accept CreditOutage   then PRAwaitingFunds;
             transition first PRAwaitingFunds accept CreditRestored then AwaitingQA;
+
+            /* --- found by the completeness pass --- */
+
+            /* QA actually starting. Without this UnderReview was unreachable — the
+             * model had a state nothing entered. */
+            transition first AwaitingQA accept QAStarts then UnderReview;
+
+            /* The owner's approval outranks a QA flag. approval-merge.yml reads no
+             * qa/* label at all: QA is a second opinion offered to the human, never
+             * a veto over them. Deliberate, and now written down in both places. */
+            transition first Flagged accept OwnerApproves then AutoMergeArmed;
+
+            /* Arming is not committing. A later changes-requested review from a code
+             * owner un-satisfies branch protection, and --auto keeps holding. */
+            transition first AutoMergeArmed accept OwnerRequestsChanges then Revising;
+
+            /* A PR can end without merging — superseded, or closed by hand. This was
+             * unrepresentable, yet block-retire.yml fires on exactly this event. */
+            transition first AwaitingQA    accept PRAbandoned then ClosedUnmerged;
+            transition first UnderReview   accept PRAbandoned then ClosedUnmerged;
+            transition first Flagged       accept PRAbandoned then ClosedUnmerged;
+            transition first AwaitingHuman accept PRAbandoned then ClosedUnmerged;
+            transition first Revising      accept PRAbandoned then ClosedUnmerged;
+            /* Including one QA already passed: qa/pass arms a landing, it does not
+             * guarantee one, and a superseding PR closes this one first. */
+            transition first Passed        accept PRAbandoned then ClosedUnmerged;
         }
 
         // ---------------------------------------------------------------------
@@ -832,6 +905,12 @@ package DPYCSoftwareFactory {
             transition first None    accept CreditOutage   then Active;
             transition first Active  accept CreditRestored then Cleared;
             transition first Active  accept ItemClosed     then Historical;
+
+            /* Outages recur, and mark_funding_state is a MERGE + SET, so a cleared or
+             * retired block re-activates cleanly. Cleared was modelled terminal; the
+             * graph never agreed with that. */
+            transition first Cleared    accept CreditOutage then Active;
+            transition first Historical accept CreditOutage then Active;
         }
     }
 
@@ -982,6 +1061,20 @@ package DPYCSoftwareFactory {
             }
         }
 
+        requirement def <G15> OneRunPerRolePerItem {
+            doc /* No two runs of the same role act on one work-item at the same time.
+                 * The case that motivated it: two Journeymen both branch
+                 * `agent/fix-<n>`, race pushes to that ref and open competing PRs —
+                 * and the credit canary's recovery, which re-toggles `agent/fix` to
+                 * resume deferred work, is the trigger most likely to land on an issue
+                 * a slow run is still holding. Enforced by a GitHub `concurrency` group
+                 * in the workflow skeleton, so it is a property of the platform rather
+                 * than something an agent has to remember. Escalation carries one too:
+                 * it read-modify-writes an idempotency marker, and a lost race there
+                 * files a duplicate issue in someone else's repository. */
+            subject role : AgenticRole;
+        }
+
         requirement def <G14> JudgementGetsAnAgentPolicyGetsBash {
             doc /* The recurring design rule behind the crew roster. "Does this
                  * diff actually fix the issue" is judgement — an agent. "The owner
@@ -1118,6 +1211,8 @@ package DPYCSoftwareFactory {
         satisfy requirement PromptsRetainSafetyAnchors by porterPrompt;
         satisfy requirement ContainmentIsFunding by journeyman;
         satisfy requirement AnOutageDefersRatherThanFails by sentinel;
+        satisfy requirement OneRunPerRolePerItem by journeyman;
+        satisfy requirement OneRunPerRolePerItem by escalation;
         satisfy requirement JudgementGetsAnAgentPolicyGetsBash by approvalMerge;
         satisfy requirement JudgementGetsAnAgentPolicyGetsBash by escalation;
 
@@ -1177,6 +1272,12 @@ package DPYCSoftwareFactory {
             doc /* The dpyc-route-history marker on the origin issue: a repeat repo or
                  * a third hop freezes the issue for a human rather than bouncing it. */
         }
+        verification def <VC13> ConcurrencyGroupPerItem {
+            doc /* The `concurrency:` block in each role's reusable workflow. GitHub — not
+                 * the agent, and not a label — refuses to run two members of a group at
+                 * once, which is what makes this hold even when the trigger is a bot
+                 * re-toggling a label during someone else's run. */
+        }
         verification def <VC12> BranchProtectionProfile {
             doc /* scripts/require_ci_checks.py — require_code_owner_reviews with zero
                  * required approvals, merged onto each repo's OWN posted check names.
@@ -1215,5 +1316,6 @@ package DPYCSoftwareFactory {
         verification rosterHolds : VC10 { verify requirement JudgementGetsAnAgentPolicyGetsBash; }
         verification noBounce : VC11 { verify requirement NoPingPong; }
         verification protectionHolds : VC12 { verify requirement CodeownersMoneyGate; }
+        verification oneRunAtATime : VC13 { verify requirement OneRunPerRolePerItem; }
     }
 }

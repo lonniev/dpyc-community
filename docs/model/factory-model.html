@@ -541,7 +541,7 @@ a:focus-visible, .toc-part a:focus-visible {
 
   <div class="part-rule"><span>Part I</span><h2>Overview</h2></div>
   <div class="prose"><p>A formal model of the agentic pipeline that triages, fixes, reviews and lands work across the fleet: its crew, the common behavior every repo inherits from this repository, the guards on who may change what, both funding rails, the tech stack, and the state machines that govern an issue, a pull request, and an outage.</p>
-<div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr></tbody></table></div>
+<div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr><tr><td><code>check_states.py</code></td><td>State-machine completeness. Asks which <em>ambient</em> events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap.</td></tr></tbody></table></div>
 <p>Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the diagrams stay readable in the same place the source they describe lives.</p>
 <h2 id="i-1"><span class="mark">I.1</span><span>What is deliberately <em>not</em> in the model</span></h2>
 <ul><li><strong>The Digest&#x27;s prose output and the Housekeeper&#x27;s tidy heuristics.</strong> Both are inline prompts whose specifics change often; the model captures their trigger, scope, token and tier, which is what governs their blast radius.</li><li><strong>Per-repo CI internals</strong> beyond runner OS and required-check name. Each repo&#x27;s <code>ci.yml</code> is its own concern; the Factory only cares that a green context exists and is required.</li><li><strong>The DPYC network&#x27;s own economics</strong> — Authorities, certification, demurrage. The Factory <em>consumes</em> that network as a patron; it does not define it.</li></ul>
@@ -562,6 +562,9 @@ sysml validate docs/model/dpyc-factory.sysml
 <div class="scroll"><table><thead><tr><th>Check</th><th>Findings</th><th>Why</th></tr></thead><tbody><tr><td><code>DanglingReferences</code></td><td>199</td><td><code>String</code> / <code>Boolean</code> / <code>Integer</code> / <code>Real</code> resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (<code>= &quot;reader&quot;</code>, <code>= false</code>) counted as unresolved targets.</td></tr><tr><td><code>OrphanRequirements</code>, <code>UnverifiedRequirements</code>, <code>MissingVerification</code></td><td>14 / 14 / 24</td><td>The indexer extracts only <code>Member</code> and <code>TypedBy</code> relationships — <code>Satisfy</code> and <code>Verify</code> are never produced, so these checks cannot pass for any model. An eight-line file with <code>satisfy requirement R by t;</code> and <code>verify requirement R;</code> reports the same findings.</td></tr><tr><td><code>UnconnectedPorts</code></td><td>3</td><td><code>Connect</code> is likewise not extracted, and the check also flags port <em>definitions</em>, which are never themselves connected.</td></tr><tr><td><code>MetamodelConformance</code></td><td>1</td><td>Reports <code>port def GraphToolPort</code> as having no type. A port def <em>is</em> a type; a two-line canonical port def reproduces it.</td></tr></tbody></table></div>
 <p>So treat a clean <code>validate</code> as the meaningful signal today, and the <code>check</code> counts as noise until the indexer grows those relationship kinds.</p>
 <p>With thanks to <a href="https://nomograph.ai/">Nomograph Labs</a> for the tool — a hand-authored model is only a claim until something with a real grammar agrees with it.</p>
+<p><strong>The state machines</strong> are checked for completeness by <code>check_states.py</code>. Its first run found six gaps, and acting on them changed the <em>workflows</em>, not just the model:</p>
+<ul><li><strong>No mutual exclusion existed anywhere.</strong> Not one role workflow had a <code>concurrency:</code> block, so two Journeymen could branch the same <code>agent/fix-&lt;n&gt;</code> and race pushes — with the credit canary&#x27;s <span class="chip" style="--chip:#5319e7">agent/fix</span> re-toggle as the likeliest trigger. <span class="chip" style="--chip:#1d76db">agent/working</span> was a beacon being read as a lock. Every role now carries a per-item concurrency group (guard G15); QA is the only one that cancels in flight, because it would otherwise review a head that a new push already replaced.</li><li><strong>A PR closed without merging stranded its issue.</strong> It kept <span class="chip" style="--chip:#5319e7">agent/fix</span> while no agent was coming back, and nothing in the pipeline noticed. The Housekeeper gained an UNSTRAND sweep that returns such issues to triage.</li><li><strong>An owner approval overrides <span class="chip" style="--chip:#d93f0b">qa/flag</span>,</strong> because <code>approval-merge.yml</code> reads no <code>qa/*</code> label at all. That is the intended ordering — QA advises the human rather than vetoing them — but it was undocumented, and is now stated in the workflow itself.</li></ul>
+<p>The other three were model drift from workflows that already handled the case, and the check now holds the model to them.</p>
 <p><strong>The diagrams</strong> all parse and render under Mermaid&#x27;s own engine — <code>check.mjs</code> in this directory runs <code>mermaid.parse()</code> then <code>mermaid.render()</code> over every fenced block in <code>diagrams.md</code>. Two constructs to avoid in a <strong>sequence</strong> diagram, both of which bit this document: a literal <code>--</code> in message text is lexed as the start of an arrow token, and a <code>;</code> anywhere in a note ends the statement early.</p>
 <h2 id="i-5"><span class="mark">I.5</span><span>Caveats</span></h2>
 <p>Both files are a snapshot of <code>main</code> as read on 2026-07-29. The Factory changes itself by PR, so re-derive rather than trust this model when the answer matters — <code>factory/README.md</code> is the crew&#x27;s own living table, and the workflow headers are the authoritative rationale.</p>
@@ -735,6 +738,11 @@ sysml validate docs/model/dpyc-factory.sysml
     Funds --&gt; Closed: closed while deferred — block retired as historical
 
     PRRaised --&gt; Closed: PR merged
+    PRRaised --&gt; Triaging: PR closed unmerged — Housekeeper unstrands it
+    Working --&gt; Funds: key exhausted
+    Working --&gt; Closed: a human closes it mid-run
+    Closed --&gt; Triaging: reopened — the reverse escalation path does this
+    Rejected --&gt; Triaging: reopened
     Closed --&gt; [*]</pre></div></figure>
 <hr />
 <h2 id="ii-4"><span class="mark">II.4</span><span>Pull request lifecycle</span></h2>
@@ -751,6 +759,7 @@ sysml validate docs/model/dpyc-factory.sysml
     state &quot;Auto-merge armed — GitHub holds it pending&quot; as Armed
     state &quot;Merged&quot; as Merged
     state &quot;awaiting-funds&quot; as PRFunds
+    state &quot;Closed unmerged — the waiting issue is unstranded by the Housekeeper&quot; as Abandoned
 
     AwaitingQA --&gt; Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --&gt; Flagged: any concern
@@ -769,12 +778,20 @@ sysml validate docs/model/dpyc-factory.sysml
     Revising --&gt; AwaitingQA: revision pushed to the head branch
 
     Armed --&gt; Merged: branch protection satisfied — required checks green + code-owner review
+    Armed --&gt; Revising: OWNER later requests changes — --auto keeps holding
+    Flagged --&gt; Armed: OWNER approves anyway — QA advises, it does not veto
 
     AwaitingQA --&gt; PRFunds: key exhausted
     Revising --&gt; PRFunds: key exhausted
     PRFunds --&gt; AwaitingQA: canary recovery
     PRFunds --&gt; Revising: mid-revision — the owner re-requests, never the bot
-    Merged --&gt; [*]</pre></div></figure>
+    AwaitingQA --&gt; Abandoned: closed without merging
+    Flagged --&gt; Abandoned
+    Passed --&gt; Abandoned
+    Human --&gt; Abandoned
+    Revising --&gt; Abandoned
+    Merged --&gt; [*]
+    Abandoned --&gt; [*]</pre></div></figure>
 <hr />
 <h2 id="ii-5"><span class="mark">II.5</span><span>Funding — two independent rails</span></h2>
 <p>The crew spends on two rails that fail independently, and the design leans on that. LLM credits buy inference; <strong>sats</strong> buy graph writes. When the inference rail is dry, the sats rail still works — which is exactly how &quot;what is currently awaiting funds&quot; stays queryable while every LLM node is dark.</p>
@@ -847,7 +864,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <p>The subtle bug this shape had to fix: idempotency was originally <em>unscoped</em> — any &quot;already escalated&quot; marker stopped further routing. That meant an issue declined by its first home could never be re-homed. Idempotency is now <strong>per home</strong>, so each home is escalated at most once while a re-home stays possible.</p>
 <hr />
 <h2 id="ii-7"><span class="mark">II.7</span><span>Guard map — who can change what</span></h2>
-<div class="scroll"><table><thead><tr><th>#</th><th>Guard</th><th>Enforced by</th><th>Mechanism, not a promise</th></tr></thead><tbody><tr><td>G1</td><td>An agent cannot change the powers it is granted</td><td>GitHub App scope + <code>doctrine_lint</code></td><td>The App holds no <code>workflows: write</code>, so the token <em>cannot</em> push a <code>.github/workflows/</code> edit; the linter fails red if a diff adds the permission</td></tr><tr><td>G2</td><td>No self-merge, no self-approval</td><td><code>doctrine_lint</code> on <code>--allowedTools</code></td><td>Bans <code>gh pr review</code>, <code>Bash(gh:*)</code>, <code>Bash(gh pr:*)</code>, bare and <code>--admin</code> <code>gh pr merge</code>; permits only the gated <code>gh pr merge --auto</code></td></tr><tr><td>G3</td><td>Money paths need a human</td><td>CODEOWNERS + branch protection</td><td><code>* @lonniev</code> catch-all with <code>require_code_owner_reviews</code>; approvals set to 0 so docs still auto-land; <code>enforce_admins</code> false keeps the owner&#x27;s escape hatch</td></tr><tr><td>G4</td><td>Fork PRs get no secrets</td><td><code>pull_request</code> only, banned <code>pull_request_target</code></td><td>The trigger is banned outright rather than guarded by an <code>if</code>, because a blanket ban is auditable</td></tr><tr><td>G5</td><td>Write-capable + human-triggered ⇒ owner-only</td><td>Caller <code>if:</code> expression</td><td>PR Revision requires <code>author_association == &#x27;OWNER&#x27;</code>; PR Dialogue pays for open access by having no write tools and <code>contents: read</code> tokens</td></tr><tr><td>G6</td><td>Cross-repo writes are issues-only</td><td>Token permission + allowlist</td><td>Account-wide token downscoped to <code>permission-issues: write</code>; <code>home_repo</code> word-boundary-matched against 18 repos before any write</td></tr><tr><td>G7</td><td>No issue ping-pong</td><td>Escalation reverse path</td><td>Durable <code>passed_repos</code> set; a repeat repo or 3 hops freezes the issue as <span class="chip" style="--chip:#b60205">blocked/arbitration</span></td></tr><tr><td>G8</td><td>Untrusted input is always data</td><td>Prompt anchors + <code>--allowedTools</code></td><td>No <code>curl</code>, <code>bash -c</code>, <code>eval</code> or <code>rm</code>; every <code>gh</code> subcommand enumerated; the agent holds no secrets; an injection <em>attempt</em> is itself grounds to close</td></tr><tr><td>G9</td><td>Secrets never enter the agent shell</td><td><code>--mcp-config</code> per-server env; git auth header</td><td>The nsec lives only in the keyring subprocess; Dialogue&#x27;s investigation token is a git header, never an env var</td></tr><tr><td>G10</td><td>Provenance cannot be forged</td><td>cypher-mcp write template</td><td><code>llm-inferred-unverified</code> is a Cypher <strong>literal</strong>, not a parameter — there is no argument that claims human authority</td></tr><tr><td>G11</td><td>Prompts keep their safety anchors</td><td><code>doctrine_lint</code></td><td><code>SECURITY</code> + <code>UNTRUSTED</code> everywhere, plus <code>MANDATORY OUTCOME</code> for Porter and PR Revision</td></tr><tr><td>G12</td><td>Containment is funding</td><td>Per-agent patron balance</td><td>Fund the Porter thin, the Journeyman thicker; a drained agent degrades, it does not stall the pipeline</td></tr><tr><td>G13</td><td>An outage defers, it does not fail</td><td>Funding sentinel signature</td><td>Only <code>is_error &amp;&amp; turns ≤ 1 &amp;&amp; cost == 0</code> counts as an outage</td></tr><tr><td>G14</td><td>Judgement gets an agent, policy gets bash</td><td>Role roster</td><td>Every merge, escalation, lint and verify gate is LLM-free, and therefore immune to injection and to a dry key</td></tr></tbody></table></div></div>
+<div class="scroll"><table><thead><tr><th>#</th><th>Guard</th><th>Enforced by</th><th>Mechanism, not a promise</th></tr></thead><tbody><tr><td>G1</td><td>An agent cannot change the powers it is granted</td><td>GitHub App scope + <code>doctrine_lint</code></td><td>The App holds no <code>workflows: write</code>, so the token <em>cannot</em> push a <code>.github/workflows/</code> edit; the linter fails red if a diff adds the permission</td></tr><tr><td>G2</td><td>No self-merge, no self-approval</td><td><code>doctrine_lint</code> on <code>--allowedTools</code></td><td>Bans <code>gh pr review</code>, <code>Bash(gh:*)</code>, <code>Bash(gh pr:*)</code>, bare and <code>--admin</code> <code>gh pr merge</code>; permits only the gated <code>gh pr merge --auto</code></td></tr><tr><td>G3</td><td>Money paths need a human</td><td>CODEOWNERS + branch protection</td><td><code>* @lonniev</code> catch-all with <code>require_code_owner_reviews</code>; approvals set to 0 so docs still auto-land; <code>enforce_admins</code> false keeps the owner&#x27;s escape hatch</td></tr><tr><td>G4</td><td>Fork PRs get no secrets</td><td><code>pull_request</code> only, banned <code>pull_request_target</code></td><td>The trigger is banned outright rather than guarded by an <code>if</code>, because a blanket ban is auditable</td></tr><tr><td>G5</td><td>Write-capable + human-triggered ⇒ owner-only</td><td>Caller <code>if:</code> expression</td><td>PR Revision requires <code>author_association == &#x27;OWNER&#x27;</code>; PR Dialogue pays for open access by having no write tools and <code>contents: read</code> tokens</td></tr><tr><td>G6</td><td>Cross-repo writes are issues-only</td><td>Token permission + allowlist</td><td>Account-wide token downscoped to <code>permission-issues: write</code>; <code>home_repo</code> word-boundary-matched against 18 repos before any write</td></tr><tr><td>G7</td><td>No issue ping-pong</td><td>Escalation reverse path</td><td>Durable <code>passed_repos</code> set; a repeat repo or 3 hops freezes the issue as <span class="chip" style="--chip:#b60205">blocked/arbitration</span></td></tr><tr><td>G8</td><td>Untrusted input is always data</td><td>Prompt anchors + <code>--allowedTools</code></td><td>No <code>curl</code>, <code>bash -c</code>, <code>eval</code> or <code>rm</code>; every <code>gh</code> subcommand enumerated; the agent holds no secrets; an injection <em>attempt</em> is itself grounds to close</td></tr><tr><td>G9</td><td>Secrets never enter the agent shell</td><td><code>--mcp-config</code> per-server env; git auth header</td><td>The nsec lives only in the keyring subprocess; Dialogue&#x27;s investigation token is a git header, never an env var</td></tr><tr><td>G10</td><td>Provenance cannot be forged</td><td>cypher-mcp write template</td><td><code>llm-inferred-unverified</code> is a Cypher <strong>literal</strong>, not a parameter — there is no argument that claims human authority</td></tr><tr><td>G11</td><td>Prompts keep their safety anchors</td><td><code>doctrine_lint</code></td><td><code>SECURITY</code> + <code>UNTRUSTED</code> everywhere, plus <code>MANDATORY OUTCOME</code> for Porter and PR Revision</td></tr><tr><td>G12</td><td>Containment is funding</td><td>Per-agent patron balance</td><td>Fund the Porter thin, the Journeyman thicker; a drained agent degrades, it does not stall the pipeline</td></tr><tr><td>G13</td><td>An outage defers, it does not fail</td><td>Funding sentinel signature</td><td>Only <code>is_error &amp;&amp; turns ≤ 1 &amp;&amp; cost == 0</code> counts as an outage</td></tr><tr><td>G15</td><td>One run per role per work-item</td><td>GitHub <code>concurrency</code> group</td><td>Group is (role, repo, item number). Two Journeymen would branch the same <code>agent/fix-&lt;n&gt;</code> and race pushes; the canary&#x27;s <span class="chip" style="--chip:#5319e7">agent/fix</span> re-toggle is the likeliest trigger. Only QA cancels in flight — it would otherwise stamp a verdict on a head that a new push replaced</td></tr><tr><td>G14</td><td>Judgement gets an agent, policy gets bash</td><td>Role roster</td><td>Every merge, escalation, lint and verify gate is LLM-free, and therefore immune to injection and to a dry key</td></tr></tbody></table></div></div>
 
   <section class="attribution" id="attribution">
     <p class="eyebrow">With thanks</p>
@@ -1266,6 +1283,18 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            attribute promptFile : String;</span>
 <span class="ln">            attribute modelTier : String;         // writer | reader | budget</span>
 <span class="ln">            part harness : AgentHarness;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            doc /* MUTUAL EXCLUSION. Every role is keyed to one run per work-item by a</span>
+<span class="ln">                 * GitHub `concurrency` group of (role, caller repo, issue-or-PR number).</span>
+<span class="ln">                 * This was missing entirely until a state/event completeness pass went</span>
+<span class="ln">                 * looking for it: `agent/working` and `agent/revising` are BEACONS that</span>
+<span class="ln">                 * say a run is live, and were being read as locks, which they never</span>
+<span class="ln">                 * were. Only QA cancels an in-flight run — it reviews a head that a new</span>
+<span class="ln">                 * push has already replaced. Every other role queues, because these runs</span>
+<span class="ln">                 * push commits and open PRs, and a half-killed one leaves worse state</span>
+<span class="ln">                 * than a late one. */</span>
+<span class="ln">            attribute concurrencyGroup : String;</span>
+<span class="ln">            attribute cancelInProgress : Boolean = false;</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        abstract part def DeterministicRole :&gt; FactoryRole {</span>
@@ -1341,6 +1370,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            attribute redefines canWriteCode = false;</span>
 <span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
 <span class="ln">            attribute maxTurns : Integer = 30;</span>
+<span class="ln">            attribute redefines cancelInProgress = true;</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        part def PRDialogue :&gt; AgenticRole {</span>
@@ -1569,6 +1599,8 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            attribute def CreditOutage;        attribute def CreditRestored;</span>
 <span class="ln">            attribute def ItemClosed;          attribute def RetriageApplied;</span>
 <span class="ln">            attribute def QAPasses;            attribute def QAFlags;</span>
+<span class="ln">            attribute def IssueReopened;       attribute def PRAbandoned;</span>
+<span class="ln">            attribute def QAStarts;</span>
 <span class="ln">            attribute def OwnerApproves;       attribute def OwnerRequestsChanges;</span>
 <span class="ln">            attribute def RevisionPushed;      attribute def ProtectionSatisfied;</span>
 <span class="ln">            attribute def LowRiskPathsOnly;    attribute def CodePathTouched;</span>
@@ -1637,6 +1669,35 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            transition first AwaitingFunds       accept ItemClosed    then Closed;</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">            transition first PRRaised accept FixPropagated then Closed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* --- paths the model missed, found by the state/event completeness</span>
+<span class="ln">             * pass and confirmed against the workflows (see check_states.py) --- */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* An outage can cut Engineering mid-fix, not only before it starts —</span>
+<span class="ln">             * engineering.yml has carried the funding sentinel all along. */</span>
+<span class="ln">            transition first Working accept CreditOutage then AwaitingFunds;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Closed is not the end. escalation.yml calls `gh issue reopen` on the</span>
+<span class="ln">             * reverse path, and the Service Desk caller fires on `reopened`. */</span>
+<span class="ln">            transition first Closed accept IssueReopened then Triaging;</span>
+<span class="ln">            transition first Rejected accept IssueReopened then Triaging;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* A PR closed WITHOUT merging used to strand the issue here forever:</span>
+<span class="ln">             * nothing re-fired, and it kept agent/fix while no agent was coming</span>
+<span class="ln">             * back. The Housekeeper&#x27;s UNSTRAND sweep now hands it to triage. */</span>
+<span class="ln">            transition first PRRaised accept PRAbandoned then Triaging;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* A human may close anything at any time. */</span>
+<span class="ln">            transition first Triaging accept ItemClosed then Closed;</span>
+<span class="ln">            transition first NeedsInfo accept ItemClosed then Closed;</span>
+<span class="ln">            transition first ReadyForEngineering accept ItemClosed then Closed;</span>
+<span class="ln">            transition first BlockedUpstream accept ItemClosed then Closed;</span>
+<span class="ln">            transition first Arbitration accept ItemClosed then Closed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* A human can close an issue out from under a running Journeyman. The run</span>
+<span class="ln">             * is not killed — it finishes and may open a PR against a closed issue —</span>
+<span class="ln">             * but the issue&#x27;s own state is settled the moment the human acts. */</span>
+<span class="ln">            transition first Working accept ItemClosed then Closed;</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        // ---------------------------------------------------------------------</span>
@@ -1658,6 +1719,9 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            state AutoMergeArmed { doc /* native --auto enabled; GitHub holds it pending */ }</span>
 <span class="ln">            state Merged;</span>
 <span class="ln">            state PRAwaitingFunds;</span>
+<span class="ln">            state ClosedUnmerged { doc /* Ended without landing. The issue that was waiting on</span>
+<span class="ln">                                       * it is unstranded by the Housekeeper, not by this</span>
+<span class="ln">                                       * machine — nothing else in the pipeline notices. */ }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">            transition first AwaitingQA  accept QAPasses then Passed;</span>
 <span class="ln">            transition first AwaitingQA  accept QAFlags  then Flagged;</span>
@@ -1681,6 +1745,32 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            transition first AwaitingQA  accept CreditOutage   then PRAwaitingFunds;</span>
 <span class="ln">            transition first Revising    accept CreditOutage   then PRAwaitingFunds;</span>
 <span class="ln">            transition first PRAwaitingFunds accept CreditRestored then AwaitingQA;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* --- found by the completeness pass --- */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* QA actually starting. Without this UnderReview was unreachable — the</span>
+<span class="ln">             * model had a state nothing entered. */</span>
+<span class="ln">            transition first AwaitingQA accept QAStarts then UnderReview;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* The owner&#x27;s approval outranks a QA flag. approval-merge.yml reads no</span>
+<span class="ln">             * qa/* label at all: QA is a second opinion offered to the human, never</span>
+<span class="ln">             * a veto over them. Deliberate, and now written down in both places. */</span>
+<span class="ln">            transition first Flagged accept OwnerApproves then AutoMergeArmed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Arming is not committing. A later changes-requested review from a code</span>
+<span class="ln">             * owner un-satisfies branch protection, and --auto keeps holding. */</span>
+<span class="ln">            transition first AutoMergeArmed accept OwnerRequestsChanges then Revising;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* A PR can end without merging — superseded, or closed by hand. This was</span>
+<span class="ln">             * unrepresentable, yet block-retire.yml fires on exactly this event. */</span>
+<span class="ln">            transition first AwaitingQA    accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">            transition first UnderReview   accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">            transition first Flagged       accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">            transition first AwaitingHuman accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">            transition first Revising      accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">            /* Including one QA already passed: qa/pass arms a landing, it does not</span>
+<span class="ln">             * guarantee one, and a superseding PR closes this one first. */</span>
+<span class="ln">            transition first Passed        accept PRAbandoned then ClosedUnmerged;</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        // ---------------------------------------------------------------------</span>
@@ -1725,6 +1815,12 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            transition first None    accept CreditOutage   then Active;</span>
 <span class="ln">            transition first Active  accept CreditRestored then Cleared;</span>
 <span class="ln">            transition first Active  accept ItemClosed     then Historical;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Outages recur, and mark_funding_state is a MERGE + SET, so a cleared or</span>
+<span class="ln">             * retired block re-activates cleanly. Cleared was modelled terminal; the</span>
+<span class="ln">             * graph never agreed with that. */</span>
+<span class="ln">            transition first Cleared    accept CreditOutage then Active;</span>
+<span class="ln">            transition first Historical accept CreditOutage then Active;</span>
 <span class="ln">        }</span>
 <span class="ln">    }</span>
 <span class="ln">&nbsp;</span>
@@ -1875,6 +1971,20 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            }</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G15&gt; OneRunPerRolePerItem {</span>
+<span class="ln">            doc /* No two runs of the same role act on one work-item at the same time.</span>
+<span class="ln">                 * The case that motivated it: two Journeymen both branch</span>
+<span class="ln">                 * `agent/fix-&lt;n&gt;`, race pushes to that ref and open competing PRs —</span>
+<span class="ln">                 * and the credit canary&#x27;s recovery, which re-toggles `agent/fix` to</span>
+<span class="ln">                 * resume deferred work, is the trigger most likely to land on an issue</span>
+<span class="ln">                 * a slow run is still holding. Enforced by a GitHub `concurrency` group</span>
+<span class="ln">                 * in the workflow skeleton, so it is a property of the platform rather</span>
+<span class="ln">                 * than something an agent has to remember. Escalation carries one too:</span>
+<span class="ln">                 * it read-modify-writes an idempotency marker, and a lost race there</span>
+<span class="ln">                 * files a duplicate issue in someone else&#x27;s repository. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
 <span class="ln">        requirement def &lt;G14&gt; JudgementGetsAnAgentPolicyGetsBash {</span>
 <span class="ln">            doc /* The recurring design rule behind the crew roster. &quot;Does this</span>
 <span class="ln">                 * diff actually fix the issue&quot; is judgement — an agent. &quot;The owner</span>
@@ -2011,6 +2121,8 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">        satisfy requirement PromptsRetainSafetyAnchors by porterPrompt;</span>
 <span class="ln">        satisfy requirement ContainmentIsFunding by journeyman;</span>
 <span class="ln">        satisfy requirement AnOutageDefersRatherThanFails by sentinel;</span>
+<span class="ln">        satisfy requirement OneRunPerRolePerItem by journeyman;</span>
+<span class="ln">        satisfy requirement OneRunPerRolePerItem by escalation;</span>
 <span class="ln">        satisfy requirement JudgementGetsAnAgentPolicyGetsBash by approvalMerge;</span>
 <span class="ln">        satisfy requirement JudgementGetsAnAgentPolicyGetsBash by escalation;</span>
 <span class="ln">&nbsp;</span>
@@ -2070,6 +2182,12 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            doc /* The dpyc-route-history marker on the origin issue: a repeat repo or</span>
 <span class="ln">                 * a third hop freezes the issue for a human rather than bouncing it. */</span>
 <span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC13&gt; ConcurrencyGroupPerItem {</span>
+<span class="ln">            doc /* The `concurrency:` block in each role&#x27;s reusable workflow. GitHub — not</span>
+<span class="ln">                 * the agent, and not a label — refuses to run two members of a group at</span>
+<span class="ln">                 * once, which is what makes this hold even when the trigger is a bot</span>
+<span class="ln">                 * re-toggling a label during someone else&#x27;s run. */</span>
+<span class="ln">        }</span>
 <span class="ln">        verification def &lt;VC12&gt; BranchProtectionProfile {</span>
 <span class="ln">            doc /* scripts/require_ci_checks.py — require_code_owner_reviews with zero</span>
 <span class="ln">                 * required approvals, merged onto each repo&#x27;s OWN posted check names.</span>
@@ -2108,6 +2226,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">        verification rosterHolds : VC10 { verify requirement JudgementGetsAnAgentPolicyGetsBash; }</span>
 <span class="ln">        verification noBounce : VC11 { verify requirement NoPingPong; }</span>
 <span class="ln">        verification protectionHolds : VC12 { verify requirement CodeownersMoneyGate; }</span>
+<span class="ln">        verification oneRunAtATime : VC13 { verify requirement OneRunPerRolePerItem; }</span>
 <span class="ln">    }</span>
 <span class="ln">}</span>
 </pre></div>

@@ -552,7 +552,14 @@ a:focus-visible, .toc-part a:focus-visible {
 <p>Three ideas explain most of its shape, and they are worth holding while reading:</p>
 <ol><li><strong>Behavior is data; powers are not.</strong> Role prompts live in <code>factory/*.prompt.md</code> and the crew may evolve them by PR. The workflow skeleton that grants permissions, mints tokens and sets <code>--allowedTools</code> is human-only — and that separation is <em>structural</em>, because the GitHub App carries no <code>workflows: write</code>, so an agent token cannot push such an edit even under a successful injection.</li><li><strong>Judgement gets an agent; policy gets bash.</strong> Every gate that could actually land code — merge, escalation, lint, deploy verification — is LLM-free, which makes it immune both to prompt injection and to an exhausted key at the moment it matters.</li><li><strong>Containment is funding, not policy.</strong> Each agent is a DPYC patron holding its own nsec and buying its own memory-graph writes with sats. The human&#x27;s routine oversight is topping up balances; a drained agent degrades gracefully rather than stalling.</li></ol>
 <h2 id="i-4"><span class="mark">I.4</span><span>Verification</span></h2>
-<p>Both files are machine-checked. Neither check is wired into CI yet.</p>
+<p>Everything here is machine-checked, and the checks run in CI — the <code>model</code> job in <code>.github/workflows/ci.yml</code>. That job always reports, deliberately without a <code>paths:</code> filter: a path-filtered workflow posts no status on PRs that miss the filter, and a required context that sometimes never posts leaves merges pending forever, which is the trap <code>scripts/require_ci_checks.py</code> exists to refuse. It skips its own expensive steps when <code>docs/model</code> is untouched, so it stays cheap while remaining safe to require.</p>
+<p>Three gates run there:</p>
+<ol><li><strong><code>check_states.py</code></strong> — state-machine completeness.</li><li><strong>The page is current</strong> — <code>build_page.py</code> is re-run and the result diffed against the committed <code>factory-model.html</code>, so editing a source without rebuilding cannot land.</li><li><strong><code>check.mjs</code></strong> — every mermaid block parses <em>and</em> renders.</li></ol>
+<p>Run all three locally exactly as CI does:</p>
+<div class="scroll"><pre class="code">python3 docs/model/check_states.py --verbose
+python3 docs/model/build_page.py &amp;&amp; git diff --exit-code -- docs/model/factory-model.html
+cd docs/model &amp;&amp; npm ci &amp;&amp; node check.mjs</pre></div>
+<p><code>sysml validate</code> is <strong>not</strong> in CI — it needs a Rust toolchain and a <code>cargo install</code>, which is a poor trade against how rarely the grammar breaks. Run it by hand when the model changes shape.</p>
 <p><strong>The model</strong> parses clean under <a href="https://github.com/nomograph-ai/sysml">nomograph-sysml</a>, a Rust CLI over <code>tree-sitter-sysml</code>:</p>
 <div class="scroll"><pre class="code">cargo install nomograph-sysml
 sysml validate docs/model/dpyc-factory.sysml

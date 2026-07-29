@@ -225,7 +225,7 @@ sysml = (SRC / "dpyc-factory.sysml").read_text()
 
 # The intro paragraph of diagrams.md points at sibling files; on one page it is noise.
 diagrams = re.sub(
-    r"Mermaid renderings of the model.*?\n\n", "", diagrams, count=1, flags=re.S
+    r"Mermaid renderings of the model.*?\n\n", "", diagrams, count=1, flags=re.DOTALL
 )
 
 body_a, toc_a = render(readme, "i")

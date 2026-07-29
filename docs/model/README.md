@@ -78,7 +78,31 @@ Three ideas explain most of its shape, and they are worth holding while reading:
 
 ## Verification
 
-Both files are machine-checked. Neither check is wired into CI yet.
+Everything here is machine-checked, and the checks run in CI — the `model` job in
+`.github/workflows/ci.yml`. That job always reports, deliberately without a `paths:`
+filter: a path-filtered workflow posts no status on PRs that miss the filter, and a
+required context that sometimes never posts leaves merges pending forever, which is the
+trap `scripts/require_ci_checks.py` exists to refuse. It skips its own expensive steps
+when `docs/model` is untouched, so it stays cheap while remaining safe to require.
+
+Three gates run there:
+
+1. **`check_states.py`** — state-machine completeness.
+2. **The page is current** — `build_page.py` is re-run and the result diffed against the
+   committed `factory-model.html`, so editing a source without rebuilding cannot land.
+3. **`check.mjs`** — every mermaid block parses *and* renders.
+
+Run all three locally exactly as CI does:
+
+```
+python3 docs/model/check_states.py --verbose
+python3 docs/model/build_page.py && git diff --exit-code -- docs/model/factory-model.html
+cd docs/model && npm ci && node check.mjs
+```
+
+`sysml validate` is **not** in CI — it needs a Rust toolchain and a `cargo install`, which
+is a poor trade against how rarely the grammar breaks. Run it by hand when the model
+changes shape.
 
 **The model** parses clean under [nomograph-sysml](https://github.com/nomograph-ai/sysml),
 a Rust CLI over `tree-sitter-sysml`:

@@ -129,9 +129,9 @@ def parse(src: str) -> dict[str, tuple[list[str], list[tuple[str, str, str]]]]:
             elif src[i] == "}":
                 depth -= 1
             i += 1
-        body = re.sub(r"/\*.*?\*/", "", src[m.end():i], flags=re.S)
+        body = re.sub(r"/\*.*?\*/", "", src[m.end():i], flags=re.DOTALL)
         out[name] = (
-            re.findall(r"^\s*state\s+(?:\"[^\"]*\"\s+as\s+)?(\w+)", body, re.M),
+            re.findall(r"^\s*state\s+(?:\"[^\"]*\"\s+as\s+)?(\w+)", body, re.MULTILINE),
             re.findall(r"transition\s+first\s+(\w+)(?:\s+accept\s+(\w+))?\s+then\s+(\w+)\s*;", body),
         )
     return out

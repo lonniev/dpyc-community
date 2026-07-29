@@ -30,7 +30,86 @@ jobs:
         run: pip install ruff pytest pyyaml pynostr
 
       - name: Lint
-        run: ruff check scripts/ tests/
+        run: ruff check scripts/ tests/ docs/model/
 
       - name: Run tests
         run: pytest tests/ -v
+
+  # The architecture model in docs/model is only worth having if it stays true, so its
+  # checks run here rather than on someone's laptop.
+  #
+  # This job ALWAYS runs, and deliberately does not use a `paths:` filter. A path-filtered
+  # workflow posts no status on PRs that miss the filter, and a required context that
+  # sometimes never posts leaves merges pending forever — the exact trap
+  # scripts/require_ci_checks.py refuses to walk into. So the job always reports, and skips
+  # its own expensive steps when docs/model is untouched. That keeps `model` safe to add to
+  # branch protection.
+  model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # Same base/head SHA idiom as doctrine-lint.yml. On push to main there is no PR to
+      # diff against, so everything runs.
+      - name: Did the model change?
+        id: touched
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BASE_SHA:-}" ]; then
+            echo "push build — running every model check."
+            echo "any=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
+               | grep -q '^docs/model/'; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "docs/model untouched — reporting green without running the checks."
+          fi
+
+      - uses: actions/setup-python@v6
+        if: steps.touched.outputs.any == 'true'
+        with:
+          python-version: '3.12'
+
+      # For each state, do the events the outside world can deliver at any moment have a
+      # transition? An unhandled one must carry a written reason, not sit on an allow-list.
+      - name: State-machine completeness
+        if: steps.touched.outputs.any == 'true'
+        run: python3 docs/model/check_states.py --verbose
+
+      # factory-model.html is generated and committed. Regenerate and diff, so editing a
+      # source without rebuilding the page cannot land — the page would otherwise rot
+      # silently against the model it claims to render.
+      - name: The published page is current
+        if: steps.touched.outputs.any == 'true'
+        run: |
+          set -euo pipefail
+          python3 docs/model/build_page.py
+          if ! git diff --quiet -- docs/model/factory-model.html; then
+            echo "::error::docs/model/factory-model.html is stale. Run 'python3 docs/model/build_page.py' and commit the result."
+            git diff --stat -- docs/model/factory-model.html
+            exit 1
+          fi
+          echo "Generated page matches its sources."
+
+      - uses: actions/setup-node@v4
+        if: steps.touched.outputs.any == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs/model/package-lock.json
+
+      # Parses AND renders every mermaid block. Parsing alone is not enough — the two bugs
+      # this caught were both grammar-level, but a diagram can also die in layout.
+      - name: Diagrams parse and render
+        if: steps.touched.outputs.any == 'true'
+        working-directory: docs/model
+        run: |
+          npm ci
+          node check.mjs

@@ -1,0 +1,503 @@
+/* ------------------------------------------------------------------ tokens */
+:root {
+  color-scheme: light dark;
+
+  /* Ground is a cool-biased neutral so the Bitcoin orange stays hot against it. */
+  --paper:      #f3f4f7;
+  --surface:    #ffffff;
+  --ink:        #191c24;
+  --ink-soft:   #4c5464;
+  --ink-faint:  #7b8497;
+  --rule:       #d8dbe3;
+  --rule-soft:  #e6e8ee;
+
+  /* Accent + semantics are the repository's own values, not invented ones. */
+  --accent:     #f7931a;   /* DPYC / Bitcoin orange, from docs/diagrams */
+  --agent:      #5319e7;   /* agent/fix */
+  --pass:       #0e8a16;   /* qa/pass */
+  --flag:       #d93f0b;   /* qa/flag */
+  --critical:   #b60205;   /* sev/critical, awaiting-funds */
+  --working:    #1d76db;   /* agent/working */
+
+  --code-bg:    #eceef4;
+  --chip-ink:   #ffffff;
+
+  --measure: 68ch;
+  --rail: 8.5rem;
+
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, Georgia, "Iowan Old Style", Cambria, "Times New Roman", serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:     #14182a;   /* the navy ground already used in docs/diagrams */
+    --surface:   #1b2036;
+    --ink:       #e8eaf2;
+    --ink-soft:  #a8b0c6;
+    --ink-faint: #7a8299;
+    --rule:      #2c3350;
+    --rule-soft: #232941;
+    --code-bg:   #1e2439;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:     #14182a;
+  --surface:   #1b2036;
+  --ink:       #e8eaf2;
+  --ink-soft:  #a8b0c6;
+  --ink-faint: #7a8299;
+  --rule:      #2c3350;
+  --rule-soft: #232941;
+  --code-bg:   #1e2439;
+}
+:root[data-theme="light"] {
+  --paper:     #f3f4f7;
+  --surface:   #ffffff;
+  --ink:       #191c24;
+  --ink-soft:  #4c5464;
+  --ink-faint: #7b8497;
+  --rule:      #d8dbe3;
+  --rule-soft: #e6e8ee;
+  --code-bg:   #eceef4;
+}
+
+/* ------------------------------------------------------------------- shell */
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: clamp(1.75rem, 4vw, 4.5rem) clamp(1.1rem, 4vw, 3rem) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.25rem;
+}
+
+/* Reading column sits to the right of a gutter rail on wide screens. The rail
+   carries the section marks, so numbering stays out of the prose measure. */
+.prose,
+.contents,
+.masthead,
+.printhint,
+.part-rule,
+.colophon-end,
+.listing {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 60rem;
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+/* --------------------------------------------------------------- masthead */
+.masthead { display: flex; flex-direction: column; gap: 1rem; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.masthead h1 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.028em;
+  font-size: clamp(2.15rem, 5.5vw, 3.4rem);
+  line-height: 1.05;
+  text-wrap: balance;
+  margin: 0;
+}
+.masthead h1 .tm {
+  font-size: 0.34em;
+  vertical-align: super;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0;
+}
+
+.deck {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: 1.12rem;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.colophon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem 1.5rem;
+  margin: 0.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--accent);
+}
+.colophon div { display: flex; flex-direction: column; gap: 0.22rem; }
+.colophon dt {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.colophon dd {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------- printhint */
+.printhint {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  padding: 0.85rem 1.1rem;
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+  border-radius: 2px;
+}
+.printhint strong { color: var(--ink); font-family: var(--sans); font-weight: 600; }
+
+/* ----------------------------------------------------------------- contents */
+.contents {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.5rem clamp(1.1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+.contents-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+  font-weight: 500;
+}
+.toc-part { display: flex; flex-direction: column; gap: 0.5rem; }
+.toc-part h3 {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--ink);
+}
+.toc-part ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.3rem 1.5rem;
+}
+.toc-part a {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  padding: 0.12rem 0;
+  border-bottom: 1px solid transparent;
+}
+.toc-part a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+.toc-part .n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  min-width: 2.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- part rules */
+.part-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--ink);
+}
+.part-rule span {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.part-rule h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0;
+}
+
+/* -------------------------------------------------------------- prose type */
+.prose > * { max-width: var(--measure); }
+.prose p { margin: 0; text-wrap: pretty; }
+
+.prose h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  font-size: 1.42rem;
+  line-height: 1.25;
+  margin: 1.9rem 0 0;
+  scroll-margin-top: 1.5rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: baseline;
+  text-wrap: balance;
+  max-width: 100%;
+}
+.prose h2 .mark {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  flex: 0 0 var(--rail);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.prose h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.06rem;
+  letter-spacing: -0.008em;
+  margin: 1.2rem 0 0;
+}
+
+.prose ul, .prose ol { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.prose li { padding-left: 0.15rem; }
+.prose li::marker { color: var(--accent); font-family: var(--mono); font-size: 0.85em; }
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 1.4rem 0;
+  max-width: 100%;
+}
+
+.prose a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }
+.prose strong { font-weight: 700; }
+.prose em { font-style: italic; color: var(--ink-soft); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.845em;
+  background: var(--code-bg);
+  padding: 0.1em 0.34em;
+  border-radius: 2px;
+  word-break: break-word;
+}
+
+/* ------------------------------------------------------------------- chips */
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.74em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.12em 0.5em;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--chip-ink);
+  white-space: nowrap;
+  vertical-align: baseline;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+/* The two pale labels in the taxonomy need dark ink to stay legible. */
+.chip[style*="fef2c0"], .chip[style*="e99695"] { color: #2b1d05; }
+
+/* ------------------------------------------------------- tables + scrollers */
+.scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+.prose .scroll { max-width: 100%; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 34rem;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+thead th {
+  text-align: left;
+  font-weight: 650;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.85rem 0.5rem 0;
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 0.6rem 0.85rem 0.6rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody td:first-child { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-soft); }
+table code { font-size: 0.8em; background: transparent; padding: 0; color: var(--ink-soft); }
+
+/* -------------------------------------------------------------- diagrams */
+.diagram {
+  margin: 0.75rem 0;
+  padding: 1.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  max-width: 100%;
+}
+.diagram .scroll { display: flex; justify-content: center; }
+.mermaid { margin: 0; font-family: var(--sans); }
+.mermaid svg { max-width: 100%; height: auto; }
+
+/* ------------------------------------------------------------------- code */
+pre.code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.62;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1rem 1.15rem;
+  margin: 0;
+  tab-size: 2;
+}
+
+.listing { margin-top: 1.5rem; }
+pre.sysml {
+  counter-reset: line;
+  padding-left: 0;
+  font-size: 0.735rem;
+  line-height: 1.58;
+}
+pre.sysml .ln {
+  display: block;
+  padding-left: 4.1rem;
+  text-indent: 0;
+  position: relative;
+  white-space: pre;
+}
+pre.sysml .ln::before {
+  counter-increment: line;
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 3.1rem;
+  text-align: right;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+pre.sysml .ln:hover { background: var(--code-bg); }
+
+/* ------------------------------------------------------- attribution panel */
+/* A credit, not a section of the document — so it sits inside a panel with the
+   accent rule at its head, distinct from the numbered Parts around it. */
+.attribution {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 60rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.attribution h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  font-size: 1.32rem;
+  margin: 0;
+  text-wrap: balance;
+}
+.attribution p { margin: 0; max-width: var(--measure); text-wrap: pretty; }
+.attribution a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }
+.attribution .attr-foot { font-size: 0.9rem; color: var(--ink-soft); }
+.attr-table { min-width: 28rem; }
+.attr-table tbody td:first-child { white-space: nowrap; color: var(--ink); font-family: var(--mono); font-size: 0.8rem; }
+.attr-table tbody td:first-child code { font-size: 1em; }
+
+/* --------------------------------------------------------------- footer */
+.colophon-end {
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--ink-faint);
+}
+.colophon-end p { margin: 0; max-width: var(--measure); }
+
+/* ------------------------------------------------------------ interaction */
+a:focus-visible, .toc-part a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ------------------------------------------------------------ narrow view */
+@media (max-width: 46rem) {
+  body { font-size: 16px; }
+  .prose h2 { flex-direction: column; gap: 0.2rem; }
+  .prose h2 .mark { flex: none; text-align: left; }
+  .toc-part ol { grid-template-columns: 1fr; }
+}
+
+/* ----------------------------------------------------------------- print */
+@media print {
+  :root {
+    --paper: #ffffff; --surface: #ffffff; --ink: #101216;
+    --ink-soft: #3a4050; --ink-faint: #6a7180;
+    --rule: #c4c8d2; --rule-soft: #dfe2e9; --code-bg: #f1f2f6;
+  }
+  body { font-size: 10.5pt; line-height: 1.5; }
+  .page { padding: 0; gap: 1.75rem; max-width: none; }
+  .printhint { display: none; }
+  .prose h2 { flex-direction: row; }
+  .prose h2, .prose h3 { break-after: avoid; }
+  .diagram, table, pre.code { break-inside: avoid; }
+  .attribution { break-inside: avoid; border-top-width: 2px; }
+  .part-rule { break-before: page; }
+  .masthead { break-after: avoid; }
+  .listing { break-before: page; }
+  pre.sysml { break-inside: auto; font-size: 7.4pt; line-height: 1.42; }
+  pre.sysml .ln { break-inside: avoid; }
+  a { text-decoration: none; color: var(--ink); }
+  .scroll { overflow: visible; }
+  table { min-width: 0; font-size: 8.6pt; }
+}

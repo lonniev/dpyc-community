@@ -1,0 +1,13 @@
+{
+  "name": "dpyc-factory-model-checks",
+  "private": true,
+  "type": "module",
+  "description": "Diagram checks for docs/model — parses and renders every mermaid block in diagrams.md.",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0",
+    "mermaid": "^11.0.0"
+  }
+}

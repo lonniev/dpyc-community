@@ -1,0 +1,2122 @@
+<title>DPYC Software Factory — architecture model</title>
+<style>
+/* ------------------------------------------------------------------ tokens */
+:root {
+  color-scheme: light dark;
+
+  /* Ground is a cool-biased neutral so the Bitcoin orange stays hot against it. */
+  --paper:      #f3f4f7;
+  --surface:    #ffffff;
+  --ink:        #191c24;
+  --ink-soft:   #4c5464;
+  --ink-faint:  #7b8497;
+  --rule:       #d8dbe3;
+  --rule-soft:  #e6e8ee;
+
+  /* Accent + semantics are the repository's own values, not invented ones. */
+  --accent:     #f7931a;   /* DPYC / Bitcoin orange, from docs/diagrams */
+  --agent:      #5319e7;   /* agent/fix */
+  --pass:       #0e8a16;   /* qa/pass */
+  --flag:       #d93f0b;   /* qa/flag */
+  --critical:   #b60205;   /* sev/critical, awaiting-funds */
+  --working:    #1d76db;   /* agent/working */
+
+  --code-bg:    #eceef4;
+  --chip-ink:   #ffffff;
+
+  --measure: 68ch;
+  --rail: 8.5rem;
+
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, Georgia, "Iowan Old Style", Cambria, "Times New Roman", serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:     #14182a;   /* the navy ground already used in docs/diagrams */
+    --surface:   #1b2036;
+    --ink:       #e8eaf2;
+    --ink-soft:  #a8b0c6;
+    --ink-faint: #7a8299;
+    --rule:      #2c3350;
+    --rule-soft: #232941;
+    --code-bg:   #1e2439;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:     #14182a;
+  --surface:   #1b2036;
+  --ink:       #e8eaf2;
+  --ink-soft:  #a8b0c6;
+  --ink-faint: #7a8299;
+  --rule:      #2c3350;
+  --rule-soft: #232941;
+  --code-bg:   #1e2439;
+}
+:root[data-theme="light"] {
+  --paper:     #f3f4f7;
+  --surface:   #ffffff;
+  --ink:       #191c24;
+  --ink-soft:  #4c5464;
+  --ink-faint: #7b8497;
+  --rule:      #d8dbe3;
+  --rule-soft: #e6e8ee;
+  --code-bg:   #eceef4;
+}
+
+/* ------------------------------------------------------------------- shell */
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: clamp(1.75rem, 4vw, 4.5rem) clamp(1.1rem, 4vw, 3rem) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.25rem;
+}
+
+/* Reading column sits to the right of a gutter rail on wide screens. The rail
+   carries the section marks, so numbering stays out of the prose measure. */
+.prose,
+.contents,
+.masthead,
+.printhint,
+.part-rule,
+.colophon-end,
+.listing {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 60rem;
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+/* --------------------------------------------------------------- masthead */
+.masthead { display: flex; flex-direction: column; gap: 1rem; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.masthead h1 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.028em;
+  font-size: clamp(2.15rem, 5.5vw, 3.4rem);
+  line-height: 1.05;
+  text-wrap: balance;
+  margin: 0;
+}
+.masthead h1 .tm {
+  font-size: 0.34em;
+  vertical-align: super;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0;
+}
+
+.deck {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: 1.12rem;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.colophon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem 1.5rem;
+  margin: 0.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--accent);
+}
+.colophon div { display: flex; flex-direction: column; gap: 0.22rem; }
+.colophon dt {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.colophon dd {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------- printhint */
+.printhint {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  padding: 0.85rem 1.1rem;
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+  border-radius: 2px;
+}
+.printhint strong { color: var(--ink); font-family: var(--sans); font-weight: 600; }
+
+/* ----------------------------------------------------------------- contents */
+.contents {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.5rem clamp(1.1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+.contents-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+  font-weight: 500;
+}
+.toc-part { display: flex; flex-direction: column; gap: 0.5rem; }
+.toc-part h3 {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--ink);
+}
+.toc-part ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.3rem 1.5rem;
+}
+.toc-part a {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  padding: 0.12rem 0;
+  border-bottom: 1px solid transparent;
+}
+.toc-part a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+.toc-part .n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  min-width: 2.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- part rules */
+.part-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--ink);
+}
+.part-rule span {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.part-rule h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0;
+}
+
+/* -------------------------------------------------------------- prose type */
+.prose > * { max-width: var(--measure); }
+.prose p { margin: 0; text-wrap: pretty; }
+
+.prose h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  font-size: 1.42rem;
+  line-height: 1.25;
+  margin: 1.9rem 0 0;
+  scroll-margin-top: 1.5rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: baseline;
+  text-wrap: balance;
+  max-width: 100%;
+}
+.prose h2 .mark {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  flex: 0 0 var(--rail);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.prose h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.06rem;
+  letter-spacing: -0.008em;
+  margin: 1.2rem 0 0;
+}
+
+.prose ul, .prose ol { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.prose li { padding-left: 0.15rem; }
+.prose li::marker { color: var(--accent); font-family: var(--mono); font-size: 0.85em; }
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 1.4rem 0;
+  max-width: 100%;
+}
+
+.prose a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }
+.prose strong { font-weight: 700; }
+.prose em { font-style: italic; color: var(--ink-soft); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.845em;
+  background: var(--code-bg);
+  padding: 0.1em 0.34em;
+  border-radius: 2px;
+  word-break: break-word;
+}
+
+/* ------------------------------------------------------------------- chips */
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.74em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.12em 0.5em;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--chip-ink);
+  white-space: nowrap;
+  vertical-align: baseline;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+/* The two pale labels in the taxonomy need dark ink to stay legible. */
+.chip[style*="fef2c0"], .chip[style*="e99695"] { color: #2b1d05; }
+
+/* ------------------------------------------------------- tables + scrollers */
+.scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+.prose .scroll { max-width: 100%; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 34rem;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+thead th {
+  text-align: left;
+  font-weight: 650;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.85rem 0.5rem 0;
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 0.6rem 0.85rem 0.6rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody td:first-child { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-soft); }
+table code { font-size: 0.8em; background: transparent; padding: 0; color: var(--ink-soft); }
+
+/* -------------------------------------------------------------- diagrams */
+.diagram {
+  margin: 0.75rem 0;
+  padding: 1.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  max-width: 100%;
+}
+.diagram .scroll { display: flex; justify-content: center; }
+.mermaid { margin: 0; font-family: var(--sans); }
+.mermaid svg { max-width: 100%; height: auto; }
+
+/* ------------------------------------------------------------------- code */
+pre.code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.62;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1rem 1.15rem;
+  margin: 0;
+  tab-size: 2;
+}
+
+.listing { margin-top: 1.5rem; }
+pre.sysml {
+  counter-reset: line;
+  padding-left: 0;
+  font-size: 0.735rem;
+  line-height: 1.58;
+}
+pre.sysml .ln {
+  display: block;
+  padding-left: 4.1rem;
+  text-indent: 0;
+  position: relative;
+  white-space: pre;
+}
+pre.sysml .ln::before {
+  counter-increment: line;
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 3.1rem;
+  text-align: right;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+pre.sysml .ln:hover { background: var(--code-bg); }
+
+/* ------------------------------------------------------- attribution panel */
+/* A credit, not a section of the document — so it sits inside a panel with the
+   accent rule at its head, distinct from the numbered Parts around it. */
+.attribution {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 60rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.attribution h2 {
+  font-family: var(--sans);
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  font-size: 1.32rem;
+  margin: 0;
+  text-wrap: balance;
+}
+.attribution p { margin: 0; max-width: var(--measure); text-wrap: pretty; }
+.attribution a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }
+.attribution .attr-foot { font-size: 0.9rem; color: var(--ink-soft); }
+.attr-table { min-width: 28rem; }
+.attr-table tbody td:first-child { white-space: nowrap; color: var(--ink); font-family: var(--mono); font-size: 0.8rem; }
+.attr-table tbody td:first-child code { font-size: 1em; }
+
+/* --------------------------------------------------------------- footer */
+.colophon-end {
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--ink-faint);
+}
+.colophon-end p { margin: 0; max-width: var(--measure); }
+
+/* ------------------------------------------------------------ interaction */
+a:focus-visible, .toc-part a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ------------------------------------------------------------ narrow view */
+@media (max-width: 46rem) {
+  body { font-size: 16px; }
+  .prose h2 { flex-direction: column; gap: 0.2rem; }
+  .prose h2 .mark { flex: none; text-align: left; }
+  .toc-part ol { grid-template-columns: 1fr; }
+}
+
+/* ----------------------------------------------------------------- print */
+@media print {
+  :root {
+    --paper: #ffffff; --surface: #ffffff; --ink: #101216;
+    --ink-soft: #3a4050; --ink-faint: #6a7180;
+    --rule: #c4c8d2; --rule-soft: #dfe2e9; --code-bg: #f1f2f6;
+  }
+  body { font-size: 10.5pt; line-height: 1.5; }
+  .page { padding: 0; gap: 1.75rem; max-width: none; }
+  .printhint { display: none; }
+  .prose h2 { flex-direction: row; }
+  .prose h2, .prose h3 { break-after: avoid; }
+  .diagram, table, pre.code { break-inside: avoid; }
+  .attribution { break-inside: avoid; border-top-width: 2px; }
+  .part-rule { break-before: page; }
+  .masthead { break-after: avoid; }
+  .listing { break-before: page; }
+  pre.sysml { break-inside: auto; font-size: 7.4pt; line-height: 1.42; }
+  pre.sysml .ln { break-inside: avoid; }
+  a { text-decoration: none; color: var(--ink); }
+  .scroll { overflow: visible; }
+  table { min-width: 0; font-size: 8.6pt; }
+}
+
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">lonniev/dpyc-community &middot; docs/model &middot; first draft</p>
+    <h1>The DPYC<span class="tm">&trade;</span> Software Factory</h1>
+    <p class="deck">A formal model of the unattended agentic crew that triages, fixes,
+    reviews and lands work across the fleet &mdash; its roles, the common behavior every
+    repository inherits, the guards on who may change what, both funding rails, the tech
+    stack, and the state machines that govern an issue, a pull request and an outage.</p>
+    <dl class="colophon">
+      <div><dt>Notation</dt><dd>SysML v2 textual &middot; Mermaid</dd></div>
+      <div><dt>Snapshot</dt><dd>main, 29 July 2026</dd></div>
+      <div><dt>Scope</dt><dd>18 repositories &middot; 14 roles</dd></div>
+      <div><dt>Status</dt><dd><span class="chip" style="--chip:#F7931A">draft &mdash; unverified grammar</span></dd></div>
+    </dl>
+  </header>
+
+  <aside class="printhint">
+    <strong>To keep a PDF:</strong> print this page and choose <em>Save as PDF</em>.
+    The layout has a print stylesheet &mdash; the rail collapses, diagrams stay whole,
+    and the appendix paginates as a listing.
+  </aside>
+
+  <nav class="contents">
+    <h2 class="contents-title">Contents</h2>
+    <section class="toc-part"><h3>Part I &mdash; Overview</h3><ol><li><a href="#i-1"><span class="n">I.1</span>What is deliberately *not* in the model</a></li><li><a href="#i-2"><span class="n">I.2</span>Provenance — element → source map</a></li><li><a href="#i-3"><span class="n">I.3</span>Reading the model</a></li><li><a href="#i-4"><span class="n">I.4</span>Verification</a></li><li><a href="#i-5"><span class="n">I.5</span>Caveats</a></li></ol></section>
+    <section class="toc-part"><h3>Part II &mdash; Views</h3><ol><li><a href="#ii-1"><span class="n">II.1</span>Tech stack</a></li><li><a href="#ii-2"><span class="n">II.2</span>The crew, and who is allowed to fire it</a></li><li><a href="#ii-3"><span class="n">II.3</span>Issue lifecycle</a></li><li><a href="#ii-4"><span class="n">II.4</span>Pull request lifecycle</a></li><li><a href="#ii-5"><span class="n">II.5</span>Funding — two independent rails</a></li><li><a href="#ii-6"><span class="n">II.6</span>Escalation and the anti-ping-pong loop</a></li><li><a href="#ii-7"><span class="n">II.7</span>Guard map — who can change what</a></li></ol></section>
+    <section class="toc-part"><h3>Appendix</h3><ol>
+      <li><a href="#attribution"><span class="n">&mdash;</span>Validated with nomograph-sysml</a></li>
+      <li><a href="#appendix"><span class="n">A</span>The model, in full</a></li>
+    </ol></section>
+  </nav>
+
+  <div class="part-rule"><span>Part I</span><h2>Overview</h2></div>
+  <div class="prose"><p>A formal model of the agentic pipeline that triages, fixes, reviews and lands work across the fleet: its crew, the common behavior every repo inherits from this repository, the guards on who may change what, both funding rails, the tech stack, and the state machines that govern an issue, a pull request, and an outage.</p>
+<div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr></tbody></table></div>
+<p>Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the diagrams stay readable in the same place the source they describe lives.</p>
+<h2 id="i-1"><span class="mark">I.1</span><span>What is deliberately <em>not</em> in the model</span></h2>
+<ul><li><strong>The Digest&#x27;s prose output and the Housekeeper&#x27;s tidy heuristics.</strong> Both are inline prompts whose specifics change often; the model captures their trigger, scope, token and tier, which is what governs their blast radius.</li><li><strong>Per-repo CI internals</strong> beyond runner OS and required-check name. Each repo&#x27;s <code>ci.yml</code> is its own concern; the Factory only cares that a green context exists and is required.</li><li><strong>The DPYC network&#x27;s own economics</strong> — Authorities, certification, demurrage. The Factory <em>consumes</em> that network as a patron; it does not define it.</li></ul>
+<h2 id="i-2"><span class="mark">I.2</span><span>Provenance — element → source map</span></h2>
+<p>Every modelled element traces to code in this repository. Where a comment in the model explains <em>why</em> something is shaped the way it is, that rationale came from the source file&#x27;s own header comments, which are unusually rich.</p>
+<div class="scroll"><table><thead><tr><th>Model element</th><th>Source</th></tr></thead><tbody><tr><td><code>Roles::Porter</code>, <code>Behavior::IssueLifecycle</code> triage branches</td><td><code>factory/porter.prompt.md</code>, <code>.github/workflows/service-desk.yml</code></td></tr><tr><td><code>Roles::Journeyman</code>, no-change close, reuse-before-build, prove-the-fix</td><td><code>factory/journeyman.prompt.md</code>, <code>.github/workflows/engineering.yml</code></td></tr><tr><td><code>Roles::QA</code>, the invariant checklist</td><td><code>.github/workflows/qa.yml</code> (inline prompt)</td></tr><tr><td><code>Roles::PRDialogue</code> / <code>PRRevision</code>, and the split between them</td><td><code>.github/workflows/pr-dialogue.yml</code>, <code>pr-revision.yml</code>, <code>factory/pr-revision.prompt.md</code>, <code>factory/README.md</code></td></tr><tr><td><code>Roles::Housekeeper</code></td><td><code>.github/workflows/housekeeper.yml</code>, <code>factory/housekeeper.prompt.md</code></td></tr><tr><td><code>Roles::Digest</code></td><td><code>.github/workflows/digest.yml</code></td></tr><tr><td><code>Roles::Escalation</code>, <code>Guards::G6</code>, <code>G7</code>, escalation sequence</td><td><code>.github/workflows/escalation.yml</code></td></tr><tr><td><code>Roles::AutoMerge</code> + the low-risk path pattern</td><td><code>.github/workflows/auto-merge.yml</code></td></tr><tr><td><code>Roles::ApprovalMerge</code></td><td><code>.github/workflows/approval-merge.yml</code></td></tr><tr><td><code>Roles::DoctrineLint</code>, <code>Guards::G1</code>–<code>G4</code>, <code>G11</code></td><td><code>scripts/doctrine_lint.py</code>, <code>.github/workflows/doctrine-lint.yml</code></td></tr><tr><td><code>Roles::DeployVerify</code></td><td><code>.github/workflows/deploy-verify.yml</code>, <code>scripts/deploy-verify-caller.yml</code></td></tr><tr><td><code>Roles::FundingSentinel</code>, <code>Guards::G13</code></td><td><code>factory/actions/funding-sentinel/{action.yml,detect_signature.py}</code></td></tr><tr><td><code>Roles::CreditCanary</code>, <code>Behavior::FundingLifecycle</code>, the replay table</td><td><code>.github/workflows/factory-credit-canary.yml</code></td></tr><tr><td><code>Roles::BlockRetire</code>, <code>Behavior::FundingBlockLifecycle</code></td><td><code>.github/workflows/block-retire.yml</code>, <code>factory/actions/funding-sentinel/stamp_cypher.py</code></td></tr><tr><td><code>Roles::Scout</code>, <code>Identity::ScoutReporter</code></td><td><code>tollbooth-dpyc/src/tollbooth/tools/report_issue.py</code>, the FIELD REPORTS clause in <code>factory/porter.prompt.md</code>, <code>allowed_non_write_users</code> in <code>service-desk.yml</code></td></tr><tr><td><code>Identity::AgentKeyring</code>, <code>Guards::G9</code></td><td>the <code>--mcp-config</code> blocks in <code>service-desk.yml</code> / <code>engineering.yml</code>; <code>tollbooth.agent_keyring</code> in the SDK</td></tr><tr><td><code>Platform::OpenRouter</code>, the tier map</td><td><code>factory/actions/resolve-model/action.yml</code></td></tr><tr><td><code>Vocabulary::*</code> — all 32 labels</td><td><code>scripts/apply_labels.sh</code></td></tr><tr><td><code>Distribution::ThinCaller</code> and every caller guard</td><td><code>scripts/factory-callers/agentic-*.yml</code></td></tr><tr><td><code>Distribution::SyncFactoryCallers</code>, <code>ApplyLabels</code>, <code>RequireCICChecks</code></td><td><code>scripts/sync-factory-callers.sh</code>, <code>apply_labels.sh</code>, <code>require_ci_checks.py</code></td></tr><tr><td><code>Guards::G3</code> (branch protection profile)</td><td><code>scripts/require_ci_checks.py</code>, <code>scripts/factory-CODEOWNERS</code></td></tr><tr><td><code>IntentionGraph::*</code>, <code>Guards::G10</code></td><td>cypher-mcp&#x27;s <code>scripts/factory_vocabulary.py</code> write templates; the <code>mcp__graph__*</code> grants in the role workflows</td></tr><tr><td><code>Fleet::*</code></td><td>the escalation allowlist in <code>escalation.yml</code>, cross-checked against the working-directory checkouts</td></tr></tbody></table></div>
+<h2 id="i-3"><span class="mark">I.3</span><span>Reading the model</span></h2>
+<p>Three ideas explain most of its shape, and they are worth holding while reading:</p>
+<ol><li><strong>Behavior is data; powers are not.</strong> Role prompts live in <code>factory/*.prompt.md</code> and the crew may evolve them by PR. The workflow skeleton that grants permissions, mints tokens and sets <code>--allowedTools</code> is human-only — and that separation is <em>structural</em>, because the GitHub App carries no <code>workflows: write</code>, so an agent token cannot push such an edit even under a successful injection.</li><li><strong>Judgement gets an agent; policy gets bash.</strong> Every gate that could actually land code — merge, escalation, lint, deploy verification — is LLM-free, which makes it immune both to prompt injection and to an exhausted key at the moment it matters.</li><li><strong>Containment is funding, not policy.</strong> Each agent is a DPYC patron holding its own nsec and buying its own memory-graph writes with sats. The human&#x27;s routine oversight is topping up balances; a drained agent degrades gracefully rather than stalling.</li></ol>
+<h2 id="i-4"><span class="mark">I.4</span><span>Verification</span></h2>
+<p>Both files are machine-checked. Neither check is wired into CI yet.</p>
+<p><strong>The model</strong> parses clean under <a href="https://github.com/nomograph-ai/sysml">nomograph-sysml</a>, a Rust CLI over <code>tree-sitter-sysml</code>:</p>
+<div class="scroll"><pre class="code">cargo install nomograph-sysml
+sysml validate docs/model/dpyc-factory.sysml
+{&quot;file&quot;:&quot;docs/model/dpyc-factory.sysml&quot;,&quot;valid&quot;:true,&quot;diagnostics&quot;:[]}</pre></div>
+<p>Indexing reports 455 elements and 890 relationships, including all 14 requirements, four state machines with 42 transitions, ten enumerations and twelve packages — so the grammar is understood, not merely tokenized.</p>
+<p><code>sysml check all</code> still reports findings, and as of <strong>v0.2.0 every one of them is a tool limitation rather than a defect in the model</strong>. Each was isolated to a minimal reproducer:</p>
+<div class="scroll"><table><thead><tr><th>Check</th><th>Findings</th><th>Why</th></tr></thead><tbody><tr><td><code>DanglingReferences</code></td><td>199</td><td><code>String</code> / <code>Boolean</code> / <code>Integer</code> / <code>Real</code> resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (<code>= &quot;reader&quot;</code>, <code>= false</code>) counted as unresolved targets.</td></tr><tr><td><code>OrphanRequirements</code>, <code>UnverifiedRequirements</code>, <code>MissingVerification</code></td><td>14 / 14 / 24</td><td>The indexer extracts only <code>Member</code> and <code>TypedBy</code> relationships — <code>Satisfy</code> and <code>Verify</code> are never produced, so these checks cannot pass for any model. An eight-line file with <code>satisfy requirement R by t;</code> and <code>verify requirement R;</code> reports the same findings.</td></tr><tr><td><code>UnconnectedPorts</code></td><td>3</td><td><code>Connect</code> is likewise not extracted, and the check also flags port <em>definitions</em>, which are never themselves connected.</td></tr><tr><td><code>MetamodelConformance</code></td><td>1</td><td>Reports <code>port def GraphToolPort</code> as having no type. A port def <em>is</em> a type; a two-line canonical port def reproduces it.</td></tr></tbody></table></div>
+<p>So treat a clean <code>validate</code> as the meaningful signal today, and the <code>check</code> counts as noise until the indexer grows those relationship kinds.</p>
+<p>With thanks to <a href="https://nomograph.ai/">Nomograph Labs</a> for the tool — a hand-authored model is only a claim until something with a real grammar agrees with it.</p>
+<p><strong>The diagrams</strong> all parse and render under Mermaid&#x27;s own engine — <code>check.mjs</code> in this directory runs <code>mermaid.parse()</code> then <code>mermaid.render()</code> over every fenced block in <code>diagrams.md</code>. Two constructs to avoid in a <strong>sequence</strong> diagram, both of which bit this document: a literal <code>--</code> in message text is lexed as the start of an arrow token, and a <code>;</code> anywhere in a note ends the statement early.</p>
+<h2 id="i-5"><span class="mark">I.5</span><span>Caveats</span></h2>
+<p>Both files are a snapshot of <code>main</code> as read on 2026-07-29. The Factory changes itself by PR, so re-derive rather than trust this model when the answer matters — <code>factory/README.md</code> is the crew&#x27;s own living table, and the workflow headers are the authoritative rationale.</p>
+<p>The assurance case in §12 is written for a conformant reader. Because nomograph 0.2.0 does not extract those relationships, its traceability is currently legible to humans and to other SysML v2 tooling, but invisible to the checker.</p></div>
+
+  <div class="part-rule"><span>Part II</span><h2>Views</h2></div>
+  <div class="prose"><p>Every element traces to source in this repository — see the element → file map.</p>
+<hr />
+<h2 id="ii-1"><span class="mark">II.1</span><span>Tech stack</span></h2>
+<p>The Factory spans four planes. Only the control plane is GitHub; the memory and money planes are the DPYC network itself, which is why an agent&#x27;s graph write is a paid, signed, patron-authenticated call rather than a database connection.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">flowchart TB
+    subgraph SRC[&quot;Source of truth — lonniev/dpyc-community&quot;]
+        RW[&quot;Reusable workflows&lt;br/&gt;&lt;code&gt;.github/workflows/*.yml&lt;/code&gt;&lt;br/&gt;&lt;i&gt;workflow_call · human-only skeletons&lt;/i&gt;&quot;]
+        PR[&quot;Role prompts&lt;br/&gt;&lt;code&gt;factory/*.prompt.md&lt;/code&gt;&lt;br/&gt;&lt;i&gt;crew-editable by PR&lt;/i&gt;&quot;]
+        CA[&quot;Composite actions&lt;br/&gt;&lt;code&gt;factory/actions/{resolve-model,funding-sentinel}&lt;/code&gt;&quot;]
+        DL[&quot;&lt;code&gt;scripts/doctrine_lint.py&lt;/code&gt;&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;]
+        SC[&quot;&lt;code&gt;scripts/{sync-factory-callers,apply_labels,require_ci_checks}&lt;/code&gt;&quot;]
+    end
+
+    subgraph CTRL[&quot;Control plane — GitHub&quot;]
+        TC[&quot;Thin callers in 18 repos&lt;br/&gt;&lt;code&gt;.github/workflows/agentic-*.yml&lt;/code&gt;&lt;br/&gt;&lt;i&gt;byte-identical · the if: guard is the boundary&lt;/i&gt;&quot;]
+        APP[&quot;GitHub App &amp;quot;DPYC Agentic Desk&amp;quot; · id 4292331&lt;br/&gt;&lt;i&gt;account-wide · NO workflows:write&lt;/i&gt;&quot;]
+        BP[&quot;Branch protection + CODEOWNERS&lt;br/&gt;&lt;i&gt;require_code_owner_reviews · approvals 0&lt;/i&gt;&quot;]
+    end
+
+    subgraph EXEC[&quot;Execution plane — GitHub Actions runners&quot;]
+        UB[&quot;ubuntu-latest&lt;br/&gt;&lt;i&gt;default for every role&lt;/i&gt;&quot;]
+        MAC[&quot;macos-latest&lt;br/&gt;&lt;i&gt;auto-selected when *.xcodeproj / Package.swift is found&lt;/i&gt;&quot;]
+        CCA[&quot;&lt;code&gt;anthropics/claude-code-action@v1&lt;/code&gt;&lt;br/&gt;&lt;i&gt;automation mode · bubblewrap sandbox&lt;/i&gt;&quot;]
+        KR[&quot;&lt;code&gt;python -m tollbooth.agent_keyring&lt;/code&gt;&lt;br/&gt;&lt;i&gt;stdio MCP · holds the nsec · signs each call&lt;/i&gt;&quot;]
+    end
+
+    subgraph INF[&quot;Inference&quot;]
+        ORT[&quot;OpenRouter&lt;br/&gt;&lt;code&gt;ANTHROPIC_BASE_URL=https://openrouter.ai/api&lt;/code&gt;&quot;]
+        W[&quot;writer tier — Journeyman, PR Revision&quot;]
+        R[&quot;reader tier — Porter, QA, Housekeeper, Dialogue&quot;]
+        B[&quot;budget tier — Digest&quot;]
+    end
+
+    subgraph MEM[&quot;Memory + money plane — the DPYC network&quot;]
+        CY[&quot;cypher-mcp&lt;br/&gt;&lt;i&gt;named priced queries · never raw graph access&lt;/i&gt;&quot;]
+        AU[(&quot;Neo4j AuraDB&lt;br/&gt;&lt;i&gt;ephemeral Bolt · free tier sleeps&lt;/i&gt;&quot;)]
+        LN[&quot;BTCPay Lightning&lt;br/&gt;&lt;i&gt;sats per graph call&lt;/i&gt;&quot;]
+        NR[&quot;Nostr relays&lt;br/&gt;&lt;i&gt;kind-27235 proofs&lt;/i&gt;&quot;]
+        HZ[&quot;Horizon&lt;br/&gt;&lt;i&gt;hosts the MCP operators&lt;/i&gt;&quot;]
+        NE[(&quot;Neon Postgres&lt;br/&gt;&lt;i&gt;operator vaults + ledgers&lt;/i&gt;&quot;)]
+    end
+
+    RW --&gt;|&quot;uses: …@main&quot;| TC
+    SC --&gt;|&quot;fans out, one PR per repo&quot;| TC
+    TC --&gt;|&quot;secrets: inherit&quot;| EXEC
+    APP --&gt;|&quot;mints per-run scoped tokens&quot;| EXEC
+    DL --&gt; BP
+    PR --&gt;|&quot;curl at run time + restricted envsubst&quot;| CCA
+    CA --&gt; CCA
+
+    TC --&gt; UB
+    TC --&gt; MAC
+    UB --&gt; CCA
+    MAC --&gt; CCA
+    CCA --&gt;|&quot;--mcp-config, per-server env&quot;| KR
+    CCA --&gt; ORT
+    ORT --&gt; W
+    ORT --&gt; R
+    ORT --&gt; B
+
+    KR --&gt;|&quot;npub + fresh proof per call&quot;| CY
+    CY --&gt; AU
+    CY --&gt; LN
+    KR --&gt; NR
+    CY -.hosted on.-&gt; HZ
+    HZ -.-&gt; NE
+
+    style SRC fill:#1a1a2e,stroke:#F7931A,color:#fff
+    style CTRL fill:#16213e,stroke:#58a6ff,color:#fff
+    style EXEC fill:#16213e,stroke:#58a6ff,color:#fff
+    style INF fill:#1a1a2e,stroke:#8b5cf6,color:#fff
+    style MEM fill:#1a1a2e,stroke:#F7931A,color:#fff</pre></div></figure>
+<p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix; the canonical CI context is <code>test (3.12)</code>, and required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts — a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
+<hr />
+<h2 id="ii-2"><span class="mark">II.2</span><span>The crew, and who is allowed to fire it</span></h2>
+<p>Judgement gets an agent; policy gets bash. Every gate that could land code is on the deterministic side of this line, which is what makes the pipeline immune to both prompt injection <em>and</em> a dry key at exactly the moments that matter.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">flowchart LR
+    subgraph AGENTIC[&quot;LLM roles — judgement&quot;]
+        SCOUT[&quot;&lt;b&gt;Scout&lt;/b&gt;&lt;br/&gt;outside patron via SDK report_issue&lt;br/&gt;&lt;i&gt;dpyc-scout · non-collaborator&lt;/i&gt;&quot;]
+        PORTER[&quot;&lt;b&gt;Porter&lt;/b&gt; — Service Desk&lt;br/&gt;&lt;i&gt;reader · 20 turns · issue ops only&lt;/i&gt;&quot;]
+        JM[&quot;&lt;b&gt;Journeyman&lt;/b&gt; — Engineering&lt;br/&gt;&lt;i&gt;writer · 140 turns · contents:write&lt;/i&gt;&quot;]
+        QA[&quot;&lt;b&gt;QA&lt;/b&gt;&lt;br/&gt;&lt;i&gt;reader · 30 turns · diff only&lt;/i&gt;&quot;]
+        DIA[&quot;&lt;b&gt;PR Dialogue&lt;/b&gt;&lt;br/&gt;&lt;i&gt;read-only by construction · anyone may summon&lt;/i&gt;&quot;]
+        REV[&quot;&lt;b&gt;PR Revision&lt;/b&gt;&lt;br/&gt;&lt;i&gt;writer · OWNER-gated&lt;/i&gt;&quot;]
+        HK[&quot;&lt;b&gt;Housekeeper&lt;/b&gt;&lt;br/&gt;&lt;i&gt;weekly sweep · Porter identity · per repo&lt;/i&gt;&quot;]
+        DG[&quot;&lt;b&gt;Digest&lt;/b&gt; — the Dispatcher&lt;br/&gt;&lt;i&gt;budget · weekly · fleet-wide · not reusable&lt;/i&gt;&quot;]
+    end
+
+    subgraph DET[&quot;Deterministic roles — policy&quot;]
+        ESC[&quot;&lt;b&gt;Escalation&lt;/b&gt;&lt;br/&gt;&lt;i&gt;only cross-repo writer · issues:write only&lt;/i&gt;&quot;]
+        AM[&quot;&lt;b&gt;Auto-merge&lt;/b&gt;&lt;br/&gt;&lt;i&gt;path allowlist&lt;/i&gt;&quot;]
+        APM[&quot;&lt;b&gt;Merge on Approval&lt;/b&gt;&lt;br/&gt;&lt;i&gt;--auto, cannot bypass protection&lt;/i&gt;&quot;]
+        DLINT[&quot;&lt;b&gt;Doctrine Lint&lt;/b&gt;&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;]
+        DV[&quot;&lt;b&gt;Deploy Verify&lt;/b&gt;&lt;br/&gt;&lt;i&gt;sha compare after merge&lt;/i&gt;&quot;]
+        FS[&quot;&lt;b&gt;Funding Sentinel&lt;/b&gt;&quot;]
+        CC[&quot;&lt;b&gt;Credit Canary&lt;/b&gt;&lt;br/&gt;&lt;i&gt;every 30 min&lt;/i&gt;&quot;]
+        BR[&quot;&lt;b&gt;Block Retire&lt;/b&gt;&quot;]
+    end
+
+    SCOUT --&gt;|&quot;files an issue&quot;| PORTER
+    HUMAN([&quot;Human or stranger&quot;]) --&gt;|&quot;opens an issue&quot;| PORTER
+    PORTER --&gt;|&quot;agent/fix&quot;| JM
+    PORTER --&gt;|&quot;blocked/upstream&quot;| ESC
+    ESC --&gt;|&quot;agent/fix in the home repo&quot;| JM
+    JM --&gt;|&quot;opens PR&quot;| QA
+    JM --&gt;|&quot;rejected/upstream&quot;| ESC
+    ESC --&gt;|&quot;agent/retriage + the decliner&#x27;s reason&quot;| PORTER
+    QA --&gt;|&quot;qa/pass&quot;| AM
+    OWNER([&quot;Repository owner&quot;]) --&gt;|&quot;approves&quot;| APM
+    OWNER --&gt;|&quot;requests changes&quot;| REV
+    ANY([&quot;Any reviewer&quot;]) --&gt;|&quot;@journeyman&quot;| DIA
+    REV --&gt;|&quot;pushes to the head branch&quot;| QA
+    AM --&gt; MERGED([&quot;merged&quot;])
+    APM --&gt; MERGED
+    MERGED --&gt; DV
+    DV --&gt;|&quot;stale deploy → one agent/fix issue&quot;| JM
+    DLINT -.-&gt;|&quot;fails the build red&quot;| AGENTIC
+    FS -.-&gt;|&quot;awaiting-funds&quot;| CC
+    CC -.-&gt;|&quot;replays the deferred item&quot;| AGENTIC
+    ESC -.-&gt;|&quot;escalation chains reconciled weekly&quot;| DG
+    DG -.-&gt;|&quot;one pinned digest issue · rescues wrongly bounced patrons&quot;| HUMAN
+
+    style AGENTIC fill:#1a1a2e,stroke:#8b5cf6,color:#fff
+    style DET fill:#16213e,stroke:#0e8a16,color:#fff</pre></div></figure>
+<hr />
+<h2 id="ii-3"><span class="mark">II.3</span><span>Issue lifecycle</span></h2>
+<p>The Porter takes <strong>exactly one</strong> routing action, which is why these branches are exclusive. Note the ordering constraint that shows up twice: the machine-readable comment is posted <em>first</em>, the label <em>last</em>, because the label is the trigger and a deterministic workflow will read the comments the moment it fires.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">stateDiagram-v2
+    direction TB
+    [*] --&gt; Opened
+
+    state &quot;Opened&quot; as Opened
+    state &quot;Triaging — Porter&quot; as Triaging
+    state &quot;Rejected — closed&quot; as Rejected
+    state &quot;rejected/needs-info — stays open&quot; as NeedsInfo
+    state &quot;agent/fix — ready for Engineering&quot; as Ready
+    state &quot;agent/working — Journeyman on it&quot; as Working
+    state &quot;blocked/upstream — escalated&quot; as Blocked
+    state &quot;blocked/arbitration — frozen for a human&quot; as Arb
+    state &quot;awaiting-funds — deferred&quot; as Funds
+    state &quot;PR raised&quot; as PRRaised
+    state &quot;Closed&quot; as Closed
+
+    Opened --&gt; Triaging: issue opened / reopened
+    Triaging --&gt; Triaging: claim_issue, then context_pack scopes the grep
+
+    Triaging --&gt; Rejected: spam · out-of-scope · injection · wontfix · duplicate
+    Triaging --&gt; NeedsInfo: legitimate but no repro
+    Triaging --&gt; Ready: handoff comment, THEN agent/fix
+    Triaging --&gt; Blocked: escalation comment, THEN blocked/upstream
+
+    NeedsInfo --&gt; Triaging: agent/retriage
+    Ready --&gt; Working: Engineering fires
+    Working --&gt; PRRaised: fix proven by a test, PR opened
+    Working --&gt; Closed: no-change — the defect did not reproduce
+
+    Blocked --&gt; Closed: upstream fix propagates
+    Blocked --&gt; Triaging: target declined — reason routed back, re-home
+    Blocked --&gt; Arb: a repo repeated, or 3+ hops
+    Arb --&gt; Triaging: a human names the home
+
+    Triaging --&gt; Funds: key exhausted
+    Ready --&gt; Funds: key exhausted
+    Funds --&gt; Triaging: canary confirms recovery
+    Funds --&gt; Closed: closed while deferred — block retired as historical
+
+    PRRaised --&gt; Closed: PR merged
+    Closed --&gt; [*]</pre></div></figure>
+<hr />
+<h2 id="ii-4"><span class="mark">II.4</span><span>Pull request lifecycle</span></h2>
+<p>Two merge paths, both deterministic, neither able to bypass branch protection. The &quot;Merge Oops&quot; question answers itself here: <code>--auto</code> never lands on a red required check — it <em>holds</em> until the gates go green, so a bad merge is not a risk this design mitigates, it is one the design cannot express.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">stateDiagram-v2
+    direction TB
+    [*] --&gt; AwaitingQA
+
+    state &quot;Awaiting QA&quot; as AwaitingQA
+    state &quot;qa/flag — concern raised&quot; as Flagged
+    state &quot;qa/pass&quot; as Passed
+    state &quot;Awaiting the owner — CODEOWNERS holds it&quot; as Human
+    state &quot;agent/revising — PR Revision at the bench&quot; as Revising
+    state &quot;Auto-merge armed — GitHub holds it pending&quot; as Armed
+    state &quot;Merged&quot; as Merged
+    state &quot;awaiting-funds&quot; as PRFunds
+
+    AwaitingQA --&gt; Passed: diff fixes the issue, test present, invariants intact
+    AwaitingQA --&gt; Flagged: any concern
+    note right of AwaitingQA
+        Only same-repo agent/fix-* branches reach QA.
+        A fork PR receives no secrets, so it never runs.
+    end note
+
+    Passed --&gt; Armed: every changed path is docs / tests / frontend / *.md
+    Passed --&gt; Human: any code or money-adjacent path
+    Flagged --&gt; Human
+
+    Human --&gt; Armed: OWNER approves
+    Human --&gt; Revising: OWNER requests changes, or &quot;@journeyman revise&quot;
+    Flagged --&gt; Revising: OWNER requests changes
+    Revising --&gt; AwaitingQA: revision pushed to the head branch
+
+    Armed --&gt; Merged: branch protection satisfied — required checks green + code-owner review
+
+    AwaitingQA --&gt; PRFunds: key exhausted
+    Revising --&gt; PRFunds: key exhausted
+    PRFunds --&gt; AwaitingQA: canary recovery
+    PRFunds --&gt; Revising: mid-revision — the owner re-requests, never the bot
+    Merged --&gt; [*]</pre></div></figure>
+<hr />
+<h2 id="ii-5"><span class="mark">II.5</span><span>Funding — two independent rails</span></h2>
+<p>The crew spends on two rails that fail independently, and the design leans on that. LLM credits buy inference; <strong>sats</strong> buy graph writes. When the inference rail is dry, the sats rail still works — which is exactly how &quot;what is currently awaiting funds&quot; stays queryable while every LLM node is dark.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">stateDiagram-v2
+    direction LR
+    state &quot;Rail A — LLM credits · one shared key · OpenRouter&quot; as RailA {
+        [*] --&gt; Healthy
+        Healthy --&gt; Unknown: transient 429 / 529 / network
+        Unknown --&gt; Healthy: next probe returns 200
+        Healthy --&gt; Broke: non-200 naming credit / billing / quota / spend
+        Broke --&gt; Deferring: sentinel tags each affected item
+        Deferring --&gt; Replaying: probe returns 200 again
+        Broke --&gt; Replaying: probe returns 200 again
+        Replaying --&gt; Healthy: fleet swept, work re-fired
+    }
+
+    state &quot;Rail B — sats · per-agent patron balance&quot; as RailB {
+        [*] --&gt; Funded
+        Funded --&gt; Drained: balance spent
+        Drained --&gt; Funded: the human tops up
+        note right of Drained
+            Containment is funding, not policy.
+            A drained agent still triages and labels;
+            only its graph writes stop. Every graph
+            call is best-effort and non-fatal.
+        end note
+    }</pre></div></figure>
+<p><strong>Outage detection is a signature, not a guess.</strong> A dry key makes the action fail on turn 1 with <code>is_error:true</code>, <code>num_turns &lt;= 1</code>, <code>total_cost_usd == 0</code> — rejected before any work, billed nothing. That exact shape is the <em>only</em> thing tagged <span class="chip" style="--chip:#b60205">awaiting-funds</span>; a genuine agent failure shows real turns, real cost, and usually permission denials, so it is never mislabeled and quietly retried forever.</p>
+<p><strong>Replay is discriminated by what the item already carries</strong>, because the labels record which node the outage cut:</p>
+<div class="scroll"><table><thead><tr><th>Item</th><th>Carries</th><th>Node that was skipped</th><th>Recovery action</th></tr></thead><tbody><tr><td>Issue</td><td>no <span class="chip" style="--chip:#5319e7">agent/fix</span></td><td>Porter</td><td>add <span class="chip" style="--chip:#5319e7">agent/retriage</span></td></tr><tr><td>Issue</td><td><span class="chip" style="--chip:#5319e7">agent/fix</span></td><td>Engineering</td><td>re-toggle <span class="chip" style="--chip:#5319e7">agent/fix</span></td></tr><tr><td>PR</td><td>no <span class="chip" style="--chip:#1d76db">agent/revising</span></td><td>QA</td><td>add <span class="chip" style="--chip:#5319e7">agent/retriage</span></td></tr><tr><td>PR</td><td><span class="chip" style="--chip:#1d76db">agent/revising</span></td><td>PR Revision</td><td><strong>comment only</strong> — the owner must re-request</td></tr></tbody></table></div>
+<p>That last row is a deliberate refusal. PR Revision is gated on a human owner review, and letting the bot re-trigger a write-capable role would dissolve exactly the boundary that gate exists to hold.</p>
+<hr />
+<h2 id="ii-6"><span class="mark">II.6</span><span>Escalation and the anti-ping-pong loop</span></h2>
+<p>Escalation is the only workflow that writes across repositories, and it holds the only account-wide token — downscoped to <code>issues: write</code> and nothing else. Widened scope is always paired with narrowed permission.</p>
+<p>The markers named below are HTML comments in the issue thread — <code>&lt;!-- dpyc-escalation --&gt;</code>, <code>&lt;!-- dpyc-rejection --&gt;</code>, <code>&lt;!-- dpyc-route-history: a,b --&gt;</code> — written out in full in §Items of the model. They are named rather than quoted here because a literal <code>--</code> inside a Mermaid sequence message is lexed as the start of an arrow token and breaks the diagram.</p>
+<figure class="diagram"><div class="scroll"><pre class="mermaid">sequenceDiagram
+    autonumber
+    participant O as Origin repo
+    participant P as Porter @ origin
+    participant E as Escalation&lt;br/&gt;deterministic
+    participant H as Home repo
+    participant J as Journeyman @ home
+
+    P-&gt;&gt;O: post the dpyc-escalation marker comment
+    P-&gt;&gt;O: apply blocked/upstream (the trigger — always last)
+    O-&gt;&gt;E: issues.labeled
+    E-&gt;&gt;E: parse home_repo, validate against the 18-repo allowlist
+    E-&gt;&gt;E: per-home idempotency — already escalated to THIS home?
+    E-&gt;&gt;H: gh issue create, labeled agent/fix, stamped Origin: + escalated-child
+    E-&gt;&gt;O: comment, stamped dpyc-escalated for that home
+
+    alt Home owns it
+        H-&gt;&gt;J: agent/fix fires Engineering
+        J-&gt;&gt;H: fix + test + PR
+        Note over O,H: origin closes when the fix propagates
+    else Home declines
+        J-&gt;&gt;H: post a dpyc-rejection marker naming the true owner, or why it is a no-op
+        J-&gt;&gt;H: apply rejected/upstream, then STOP — never re-route to a third repo
+        H-&gt;&gt;E: issues.labeled
+        E-&gt;&gt;O: post the reason back, stamped dpyc-route-history: a,b
+        E-&gt;&gt;H: close the child as not planned
+        alt repeat repo, or 3+ hops
+            E-&gt;&gt;O: blocked/arbitration + @-mention the owner
+            Note over O: frozen for a human — it will never bounce again
+        else still routable
+            E-&gt;&gt;O: agent/retriage — reopens the Porter WITH the decline reason in hand
+            Note over P: the passed-repos set is durable —&lt;br/&gt;escalating back into it is never an option
+        end
+    end</pre></div></figure>
+<p>The subtle bug this shape had to fix: idempotency was originally <em>unscoped</em> — any &quot;already escalated&quot; marker stopped further routing. That meant an issue declined by its first home could never be re-homed. Idempotency is now <strong>per home</strong>, so each home is escalated at most once while a re-home stays possible.</p>
+<hr />
+<h2 id="ii-7"><span class="mark">II.7</span><span>Guard map — who can change what</span></h2>
+<div class="scroll"><table><thead><tr><th>#</th><th>Guard</th><th>Enforced by</th><th>Mechanism, not a promise</th></tr></thead><tbody><tr><td>G1</td><td>An agent cannot change the powers it is granted</td><td>GitHub App scope + <code>doctrine_lint</code></td><td>The App holds no <code>workflows: write</code>, so the token <em>cannot</em> push a <code>.github/workflows/</code> edit; the linter fails red if a diff adds the permission</td></tr><tr><td>G2</td><td>No self-merge, no self-approval</td><td><code>doctrine_lint</code> on <code>--allowedTools</code></td><td>Bans <code>gh pr review</code>, <code>Bash(gh:*)</code>, <code>Bash(gh pr:*)</code>, bare and <code>--admin</code> <code>gh pr merge</code>; permits only the gated <code>gh pr merge --auto</code></td></tr><tr><td>G3</td><td>Money paths need a human</td><td>CODEOWNERS + branch protection</td><td><code>* @lonniev</code> catch-all with <code>require_code_owner_reviews</code>; approvals set to 0 so docs still auto-land; <code>enforce_admins</code> false keeps the owner&#x27;s escape hatch</td></tr><tr><td>G4</td><td>Fork PRs get no secrets</td><td><code>pull_request</code> only, banned <code>pull_request_target</code></td><td>The trigger is banned outright rather than guarded by an <code>if</code>, because a blanket ban is auditable</td></tr><tr><td>G5</td><td>Write-capable + human-triggered ⇒ owner-only</td><td>Caller <code>if:</code> expression</td><td>PR Revision requires <code>author_association == &#x27;OWNER&#x27;</code>; PR Dialogue pays for open access by having no write tools and <code>contents: read</code> tokens</td></tr><tr><td>G6</td><td>Cross-repo writes are issues-only</td><td>Token permission + allowlist</td><td>Account-wide token downscoped to <code>permission-issues: write</code>; <code>home_repo</code> word-boundary-matched against 18 repos before any write</td></tr><tr><td>G7</td><td>No issue ping-pong</td><td>Escalation reverse path</td><td>Durable <code>passed_repos</code> set; a repeat repo or 3 hops freezes the issue as <span class="chip" style="--chip:#b60205">blocked/arbitration</span></td></tr><tr><td>G8</td><td>Untrusted input is always data</td><td>Prompt anchors + <code>--allowedTools</code></td><td>No <code>curl</code>, <code>bash -c</code>, <code>eval</code> or <code>rm</code>; every <code>gh</code> subcommand enumerated; the agent holds no secrets; an injection <em>attempt</em> is itself grounds to close</td></tr><tr><td>G9</td><td>Secrets never enter the agent shell</td><td><code>--mcp-config</code> per-server env; git auth header</td><td>The nsec lives only in the keyring subprocess; Dialogue&#x27;s investigation token is a git header, never an env var</td></tr><tr><td>G10</td><td>Provenance cannot be forged</td><td>cypher-mcp write template</td><td><code>llm-inferred-unverified</code> is a Cypher <strong>literal</strong>, not a parameter — there is no argument that claims human authority</td></tr><tr><td>G11</td><td>Prompts keep their safety anchors</td><td><code>doctrine_lint</code></td><td><code>SECURITY</code> + <code>UNTRUSTED</code> everywhere, plus <code>MANDATORY OUTCOME</code> for Porter and PR Revision</td></tr><tr><td>G12</td><td>Containment is funding</td><td>Per-agent patron balance</td><td>Fund the Porter thin, the Journeyman thicker; a drained agent degrades, it does not stall the pipeline</td></tr><tr><td>G13</td><td>An outage defers, it does not fail</td><td>Funding sentinel signature</td><td>Only <code>is_error &amp;&amp; turns ≤ 1 &amp;&amp; cost == 0</code> counts as an outage</td></tr><tr><td>G14</td><td>Judgement gets an agent, policy gets bash</td><td>Role roster</td><td>Every merge, escalation, lint and verify gate is LLM-free, and therefore immune to injection and to a dry key</td></tr></tbody></table></div></div>
+
+  <section class="attribution" id="attribution">
+    <p class="eyebrow">With thanks</p>
+    <h2>Validated with nomograph-sysml</h2>
+    <p>The SysML v2 in this document is machine-checked by
+    <a href="https://github.com/nomograph-ai/sysml"><strong>nomograph-sysml</strong></a>,
+    the CLI-native SysML v2 toolkit from <a href="https://nomograph.ai/">Nomograph Labs</a> —
+    a Rust binary over <code>tree-sitter-sysml</code> that parses, indexes and checks a model,
+    and doubles as an MCP server. Our thanks to its authors: a hand-authored model is a claim
+    until something with a real grammar agrees with it, and this is what let us stop hedging.</p>
+
+    <div class="scroll"><table class="attr-table">
+      <thead><tr><th>Command</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>sysml validate</code></td>
+            <td><span class="chip" style="--chip:#0e8a16">valid</span> &mdash; zero diagnostics</td></tr>
+        <tr><td><code>sysml index</code></td>
+            <td>455 elements, 890 relationships &mdash; all 14 requirements, 4 state machines
+            with 42 transitions, 10 enumerations, 12 packages</td></tr>
+        <tr><td><code>sysml check all</code></td>
+            <td>255 findings, each traced to a limitation of <strong>v0.2.0</strong> rather
+            than a defect in the model &mdash; the indexer emits only <code>Member</code> and
+            <code>TypedBy</code>, so <code>Satisfy</code>, <code>Verify</code> and
+            <code>Connect</code> edges are invisible to it, and unresolved
+            <code>String</code>/<code>Integer</code> targets are the standard library sitting
+            outside the index</td></tr>
+      </tbody>
+    </table></div>
+
+    <p class="attr-foot">Each finding class was isolated to a minimal reproducer before being
+    set aside; the workings are in &sect;I.5. A clean <code>validate</code> is the signal we
+    act on today. Reproduce with
+    <code>cargo install nomograph-sysml &amp;&amp; sysml validate docs/model/dpyc-factory.sysml</code>.</p>
+  </section>
+
+  <div class="part-rule" id="appendix"><span>Appendix A</span><h2>The model, in full</h2></div>
+  <div class="prose">
+    <p>The complete SysML v2 textual model, as written to
+    <code>docs/model/dpyc-factory.sysml</code>. Every <code>doc</code> comment in it is
+    rationale carried over from the source workflow&rsquo;s own header &mdash; the Factory
+    documents its reasoning where it lives, and the model preserves that rather than
+    paraphrasing it.</p>
+  </div>
+  <div class="scroll listing"><pre class="code sysml"><span class="ln">// =============================================================================</span>
+<span class="ln">//  The DPYC Software Factory — SysML v2 textual model</span>
+<span class="ln">//</span>
+<span class="ln">//  Subject: the unattended agentic crew (Scout, Porter, Journeyman, QA,</span>
+<span class="ln">//  Housekeeper) that triages, fixes, reviews and lands work across the DPYC</span>
+<span class="ln">//  fleet of GitHub repositories.</span>
+<span class="ln">//</span>
+<span class="ln">//  Provenance: every element below is derived from source in</span>
+<span class="ln">//  lonniev/dpyc-community — .github/workflows/*.yml (reusable skeletons),</span>
+<span class="ln">//  scripts/factory-callers/*.yml (thin per-repo callers), factory/*.prompt.md</span>
+<span class="ln">//  (role behavior), factory/actions/* (deterministic composite actions),</span>
+<span class="ln">//  scripts/doctrine_lint.py (the tripwires) and scripts/apply_labels.sh (the</span>
+<span class="ln">//  label alphabet). See docs/model/README.md for the element -&gt; file map.</span>
+<span class="ln">//</span>
+<span class="ln">//  Two rules of the modelled system that explain most of its shape:</span>
+<span class="ln">//    1. Behavior is data the crew may evolve by PR; the workflow SKELETON that</span>
+<span class="ln">//       grants powers is human-only. The GitHub App holds no `workflows: write`,</span>
+<span class="ln">//       so that separation is structural, not a promise.</span>
+<span class="ln">//    2. Containment is funding, not policy. A drained agent degrades — it keeps</span>
+<span class="ln">//       triaging and stops writing to the memory graph.</span>
+<span class="ln">// =============================================================================</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">package DPYCSoftwareFactory {</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    doc /*</span>
+<span class="ln">     * The Factory is one federated pipeline instantiated N times: logic lives once</span>
+<span class="ln">     * in dpyc-community as `workflow_call` reusables; each fleet repo carries only</span>
+<span class="ln">     * byte-identical thin callers. Language dispatch happens inside the reusable</span>
+<span class="ln">     * (an Xcode/Swift probe picks macos-latest), so onboarding a repo never means</span>
+<span class="ln">     * customizing YAML.</span>
+<span class="ln">     */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // -------------------------------------------------------------------------</span>
+<span class="ln">    private import ScalarValues::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  1. VOCABULARY — the label alphabet is the pipeline&#x27;s shared contract.</span>
+<span class="ln">    //     Applied per repo by scripts/apply_labels.sh (32 labels).</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Vocabulary {</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def IssueType {</span>
+<span class="ln">            &#x27;type/bug&#x27;; &#x27;type/feature&#x27;; &#x27;type/docs&#x27;; &#x27;type/question&#x27;; &#x27;type/chore&#x27;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def Area {</span>
+<span class="ln">            &#x27;area/ledger&#x27;; &#x27;area/pricing&#x27;; &#x27;area/vault&#x27;;</span>
+<span class="ln">            &#x27;area/auth&#x27;; &#x27;area/ci&#x27;; &#x27;area/docs&#x27;; &#x27;area/ui&#x27;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def Severity {</span>
+<span class="ln">            &#x27;sev/critical&#x27;; &#x27;sev/high&#x27;; &#x27;sev/medium&#x27;; &#x27;sev/low&#x27;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Routing labels. Each is a workflow TRIGGER, which is why the prompts</span>
+<span class="ln">         * insist the machine-readable comment be posted BEFORE the label lands. */</span>
+<span class="ln">        enum def RoutingLabel {</span>
+<span class="ln">            &#x27;agent/fix&#x27;;               // -&gt; Engineering (Journeyman)</span>
+<span class="ln">            &#x27;agent/working&#x27;;           // liveness beacon, stamped/cleared by the skeleton</span>
+<span class="ln">            &#x27;agent/revising&#x27;;          // liveness beacon for PR Revision; canary discriminator</span>
+<span class="ln">            &#x27;agent/retriage&#x27;;          // replay marker -&gt; Porter (issues) or QA (PRs)</span>
+<span class="ln">            &#x27;blocked/upstream&#x27;;        // -&gt; Escalation, forward path</span>
+<span class="ln">            &#x27;rejected/upstream&#x27;;       // -&gt; Escalation, reverse (anti-ping-pong) path</span>
+<span class="ln">            &#x27;blocked/arbitration&#x27;;     // routing standoff frozen for a human</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def RejectionLabel {</span>
+<span class="ln">            &#x27;rejected/spam&#x27;; &#x27;rejected/out-of-scope&#x27;; &#x27;rejected/injection&#x27;;</span>
+<span class="ln">            &#x27;rejected/wontfix&#x27;; &#x27;rejected/duplicate&#x27;;</span>
+<span class="ln">            &#x27;rejected/needs-info&#x27;;     // the only rejection that stays OPEN</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def QAVerdict { &#x27;qa/pass&#x27;; &#x27;qa/flag&#x27;; }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        enum def FundingLabel { &#x27;awaiting-funds&#x27;; &#x27;factory/outage&#x27;; }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* What the Porter records as its single routing action. */</span>
+<span class="ln">        enum def Disposition { &#x27;agent/fix&#x27;; &#x27;rejected&#x27;; &#x27;blocked/upstream&#x27;; &#x27;needs-info&#x27;; }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* The token-savings metric: how the code was located. `wide-grep` is the</span>
+<span class="ln">         * expensive path the intention graph exists to eliminate. */</span>
+<span class="ln">        enum def ResolvedVia { graph; &#x27;scoped-grep&#x27;; &#x27;wide-grep&#x27;; }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Provenance of a why-statement in the memory graph. An agent may only</span>
+<span class="ln">         * ever write the second one — cypher-mcp hard-codes it as a Cypher</span>
+<span class="ln">         * literal, so the value cannot be forged through a parameter. */</span>
+<span class="ln">        enum def Provenance { &#x27;human-authored&#x27;; &#x27;llm-inferred-unverified&#x27;; }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  2. ITEMS — what flows through the Factory.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Items {</span>
+<span class="ln">        private import Vocabulary::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def Issue {</span>
+<span class="ln">            attribute number : Integer;</span>
+<span class="ln">            attribute title : String;</span>
+<span class="ln">            attribute body : String;              // UNTRUSTED. Data, never instructions.</span>
+<span class="ln">            attribute isFieldReport : Boolean;    // carries a &lt;!-- dpyc-field-report --&gt; marker</span>
+<span class="ln">            attribute isEscalatedChild : Boolean; // carries a &lt;!-- dpyc-escalated-child --&gt; marker</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def PullRequest {</span>
+<span class="ln">            attribute number : Integer;</span>
+<span class="ln">            attribute headRef : String;           // &#x27;agent/fix-&lt;n&gt;&#x27; for Journeyman PRs</span>
+<span class="ln">            attribute sameRepo : Boolean;         // false =&gt; a fork =&gt; no secrets</span>
+<span class="ln">            attribute touchesOnlyLowRiskPaths : Boolean;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Machine-readable comment blocks. These are the Factory&#x27;s wire protocol:</span>
+<span class="ln">         * a deterministic workflow parses them, so their shape is load-bearing. */</span>
+<span class="ln">        item def HandoffComment {                 // &lt;!-- dpyc-handoff --&gt;</span>
+<span class="ln">            attribute actionable_text : String;   // Porter&#x27;s 1-2 sentence spec</span>
+<span class="ln">            attribute capability : String;</span>
+<span class="ln">            attribute files : String;</span>
+<span class="ln">            attribute symbols : String;</span>
+<span class="ln">            attribute invariants : String;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def EscalationComment {              // &lt;!-- dpyc-escalation --&gt;</span>
+<span class="ln">            attribute home_repo : String;         // validated against a fixed allowlist</span>
+<span class="ln">            attribute title : String;</span>
+<span class="ln">            attribute reason : String;</span>
+<span class="ln">            attribute repro : String;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def RejectionComment;                // &lt;!-- dpyc-rejection --&gt;    reverse path</span>
+<span class="ln">        item def RouteBackComment;                // &lt;!-- dpyc-route-back --&gt;   reason returned</span>
+<span class="ln">        item def RouteHistoryMarker {             // &lt;!-- dpyc-route-history: a,b --&gt;</span>
+<span class="ln">            attribute passed_repos : String;      // durable anti-ping-pong set</span>
+<span class="ln">            attribute hops : Integer;</span>
+<span class="ln">        }</span>
+<span class="ln">        item def FieldReportMarker {              // &lt;!-- dpyc-field-report ... --&gt;</span>
+<span class="ln">            attribute reporter : String;          // proven npub — SDK-authored, unspoofable</span>
+<span class="ln">            attribute tool : String;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* claude-code-action&#x27;s execution transcript. Its shape is what the</span>
+<span class="ln">         * funding sentinel classifies on. */</span>
+<span class="ln">        item def AgentResult {</span>
+<span class="ln">            attribute is_error : Boolean;</span>
+<span class="ln">            attribute num_turns : Integer;</span>
+<span class="ln">            attribute total_cost_usd : Real;</span>
+<span class="ln">            attribute permission_denials_count : Integer;</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  3. IDENTITY — every agent is a DPYC patron holding its own nsec.</span>
+<span class="ln">    //     No new actors, no stored tokens, nothing granted per call: the agent</span>
+<span class="ln">    //     signs its own ephemeral kind-27235 proof of possession per request.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Identity {</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def NostrIdentity {</span>
+<span class="ln">            attribute npub : String;</span>
+<span class="ln">            attribute nip05 : String;</span>
+<span class="ln">            /* The nsec is deliberately NOT an attribute of anything reachable</span>
+<span class="ln">             * from the agent: it exists only in the keyring subprocess env. */</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def AgentKeyring {</span>
+<span class="ln">            doc /* `python -m tollbooth.agent_keyring` from tollbooth-dpyc[keyring].</span>
+<span class="ln">                 * A FastMCP create_proxy plus one middleware that injects the npub</span>
+<span class="ln">                 * and a FRESH kind-27235 proof into every forwarded call. Mounted</span>
+<span class="ln">                 * as a local stdio MCP server via claude-code-action&#x27;s</span>
+<span class="ln">                 * --mcp-config, whose per-server `env` is isolated from the</span>
+<span class="ln">                 * agent&#x27;s own shell. It is the agent&#x27;s signing HAND, not an actor. */</span>
+<span class="ln">            attribute upstream : String = &quot;https://cypher-mcp.fastmcp.app/mcp&quot;;</span>
+<span class="ln">            attribute sdkExtra : String = &quot;tollbooth-dpyc[keyring]==0.63.1&quot;;</span>
+<span class="ln">            port graphTools : GraphToolPort;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def SignedToolCall {</span>
+<span class="ln">            doc /* One mcp__graph__cypher_* call as it leaves the keyring: the patron</span>
+<span class="ln">                 * npub and a freshly minted kind-27235 proof attached. Nothing is</span>
+<span class="ln">                 * stored — a DPoP is proof of possession for THIS call only, which is</span>
+<span class="ln">                 * why there is no token to expire, leak, or revoke. */</span>
+<span class="ln">            attribute tool : String;</span>
+<span class="ln">            attribute npub : String;</span>
+<span class="ln">            attribute proofKind : Integer = 27235;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def GraphAnswer {</span>
+<span class="ln">            doc /* The operator&#x27;s reply, or a situation. Every graph write in the</span>
+<span class="ln">                 * Factory is best-effort: an answer that never arrives degrades the</span>
+<span class="ln">                 * record, never the GitHub outcome the agent already committed. */</span>
+<span class="ln">            attribute ok : Boolean;</span>
+<span class="ln">            attribute situation : String;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        port def GraphToolPort {</span>
+<span class="ln">            doc /* The keyring&#x27;s outward face — the mcp__graph__cypher_* verbs as the</span>
+<span class="ln">                 * agent sees them. Directed, because the asymmetry IS the design: the</span>
+<span class="ln">                 * agent emits a call it cannot sign for itself, and the signing happens</span>
+<span class="ln">                 * on the far side of this boundary, in a subprocess whose env it cannot</span>
+<span class="ln">                 * read. */</span>
+<span class="ln">            out item call : SignedToolCall;</span>
+<span class="ln">            in item answer : GraphAnswer;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        interface def GraphChannel {</span>
+<span class="ln">            doc /* Agent-to-operator over the sats rail: a priced, proof-authenticated</span>
+<span class="ln">                 * MCP call. Orthogonal to the LLM-credit rail, which is what keeps the</span>
+<span class="ln">                 * memory queryable during an inference outage. */</span>
+<span class="ln">            end consumer : GraphToolPort;</span>
+<span class="ln">            end supplier : ~GraphToolPort;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part porterIdentity : NostrIdentity {</span>
+<span class="ln">            attribute redefines npub = &quot;npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2&quot;;</span>
+<span class="ln">            attribute redefines nip05 = &quot;porter@tollbooth-dpyc.org&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part journeymanIdentity : NostrIdentity {</span>
+<span class="ln">            attribute redefines npub = &quot;npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk&quot;;</span>
+<span class="ln">            attribute redefines nip05 = &quot;journeyman@tollbooth-dpyc.org&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Scout is NOT a workflow. It is an outside patron — Claude.ai reporting</span>
+<span class="ln">         * under its own npub through the SDK `report_issue` tool — whose reports</span>
+<span class="ln">         * arrive on a dedicated `dpyc-scout` GitHub account that is deliberately a</span>
+<span class="ln">         * NON-collaborator with zero write access. */</span>
+<span class="ln">        part def ScoutReporter :&gt; NostrIdentity {</span>
+<span class="ln">            attribute githubAccount : String = &quot;dpyc-scout&quot;;</span>
+<span class="ln">            attribute writeAccess : Boolean = false;</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  4. PLATFORM — the tech stack the Factory executes on.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Platform {</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def GitHubActionsRunner {</span>
+<span class="ln">            attribute image : String;             // ubuntu-latest | macos-latest</span>
+<span class="ln">            attribute costMultiplier : Real;      // macOS bills ~10x ubuntu minutes</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def AgentHarness {</span>
+<span class="ln">            doc /* anthropics/claude-code-action@v1 in automation mode: `prompt:`</span>
+<span class="ln">                 * plus `claude_args:`. It commits and pushes but never merges.</span>
+<span class="ln">                 * Runs the agent&#x27;s Bash inside a bubblewrap sandbox (enabled by</span>
+<span class="ln">                 * allowed_non_write_users), which is why every Linux job carries</span>
+<span class="ln">                 * the /home/.mcp.json pre-step. */</span>
+<span class="ln">            attribute version : String = &quot;anthropics/claude-code-action@v1&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer;</span>
+<span class="ln">            attribute modelSlug : String;</span>
+<span class="ln">            attribute allowedTools : String;      // the real capability boundary</span>
+<span class="ln">            attribute allowedBots : String = &quot;dpyc-agentic-desk[bot]&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def GitHubApp {</span>
+<span class="ln">            doc /* &quot;DPYC Agentic Desk&quot;. Installed account-wide. The absence of</span>
+<span class="ln">                 * `workflows: write` is the structural leash: an agent token</span>
+<span class="ln">                 * literally cannot push an edit to .github/workflows/. */</span>
+<span class="ln">            attribute appId : String = &quot;4292331&quot;;</span>
+<span class="ln">            attribute hasWorkflowsWrite : Boolean = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def ScopedToken {</span>
+<span class="ln">            doc /* actions/create-github-app-token@v2. Omitting `repositories`</span>
+<span class="ln">                 * and `owner` scopes a token to THIS repo — the default posture.</span>
+<span class="ln">                 * Widening scope is always paired with narrowing permission. */</span>
+<span class="ln">            attribute repoScoped : Boolean = true;</span>
+<span class="ln">            attribute accountWide : Boolean = false;</span>
+<span class="ln">            attribute permissions : String;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* --- external services -------------------------------------------- */</span>
+<span class="ln">        part def OpenRouter {</span>
+<span class="ln">            doc /* The Factory&#x27;s inference rail. ANTHROPIC_API_KEY carries the</span>
+<span class="ln">                 * OpenRouter key (its Anthropic-compatible endpoint reads</span>
+<span class="ln">                 * x-api-key) and ANTHROPIC_BASE_URL overrides the host, so the</span>
+<span class="ln">                 * secret NAME stayed put across ~96 call sites and only its value</span>
+<span class="ln">                 * changed. With the base URL overridden there is no</span>
+<span class="ln">                 * api.anthropic.com left to fall back to. */</span>
+<span class="ln">            attribute baseUrl : String = &quot;https://openrouter.ai/api&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def Horizon {</span>
+<span class="ln">            doc /* The managed platform hosting the MCP operators. Builds from</span>
+<span class="ln">                 * requirements.txt (not `pip install -e .`), keeps entrypoint and</span>
+<span class="ln">                 * root dir in its dashboard, and redeploys on any push to main. */</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def Neo4jAuraDB {</span>
+<span class="ln">            doc /* cypher-mcp&#x27;s graph store, reached over ephemeral Bolt. The free</span>
+<span class="ln">                 * tier SLEEPS: the first write after idle can exceed a named</span>
+<span class="ln">                 * query&#x27;s timeout_ms and fail, then succeed on retry — harmless</span>
+<span class="ln">                 * because cypher-mcp refunds on raise. */</span>
+<span class="ln">            attribute tier : String = &quot;free&quot;;</span>
+<span class="ln">            attribute sleepsWhenIdle : Boolean = true;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def NeonPostgres {</span>
+<span class="ln">            doc /* Operator/Authority vault + ledger persistence. Not on the</span>
+<span class="ln">                 * Factory&#x27;s own hot path; reached only through operator MCPs. */</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def BTCPayServer;      // Lightning rail for sats</span>
+<span class="ln">        part def NostrRelaySet;     // identity proofs, Secure Courier DMs, audit</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  5. THE MEMORY — cypher-mcp is where the crew&#x27;s reasoning is durable.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package IntentionGraph {</span>
+<span class="ln">        private import Vocabulary::*;</span>
+<span class="ln">        private import Identity::GraphToolPort;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def CypherOperator {</span>
+<span class="ln">            doc /* A monetized MCP operator, not a database handle. It sells</span>
+<span class="ln">                 * operator-authored, parameterized NAMED queries — never raw</span>
+<span class="ln">                 * graph access. Write templates carry access_mode=&#x27;write&#x27;.</span>
+<span class="ln">                 * Access is the Constraint Engine (a json_expression allow-list</span>
+<span class="ln">                 * on patron.npub per published tool), never bespoke per-tool ACL. */</span>
+<span class="ln">            attribute endpoint : String = &quot;https://cypher-mcp.fastmcp.app/mcp&quot;;</span>
+<span class="ln">            port patronCalls : ~GraphToolPort;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        item def Service      { attribute name : String; }</span>
+<span class="ln">        item def Capability   { attribute name : String; attribute keywords : String;</span>
+<span class="ln">                                attribute why : String; attribute provenance : Provenance; }</span>
+<span class="ln">        item def Symbol       { attribute fqn : String; attribute lang : String;</span>
+<span class="ln">                                attribute file_path : String; attribute verified_at_sha : String; }</span>
+<span class="ln">        item def Invariant    { attribute name : String; }</span>
+<span class="ln">        item def GraphIssue   { attribute number : Integer; attribute disposition : Disposition;</span>
+<span class="ln">                                attribute resolved_via : ResolvedVia; attribute actionable_text : String; }</span>
+<span class="ln">        item def Decision     { attribute decision_id : String; attribute statement : String;</span>
+<span class="ln">                                attribute reason : String; attribute provenance : Provenance; }</span>
+<span class="ln">        item def FundingBlock { attribute state : String; }   // active | clear | historical</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Read verbs both LLM roles use to SCOPE their work instead of grepping</span>
+<span class="ln">         * twelve repos. cypher_context_pack is the default retrieval tier. */</span>
+<span class="ln">        action def ContextPack { in keyword : String; out capabilities : Capability[0..*];</span>
+<span class="ln">                                 out symbols : Symbol[0..*]; out precedent : GraphIssue[0..*]; }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Write verbs. Porter and Journeyman hold DIFFERENT sets — see Roles. */</span>
+<span class="ln">        action def RecordTriage;  action def RecordScope;   action def NoteRejection;</span>
+<span class="ln">        action def LinkRootCause; action def ClaimIssue;    action def RouteRejection;</span>
+<span class="ln">        action def AssertRationale {</span>
+<span class="ln">            doc /* Provenance is a Cypher LITERAL inside the template, not a</span>
+<span class="ln">                 * parameter, so an agent cannot claim human authority. */</span>
+<span class="ln">            out provenance : Provenance = Provenance::&#x27;llm-inferred-unverified&#x27;;</span>
+<span class="ln">        }</span>
+<span class="ln">        action def SuggestCapabilityWhy :&gt; AssertRationale;</span>
+<span class="ln">        action def MarkFundingState;  action def RetireFundingBlock;</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  6. ROLES — the crew. Two kinds: LLM-driven and deterministic.</span>
+<span class="ln">    //     The split is doctrine: judgement gets an agent, policy gets bash.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Roles {</span>
+<span class="ln">        private import Platform::*;</span>
+<span class="ln">        private import Identity::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        abstract part def FactoryRole {</span>
+<span class="ln">            attribute name : String;</span>
+<span class="ln">            attribute firesOn : String;</span>
+<span class="ln">            attribute canWriteCode : Boolean;</span>
+<span class="ln">            part token : ScopedToken;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        abstract part def AgenticRole :&gt; FactoryRole {</span>
+<span class="ln">            doc /* Behavior lives in a prompt file the crew may evolve by PR; the</span>
+<span class="ln">                 * skeleton around it is human-only. The prompt is fetched at run</span>
+<span class="ln">                 * time from raw.githubusercontent.com and rendered with envsubst&#x27;s</span>
+<span class="ln">                 * RESTRICTED form — only ${REPO} ${REPO_NAME} ${ISSUE_NUMBER} are</span>
+<span class="ln">                 * substituted, so nothing else in the file can expand. */</span>
+<span class="ln">            attribute promptFile : String;</span>
+<span class="ln">            attribute modelTier : String;         // writer | reader | budget</span>
+<span class="ln">            part harness : AgentHarness;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        abstract part def DeterministicRole :&gt; FactoryRole {</span>
+<span class="ln">            doc /* No LLM on purpose. These decide facts, not judgements — &quot;the</span>
+<span class="ln">                 * owner approved&quot;, &quot;this path is docs&quot;, &quot;this sha matches&quot; — and</span>
+<span class="ln">                 * so they are immune to both prompt injection and a dry key. */</span>
+<span class="ln">            attribute usesLLM : Boolean = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- intake ----------------------------------------------------------</span>
+<span class="ln">        part def Scout :&gt; FactoryRole {</span>
+<span class="ln">            doc /* Not a workflow: an outside proven patron filing a field report</span>
+<span class="ln">                 * through the SDK `report_issue` tool. The SDK composes the issue</span>
+<span class="ln">                 * body — author-of-record header plus marker — from the PROVEN</span>
+<span class="ln">                 * caller npub, and neutralizes any marker token smuggled in the</span>
+<span class="ln">                 * report text, so provenance cannot be spoofed by the report.</span>
+<span class="ln">                 * The operator opts in by delivering github_repo + github_token</span>
+<span class="ln">                 * over Secure Courier; absent those the tool degrades to a</span>
+<span class="ln">                 * situation and the patron is not charged. */</span>
+<span class="ln">            attribute redefines name = &quot;Scout&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;patron calls &lt;operator&gt;_report_issue&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            part identity : ScoutReporter;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- LLM crew --------------------------------------------------------</span>
+<span class="ln">        part def Porter :&gt; AgenticRole {</span>
+<span class="ln">            doc /* Service Desk. Reads the issue as DATA, locates the code through</span>
+<span class="ln">                 * the graph before grepping, and takes EXACTLY ONE routing action.</span>
+<span class="ln">                 * A MANDATORY OUTCOME clause forbids the failure mode that actually</span>
+<span class="ln">                 * bit us: an agent that deliberates, concludes, narrates the action,</span>
+<span class="ln">                 * and never calls the tool. It must either execute the triage or</span>
+<span class="ln">                 * post a give-up comment — then VERIFY the labels landed. */</span>
+<span class="ln">            attribute redefines name = &quot;Porter&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;factory/porter.prompt.md&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;issues: opened, reopened, labeled(agent/retriage)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer = 20;</span>
+<span class="ln">            part identity : NostrIdentity = Identity::porterIdentity;</span>
+<span class="ln">            part keyring : AgentKeyring;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def Journeyman :&gt; AgenticRole {</span>
+<span class="ln">            doc /* Engineering. Confirms the defect with a real artifact BEFORE</span>
+<span class="ln">                 * changing anything, closes no-change if the defect is not real,</span>
+<span class="ln">                 * reuses the SDK before writing new code, proves the fix with a</span>
+<span class="ln">                 * test that fails before and passes after, and opens a PR. It does</span>
+<span class="ln">                 * not merge, rebase or force-push — opening the PR is where the</span>
+<span class="ln">                 * role ends. */</span>
+<span class="ln">            attribute redefines name = &quot;Journeyman&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;factory/journeyman.prompt.md&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;issues: labeled(agent/fix)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = true;</span>
+<span class="ln">            attribute redefines modelTier = &quot;writer&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer = 140;   // raised from 70: two capped runs</span>
+<span class="ln">                                                  // produced no PR at all and cost more</span>
+<span class="ln">                                                  // than the headroom would have</span>
+<span class="ln">            part identity : NostrIdentity = Identity::journeymanIdentity;</span>
+<span class="ln">            part keyring : AgentKeyring;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def QA :&gt; AgenticRole {</span>
+<span class="ln">            doc /* Adversarial review in a FRESH context — it did not write the</span>
+<span class="ln">                 * code. Judges SEMANTICS (does the diff fix the stated issue; is</span>
+<span class="ln">                 * there a test that would fail without it; does it leak a secret,</span>
+<span class="ln">                 * reimplement SDK-owned crypto, or touch a money path). Wording</span>
+<span class="ln">                 * and doctrine belong to the deterministic linter, not to QA.</span>
+<span class="ln">                 * Reads the DIFF only; never checks out or runs head code. */</span>
+<span class="ln">            attribute redefines name = &quot;QA&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;inline in qa.yml&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;pull_request: opened, synchronize, reopened, labeled(agent/retriage)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer = 30;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def PRDialogue :&gt; AgenticRole {</span>
+<span class="ln">            doc /* The Journeyman answering the bench on the record. Read-only BY</span>
+<span class="ln">                 * CONSTRUCTION — no Edit/Write in allowedTools and both its tokens</span>
+<span class="ln">                 * are contents:read — which is precisely why ANYONE may summon it.</span>
+<span class="ln">                 * It carries a second, owner-wide, contents:READ-ONLY token wired</span>
+<span class="ln">                 * in as a git auth header so it can clone sibling repos to answer</span>
+<span class="ln">                 * &quot;why is this broken NOW&quot;; that token never enters the agent env. */</span>
+<span class="ln">            attribute redefines name = &quot;PR Dialogue&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;inline in pr-dialogue.yml&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;@journeyman mentioned on a PR (anyone)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer = 30;</span>
+<span class="ln">            part investigationToken : ScopedToken;   // owner-wide, contents: read</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def PRRevision :&gt; AgenticRole {</span>
+<span class="ln">            doc /* The Journeyman returning to the bench to make requested changes.</span>
+<span class="ln">                 * The ONLY role that is both human-triggered and write-capable, so</span>
+<span class="ln">                 * it substitutes a different mitigation for Dialogue&#x27;s read-only</span>
+<span class="ln">                 * construction: author_association == OWNER. */</span>
+<span class="ln">            attribute redefines name = &quot;PR Revision&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;factory/pr-revision.prompt.md&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;OWNER requests changes, or &#x27;@journeyman revise&#x27;&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = true;</span>
+<span class="ln">            attribute redefines modelTier = &quot;writer&quot;;</span>
+<span class="ln">            attribute maxTurns : Integer = 70;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def Digest :&gt; AgenticRole {</span>
+<span class="ln">            doc /* Role 4, the cross-repo Dispatcher — and the one role that is NOT</span>
+<span class="ln">                 * reusable: it runs only in dpyc-community, because that is the one</span>
+<span class="ln">                 * place with a fleet-wide view. Weekly it sweeps every repo&#x27;s open</span>
+<span class="ln">                 * and recently-rejected issues, reconciles whole escalation chains</span>
+<span class="ln">                 * (origin blocked/upstream -&gt; upstream issue -&gt; PR -&gt; release -&gt;</span>
+<span class="ln">                 * pin bump -&gt; origin close), and upserts one pinned digest issue.</span>
+<span class="ln">                 * Every rejected/* issue is listed, so a wrongly bounced patron is</span>
+<span class="ln">                 * rescued within the week. Reads fleet-wide; its token is</span>
+<span class="ln">                 * issues:write only, so it can report but never land anything.</span>
+<span class="ln">                 * It runs on the budget tier because nobody waits on the result —</span>
+<span class="ln">                 * a route that is nine times cheaper but takes 25 minutes is fine</span>
+<span class="ln">                 * here and disqualifying for triage or a merge-gating review. */</span>
+<span class="ln">            attribute redefines name = &quot;Digest&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;inline in digest.yml&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;schedule: weekly (Mon 13:00 UTC), workflow_dispatch&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute redefines modelTier = &quot;budget&quot;;</span>
+<span class="ln">            attribute reusable : Boolean = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def Housekeeper :&gt; AgenticRole {</span>
+<span class="ln">            doc /* Wears the Porter&#x27;s identity but is a separate role with its own</span>
+<span class="ln">                 * turn budget: a scheduled backlog sweep, deliberately NOT folded</span>
+<span class="ln">                 * into per-issue triage so triage stays bounded and decisive.</span>
+<span class="ln">                 * Evidence-required tidy actions only; never re-runs, rebases or</span>
+<span class="ln">                 * merges, and never touches sev/critical or money-path issues. */</span>
+<span class="ln">            attribute redefines name = &quot;Housekeeper&quot;;</span>
+<span class="ln">            attribute redefines promptFile = &quot;factory/housekeeper.prompt.md&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;schedule: weekly (Mon 13:17 UTC), workflow_dispatch&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- deterministic crew ----------------------------------------------</span>
+<span class="ln">        part def Escalation :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* The ONLY workflow that writes across repositories, and the only</span>
+<span class="ln">                 * one holding an account-wide token — downscoped to issues:write</span>
+<span class="ln">                 * ONLY. That pairing confines the blast radius to &quot;can file an</span>
+<span class="ln">                 * issue&quot;, never &quot;can change code&quot;. No LLM runs here: the escalation</span>
+<span class="ln">                 * comment was authored by a trusted agent and its home_repo is</span>
+<span class="ln">                 * checked against a fixed allowlist before any cross-repo write. */</span>
+<span class="ln">            attribute redefines name = &quot;Escalation&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;issues: labeled(blocked/upstream | rejected/upstream)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute allowlistedHomeRepos : Integer = 18;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def AutoMerge :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* Fires on qa/pass. Lands the PR only if EVERY changed file is on</span>
+<span class="ln">                 * a low-risk path; one code or money-adjacent file makes it a no-op</span>
+<span class="ln">                 * and CODEOWNERS takes over. There is no LLM because &quot;which paths</span>
+<span class="ln">                 * are safe to auto-land&quot; is policy, not judgement. GitHub — not</span>
+<span class="ln">                 * this workflow — enforces green CI, via required status checks. */</span>
+<span class="ln">            attribute redefines name = &quot;Auto-merge&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;pull_request: labeled(qa/pass)&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">            attribute lowRiskPathPattern : String =</span>
+<span class="ln">                &quot;(^|/)(docs|tests|frontend)/|\\.md$|(^|/)(README|CHANGELOG)(\\.[A-Za-z]+)?$&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def ApprovalMerge :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* Answers &quot;who repairs a Merge Oops&quot;: nobody has to. It only</span>
+<span class="ln">                 * ENABLES native auto-merge, which never merges on a red required</span>
+<span class="ln">                 * check or an unmet review — it holds the PR pending until the</span>
+<span class="ln">                 * gates go green. The owner&#x27;s approval IS the disposition; this</span>
+<span class="ln">                 * presses the button they would have pressed. It never checks out</span>
+<span class="ln">                 * or runs PR code, so the with-secrets review context is not an</span>
+<span class="ln">                 * injection surface. */</span>
+<span class="ln">            attribute redefines name = &quot;Merge on Approval&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;pull_request_review: submitted&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def DoctrineLint :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* The tripwires. A grep-shaped problem kept off QA&#x27;s plate: fast,</span>
+<span class="ln">                 * free, and it never hallucinates. Lints only CHANGED files, and</span>
+<span class="ln">                 * it is what makes &quot;don&#x27;t turn yourself off&quot; a checked property</span>
+<span class="ln">                 * rather than a promise the LLM is trusted to keep. */</span>
+<span class="ln">            attribute redefines name = &quot;Doctrine Lint&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;pull_request&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def DeployVerify :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* Proves a merge actually went live: probes the operator&#x27;s</span>
+<span class="ln">                 * *_service_status, reads build_info.fastmcp_cloud_git_commit_sha</span>
+<span class="ln">                 * and compares it to github.sha, retrying through the rebuild</span>
+<span class="ln">                 * window. Persistent staleness opens ONE agent/fix issue, which</span>
+<span class="ln">                 * hands the aware half back to the Journeyman. It is bash, not an</span>
+<span class="ln">                 * agent, for two reasons: an exact sha compare needs no LLM, and</span>
+<span class="ln">                 * claude-code-action cannot run on a `push` event at all. */</span>
+<span class="ln">            attribute redefines name = &quot;Deploy Verify&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;push: main&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def FundingSentinel :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* Runs as a plain shell step because a failing LLM step cannot</span>
+<span class="ln">                 * report its own failure. Classifies the agent transcript and tags</span>
+<span class="ln">                 * awaiting-funds ONLY on the exact credit-exhaustion shape. */</span>
+<span class="ln">            attribute redefines name = &quot;Funding Sentinel&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;failure() of an agentic step&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def CreditCanary :&gt; DeterministicRole {</span>
+<span class="ln">            doc /* The fleet&#x27;s awareness and auto-replay brain. Probes the shared</span>
+<span class="ln">                 * key every 30 minutes with a one-token request and reads the HTTP</span>
+<span class="ln">                 * result. Its token is owner-scoped precisely so the recovery sweep</span>
+<span class="ln">                 * can enumerate every repo the App is installed on — that</span>
+<span class="ln">                 * installation list IS the fleet&#x27;s DRY definition. */</span>
+<span class="ln">            attribute redefines name = &quot;Credit Canary&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;schedule: */30 * * * *, workflow_dispatch&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def BlockRetire :&gt; DeterministicRole {</span>
+<span class="ln">            attribute redefines name = &quot;Funding Block Retire&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;issue/PR closed while carrying awaiting-funds&quot;;</span>
+<span class="ln">            attribute redefines canWriteCode = false;</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  7. DISTRIBUTION — how a repo gets, and keeps, the common behavior.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Distribution {</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def CommunityRepo {</span>
+<span class="ln">            doc /* lonniev/dpyc-community — the Factory&#x27;s own home, and itself</span>
+<span class="ln">                 * onboarded to the Factory (its CODEOWNERS re-covers /factory/ and</span>
+<span class="ln">                 * /.github/ AFTER the *.md carve-out, because CODEOWNERS is</span>
+<span class="ln">                 * last-match-wins and the prompts are .md files). */</span>
+<span class="ln">            attribute name : String = &quot;dpyc-community&quot;;</span>
+<span class="ln">            part reusableWorkflows : ReusableWorkflow[0..*];</span>
+<span class="ln">            part canonicalCallers : ThinCaller[0..*];</span>
+<span class="ln">            part prompts : PromptFile[0..*];</span>
+<span class="ln">            part compositeActions : CompositeAction[0..*];</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def ReusableWorkflow {</span>
+<span class="ln">            attribute path : String;              // .github/workflows/&lt;role&gt;.yml</span>
+<span class="ln">            attribute trigger : String = &quot;workflow_call&quot;;</span>
+<span class="ln">            attribute humanOnly : Boolean = true; // the skeleton: permissions, tokens, tools</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def ThinCaller {</span>
+<span class="ln">            doc /* THIS is the security boundary. The caller&#x27;s `if:` expression</span>
+<span class="ln">                 * decides who may fire the role; the reusable decides what the</span>
+<span class="ln">                 * role may then do. Callers are byte-identical across the fleet. */</span>
+<span class="ln">            attribute path : String;              // .github/workflows/agentic-&lt;role&gt;.yml</span>
+<span class="ln">            attribute guardExpression : String;</span>
+<span class="ln">            attribute secretsInherit : Boolean = true;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def PromptFile {</span>
+<span class="ln">            attribute path : String;              // factory/&lt;role&gt;.prompt.md</span>
+<span class="ln">            attribute agentEditable : Boolean = true;   // by PR, gated by CODEOWNERS</span>
+<span class="ln">            attribute requiredAnchors : String;         // enforced by doctrine_lint</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def CompositeAction {</span>
+<span class="ln">            attribute path : String;              // factory/actions/&lt;name&gt;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Fan-out: scripts/sync-factory-callers.sh works in throwaway clones,</span>
+<span class="ln">         * opens one factory-callers-sync PR per repo, and is idempotent. */</span>
+<span class="ln">        action def SyncFactoryCallers { in repos : String[0..*]; }</span>
+<span class="ln">        action def ApplyLabels { in repo : String; }         // 32 labels, idempotent</span>
+<span class="ln">        action def SetPipelineSecrets { in repo : String; }  // App id + private key</span>
+<span class="ln">        action def BootstrapFactorySecrets;                  // PORTER_NSEC, JOURNEYMAN_NSEC, key</span>
+<span class="ln">        action def RequireCICChecks {</span>
+<span class="ln">            doc /* Refuses to require a context that has never posted on main —</span>
+<span class="ln">                 * that safety exists because two repos had required checks that</span>
+<span class="ln">                 * could never pass, hanging merges forever behind a name typo. */</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  8. STATE MACHINES</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Behavior {</span>
+<span class="ln">        private import Items::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- signals ---------------------------------------------------------</span>
+<span class="ln">        package Signals {</span>
+<span class="ln">            attribute def IssueOpened;         attribute def FieldReportFiled;</span>
+<span class="ln">            attribute def PorterRejects;       attribute def PorterNeedsInfo;</span>
+<span class="ln">            attribute def PorterRoutesLocal;   attribute def PorterRoutesUpstream;</span>
+<span class="ln">            attribute def EngineeringStarts;   attribute def NoChangeConfirmed;</span>
+<span class="ln">            attribute def PROpened;            attribute def TargetDeclines;</span>
+<span class="ln">            attribute def RouteBackDelivered;  attribute def PingPongDetected;</span>
+<span class="ln">            attribute def OwnerArbitrates;     attribute def FixPropagated;</span>
+<span class="ln">            attribute def CreditOutage;        attribute def CreditRestored;</span>
+<span class="ln">            attribute def ItemClosed;          attribute def RetriageApplied;</span>
+<span class="ln">            attribute def QAPasses;            attribute def QAFlags;</span>
+<span class="ln">            attribute def OwnerApproves;       attribute def OwnerRequestsChanges;</span>
+<span class="ln">            attribute def RevisionPushed;      attribute def ProtectionSatisfied;</span>
+<span class="ln">            attribute def LowRiskPathsOnly;    attribute def CodePathTouched;</span>
+<span class="ln">        }</span>
+<span class="ln">        private import Signals::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        //  8.1  Issue lifecycle — the Factory&#x27;s main line.</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        state def IssueLifecycle {</span>
+<span class="ln">            doc /* One issue, from intake to landed fix. The Porter takes EXACTLY</span>
+<span class="ln">                 * ONE routing action, which is why these branches are exclusive. */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            entry; then Opened;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            state Opened {</span>
+<span class="ln">                doc /* Intake. Either a human/Scout opens it, or the Escalation</span>
+<span class="ln">                     * workflow minted it as a child in a home repo. */</span>
+<span class="ln">            }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            state Triaging {</span>
+<span class="ln">                doc /* Porter. claim_issue heartbeat first (so a dashboard shows</span>
+<span class="ln">                     * work in progress, not only completion), then translate the</span>
+<span class="ln">                     * issue into an actionable spec, locate the code cheapest-tier</span>
+<span class="ln">                     * first, classify with exactly one type/sev/area, route once,</span>
+<span class="ln">                     * then record to the graph. */</span>
+<span class="ln">            }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            state Rejected   { doc /* closed: spam | out-of-scope | injection | wontfix | duplicate */ }</span>
+<span class="ln">            state NeedsInfo  { doc /* rejected/needs-info — the one rejection that stays OPEN */ }</span>
+<span class="ln">            state ReadyForEngineering { doc /* agent/fix applied, AFTER the handoff comment landed */ }</span>
+<span class="ln">            state Working    { doc /* agent/working stamped by the skeleton; cleared on any ending.</span>
+<span class="ln">                                    * A stale agent/working outliving its run IS the hung-run tell. */ }</span>
+<span class="ln">            state BlockedUpstream { doc /* escalation comment posted, THEN the label */ }</span>
+<span class="ln">            state Arbitration     { doc /* frozen for a human: a repo repeated, or 3+ hops */ }</span>
+<span class="ln">            state AwaitingFunds   { doc /* deferred by a dry key; the canary replays it */ }</span>
+<span class="ln">            state PRRaised;</span>
+<span class="ln">            state Closed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first Opened accept IssueOpened then Triaging;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first Triaging accept PorterRejects      then Rejected;</span>
+<span class="ln">            transition first Triaging accept PorterNeedsInfo    then NeedsInfo;</span>
+<span class="ln">            transition first Triaging accept PorterRoutesLocal  then ReadyForEngineering;</span>
+<span class="ln">            transition first Triaging accept PorterRoutesUpstream then BlockedUpstream;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first ReadyForEngineering accept EngineeringStarts then Working;</span>
+<span class="ln">            transition first Working accept PROpened          then PRRaised;</span>
+<span class="ln">            transition first Working accept NoChangeConfirmed then Closed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* The reverse path: a target repo declined, the reason came home, and</span>
+<span class="ln">             * the Porter re-homes with the decliner&#x27;s evidence and a durable</span>
+<span class="ln">             * passed-repos set it may never escalate back into. */</span>
+<span class="ln">            transition first BlockedUpstream accept RouteBackDelivered then Triaging;</span>
+<span class="ln">            transition first BlockedUpstream accept PingPongDetected   then Arbitration;</span>
+<span class="ln">            transition first BlockedUpstream accept FixPropagated      then Closed;</span>
+<span class="ln">            transition first Arbitration     accept OwnerArbitrates    then Triaging;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first NeedsInfo accept RetriageApplied then Triaging;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Funding is orthogonal to progress: any agentic state can be deferred</span>
+<span class="ln">             * and is replayed where it left off. */</span>
+<span class="ln">            transition first Triaging            accept CreditOutage then AwaitingFunds;</span>
+<span class="ln">            transition first ReadyForEngineering accept CreditOutage then AwaitingFunds;</span>
+<span class="ln">            transition first AwaitingFunds       accept CreditRestored then Triaging;</span>
+<span class="ln">            transition first AwaitingFunds       accept ItemClosed    then Closed;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first PRRaised accept FixPropagated then Closed;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        //  8.2  Pull request lifecycle — from bot branch to landed.</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        state def PullRequestLifecycle {</span>
+<span class="ln">            doc /* Two merge paths, both deterministic, and neither able to bypass</span>
+<span class="ln">                 * branch protection. The agent never merges its own work. */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            entry; then AwaitingQA;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            state AwaitingQA  { doc /* head must be same-repo AND agent/fix-* — a fork</span>
+<span class="ln">                                    * PR receives no secrets and simply does not run QA */ }</span>
+<span class="ln">            state UnderReview { doc /* QA reads the diff adversarially; it never checks out head */ }</span>
+<span class="ln">            state Flagged     { doc /* qa/flag — a concern stated in a review comment */ }</span>
+<span class="ln">            state Passed      { doc /* qa/pass */ }</span>
+<span class="ln">            state AwaitingHuman { doc /* CODEOWNERS holds it: a code or money-adjacent path */ }</span>
+<span class="ln">            state Revising    { doc /* agent/revising; PR Revision pushes to the head branch */ }</span>
+<span class="ln">            state AutoMergeArmed { doc /* native --auto enabled; GitHub holds it pending */ }</span>
+<span class="ln">            state Merged;</span>
+<span class="ln">            state PRAwaitingFunds;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first AwaitingQA  accept QAPasses then Passed;</span>
+<span class="ln">            transition first AwaitingQA  accept QAFlags  then Flagged;</span>
+<span class="ln">            transition first UnderReview accept QAPasses then Passed;</span>
+<span class="ln">            transition first UnderReview accept QAFlags  then Flagged;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Path A — path-gated auto-merge, no human, docs/tests/UI only. */</span>
+<span class="ln">            transition first Passed accept LowRiskPathsOnly then AutoMergeArmed;</span>
+<span class="ln">            /* Path B — anything touching code or money waits for the owner. */</span>
+<span class="ln">            transition first Passed accept CodePathTouched  then AwaitingHuman;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first AwaitingHuman accept OwnerApproves        then AutoMergeArmed;</span>
+<span class="ln">            transition first AwaitingHuman accept OwnerRequestsChanges then Revising;</span>
+<span class="ln">            transition first Flagged       accept OwnerRequestsChanges then Revising;</span>
+<span class="ln">            transition first Revising      accept RevisionPushed       then AwaitingQA;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* --auto NEVER lands on a red check; it waits. A bad merge is not a</span>
+<span class="ln">             * risk this design has to mitigate — it is one it cannot express. */</span>
+<span class="ln">            transition first AutoMergeArmed accept ProtectionSatisfied then Merged;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first AwaitingQA  accept CreditOutage   then PRAwaitingFunds;</span>
+<span class="ln">            transition first Revising    accept CreditOutage   then PRAwaitingFunds;</span>
+<span class="ln">            transition first PRAwaitingFunds accept CreditRestored then AwaitingQA;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        //  8.3  Funding lifecycle — the outage/replay machine.</span>
+<span class="ln">        // ---------------------------------------------------------------------</span>
+<span class="ln">        state def FundingLifecycle {</span>
+<span class="ln">            doc /* The `awaiting-funds` label is BOTH the outage marker (set</span>
+<span class="ln">                 * per item by the sentinel) and the replay work-list (swept by the</span>
+<span class="ln">                 * canary). The GitHub label is authoritative; the graph FundingBlock</span>
+<span class="ln">                 * is a best-effort mirror written over the sats rail, which is</span>
+<span class="ln">                 * orthogonal to the exhausted LLM credits — so &quot;what is awaiting</span>
+<span class="ln">                 * funds&quot; stays queryable while every LLM node is dark. */</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            entry; then Healthy;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            state Healthy   { doc /* probe returned HTTP 200 */ }</span>
+<span class="ln">            state Unknown   { doc /* transient 429/529 or network — neither raise nor</span>
+<span class="ln">                                  * clear, so the alarm cannot flap */ }</span>
+<span class="ln">            state Broke     { doc /* non-200 whose body names credit/billing/quota/spend */ }</span>
+<span class="ln">            state Deferring { doc /* items arriving now are tagged and parked */ }</span>
+<span class="ln">            state Replaying { doc /* fleet sweep over /installation/repositories */ }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first Healthy accept CreditOutage   then Broke;</span>
+<span class="ln">            transition first Broke   accept CreditRestored then Replaying;</span>
+<span class="ln">            transition first Replaying then Healthy;</span>
+<span class="ln">            transition first Healthy  then Unknown;</span>
+<span class="ln">            transition first Unknown  then Healthy;</span>
+<span class="ln">            transition first Broke    then Deferring;</span>
+<span class="ln">            transition first Deferring accept CreditRestored then Replaying;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* The per-item block, mirrored into the graph. */</span>
+<span class="ln">        state def FundingBlockLifecycle {</span>
+<span class="ln">            entry; then None;</span>
+<span class="ln">            state None;</span>
+<span class="ln">            state Active     { doc /* mark_funding_state(awaiting-funds) — BLOCKS edge live */ }</span>
+<span class="ln">            state Cleared    { doc /* mark_funding_state(clear) — canary recovery */ }</span>
+<span class="ln">            state Historical { doc /* retire_funding_block — the item closed while awaiting,</span>
+<span class="ln">                                    * so its deferred pass will never run: break BLOCKS,</span>
+<span class="ln">                                    * keep the node as a record */ }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            transition first None    accept CreditOutage   then Active;</span>
+<span class="ln">            transition first Active  accept CreditRestored then Cleared;</span>
+<span class="ln">            transition first Active  accept ItemClosed     then Historical;</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    //  9. GUARDS — who may change what. These are the load-bearing requirements;</span>
+<span class="ln">    //     most are enforced deterministically, in CI or by token scope, rather</span>
+<span class="ln">    //     than by trusting a prompt.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Guards {</span>
+<span class="ln">        private import Roles::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G1&gt; NoSelfModificationOfPowers {</span>
+<span class="ln">            doc /* The structural leash. The DPYC Agentic Desk App holds no</span>
+<span class="ln">                 * `workflows: write`, so an agent token cannot push an edit to</span>
+<span class="ln">                 * .github/workflows/ even if it wanted to — and doctrine_lint</span>
+<span class="ln">                 * fails the build red on any diff that adds that permission.</span>
+<span class="ln">                 * An agent may propose a PROMPT change by PR; it may never change</span>
+<span class="ln">                 * the skeleton that grants it its powers. */</span>
+<span class="ln">            subject app : Platform::GitHubApp;</span>
+<span class="ln">            require constraint { app.hasWorkflowsWrite == false }</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G2&gt; NoSelfMerge {</span>
+<span class="ln">            doc /* An agent&#x27;s --allowedTools may never contain `gh pr review`</span>
+<span class="ln">                 * (self-approval), `Bash(gh:*)` or `Bash(gh pr:*)` (over-broad</span>
+<span class="ln">                 * grants that would smuggle in `gh pr merge`), or an unqualified</span>
+<span class="ln">                 * or --admin `gh pr merge`. The GATED form `gh pr merge --auto` IS</span>
+<span class="ln">                 * allowed: native auto-merge cannot bypass the owner&#x27;s review or a</span>
+<span class="ln">                 * red check. auto-merge.yml and approval-merge.yml legitimately</span>
+<span class="ln">                 * merge, but they are not agent-driven, so they are never checked. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G3&gt; CodeownersMoneyGate {</span>
+<span class="ln">            doc /* Every factory repo&#x27;s CODEOWNERS must retain the `* @lonniev`</span>
+<span class="ln">                 * catch-all: branch protection&#x27;s require_code_owner_reviews leans</span>
+<span class="ln">                 * on that line to gate every path. Required approvals is 0 so</span>
+<span class="ln">                 * docs/tests can still auto-land, and enforce_admins is false so</span>
+<span class="ln">                 * the owner keeps an --admin escape hatch. Required status checks</span>
+<span class="ln">                 * are per-repo (fleet CI names differ) and never blanket-pinned —</span>
+<span class="ln">                 * a guessed context name jams merges forever. */</span>
+<span class="ln">            subject repo : Distribution::CommunityRepo;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G4&gt; ForkPRsGetNoSecrets {</span>
+<span class="ln">            doc /* Every agentic caller uses `pull_request`, never</span>
+<span class="ln">                 * `pull_request_target`. The latter runs in the base-repo context</span>
+<span class="ln">                 * WITH secrets, and relying on an `if` guard to keep a fork out is</span>
+<span class="ln">                 * fragile; a blanket ban is auditable. doctrine_lint hard-fails on</span>
+<span class="ln">                 * the string. QA additionally requires head.repo == this repo. */</span>
+<span class="ln">            subject caller : Distribution::ThinCaller;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G5&gt; WriteCapableRolesAreOwnerGated {</span>
+<span class="ln">            doc /* PR Revision is the only role that is both human-triggered and</span>
+<span class="ln">                 * write-capable, so it requires author_association == &#x27;OWNER&#x27; on</span>
+<span class="ln">                 * either entry point. PR Dialogue, which anyone may summon, pays</span>
+<span class="ln">                 * for that openness by being read-only BY CONSTRUCTION — no</span>
+<span class="ln">                 * Edit/Write tools and contents:read tokens, so even a coerced</span>
+<span class="ln">                 * `git push` fails. The two carry mutually-negative guards so they</span>
+<span class="ln">                 * never fire on the same event. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G6&gt; CrossRepoWritesAreIssuesOnly {</span>
+<span class="ln">            doc /* Escalation is the ONLY cross-repo writer. Its token is</span>
+<span class="ln">                 * account-wide but permission-issues:write only, and the target</span>
+<span class="ln">                 * `home_repo` parsed from the agent&#x27;s comment is validated against</span>
+<span class="ln">                 * a fixed 18-repo allowlist by word-boundary match before any</span>
+<span class="ln">                 * write. Widened scope is always paired with narrowed permission. */</span>
+<span class="ln">            subject role : Escalation;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G7&gt; NoPingPong {</span>
+<span class="ln">            doc /* A declined escalation routes its REASON back to the origin and</span>
+<span class="ln">                 * reactivates that repo&#x27;s Porter, which must consult the durable</span>
+<span class="ln">                 * passed_repos set and pick a DIFFERENT home. Escalation is</span>
+<span class="ln">                 * idempotent PER HOME — a stale escalation to a repo that later</span>
+<span class="ln">                 * declined must not block a re-home, which is exactly the dead end</span>
+<span class="ln">                 * an unscoped &quot;already escalated&quot; check created. A repeated repo,</span>
+<span class="ln">                 * or three hops, freezes the issue as blocked/arbitration for a</span>
+<span class="ln">                 * human instead of bouncing it again. */</span>
+<span class="ln">            subject role : Escalation;</span>
+<span class="ln">            require constraint { true }   // hops &lt; 3 and no repeat in passed_repos</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G8&gt; UntrustedInputIsAlwaysData {</span>
+<span class="ln">            doc /* Issue bodies, PR comments and reviews are untrusted input aimed</span>
+<span class="ln">                 * at an agent. Defense is layered, not singular: every prompt says</span>
+<span class="ln">                 * so explicitly; --allowedTools carries no curl, bash -c, eval or</span>
+<span class="ln">                 * rm, so an injected instruction cannot reach the network or</span>
+<span class="ln">                 * destroy the tree; each `gh` subcommand is enumerated; the agent</span>
+<span class="ln">                 * holds no secrets; and its token is scoped to one repo. An</span>
+<span class="ln">                 * injection ATTEMPT is itself grounds to classify and close. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G9&gt; SecretsNeverEnterTheAgentShell {</span>
+<span class="ln">            doc /* An agent&#x27;s nsec lives only in the keyring subprocess&#x27;s env,</span>
+<span class="ln">                 * declared in claude-code-action&#x27;s per-server --mcp-config block —</span>
+<span class="ln">                 * isolated from the agent&#x27;s own shell. PR Dialogue&#x27;s owner-wide</span>
+<span class="ln">                 * investigation token is likewise wired in as a global git auth</span>
+<span class="ln">                 * header, never as an environment variable the agent can read. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G10&gt; ProvenanceCannotBeForged {</span>
+<span class="ln">            doc /* An agent writing to the memory graph may only ever record</span>
+<span class="ln">                 * `llm-inferred-unverified`. cypher-mcp hard-codes that value as a</span>
+<span class="ln">                 * Cypher LITERAL inside the named write template rather than</span>
+<span class="ln">                 * accepting it as a parameter, so there is no argument an agent</span>
+<span class="ln">                 * could pass to claim human authority. The agent proposes; the</span>
+<span class="ln">                 * human legislates. */</span>
+<span class="ln">            subject graph : IntentionGraph::CypherOperator;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G11&gt; PromptsRetainSafetyAnchors {</span>
+<span class="ln">            doc /* Because the crew may evolve its own prompts by PR, doctrine_lint</span>
+<span class="ln">                 * asserts each registered prompt still contains its anchors:</span>
+<span class="ln">                 * SECURITY and UNTRUSTED for every role, plus MANDATORY OUTCOME for</span>
+<span class="ln">                 * the two that must never end silently (Porter, PR Revision). An</span>
+<span class="ln">                 * unregistered prompt file is silently unlinted, so registering a</span>
+<span class="ln">                 * new role&#x27;s anchors is step 2 of adding a role. */</span>
+<span class="ln">            subject prompt : Distribution::PromptFile;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G12&gt; ContainmentIsFunding {</span>
+<span class="ln">            doc /* The human&#x27;s only routine oversight is FUNDING the balances. Each</span>
+<span class="ln">                 * agent is a patron holding its own nsec and buying its own graph</span>
+<span class="ln">                 * writes with sats; fund the Porter thin and the Journeyman</span>
+<span class="ln">                 * thicker. A drained agent still triages and labels — it just</span>
+<span class="ln">                 * stops writing to the graph. Graph writes are non-fatal</span>
+<span class="ln">                 * everywhere by design, so degradation is graceful rather than a</span>
+<span class="ln">                 * pipeline stall. */</span>
+<span class="ln">            subject role : AgenticRole;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G13&gt; AnOutageDefersRatherThanFails {</span>
+<span class="ln">            doc /* A dry key makes claude-code-action fail on turn 1 with</span>
+<span class="ln">                 * is_error:true, num_turns&lt;=1 and total_cost_usd==0 — rejected</span>
+<span class="ln">                 * before any work, billed nothing. That EXACT shape is the only</span>
+<span class="ln">                 * thing treated as an outage, so a genuine agent failure (which</span>
+<span class="ln">                 * shows real turns, real cost, and often permission denials) is</span>
+<span class="ln">                 * never mislabeled &quot;out of money&quot; and quietly retried forever. */</span>
+<span class="ln">            subject sentinel : FundingSentinel;</span>
+<span class="ln">            require constraint {</span>
+<span class="ln">                /* is_error &amp;&amp; num_turns &lt;= 1 &amp;&amp; total_cost_usd == 0 */ true</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        requirement def &lt;G14&gt; JudgementGetsAnAgentPolicyGetsBash {</span>
+<span class="ln">            doc /* The recurring design rule behind the crew roster. &quot;Does this</span>
+<span class="ln">                 * diff actually fix the issue&quot; is judgement — an agent. &quot;The owner</span>
+<span class="ln">                 * approved&quot;, &quot;every changed path is docs&quot;, &quot;the deployed sha</span>
+<span class="ln">                 * equals the merge sha&quot; are facts — bash. Deterministic roles are</span>
+<span class="ln">                 * immune to prompt injection AND to a dry key, which is why the</span>
+<span class="ln">                 * merge, escalation, lint and verify gates are all LLM-free. */</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    // 10. THE FLEET — instantiation.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Fleet {</span>
+<span class="ln">        private import Distribution::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def FactoryRepo {</span>
+<span class="ln">            doc /* A repo onboarded to the Factory: 32 labels, thin callers,</span>
+<span class="ln">                 * CODEOWNERS money gate, branch protection matching its OWN CI</span>
+<span class="ln">                 * context names, and the two App secrets plus the two agent nsecs. */</span>
+<span class="ln">            attribute name : String;</span>
+<span class="ln">            attribute language : String;</span>
+<span class="ln">            attribute runner : String = &quot;ubuntu-latest&quot;;</span>
+<span class="ln">            attribute ciContext : String = &quot;test (3.12)&quot;;</span>
+<span class="ln">            part callers : ThinCaller[0..*];</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part def SwiftFactoryRepo :&gt; FactoryRepo {</span>
+<span class="ln">            doc /* Detected by the Engineering/Revision `detect` job, which probes</span>
+<span class="ln">                 * for *.xcodeproj, *.xcworkspace or Package.swift within depth 3.</span>
+<span class="ln">                 * macOS runners bill roughly ten times ubuntu minutes, so the gate</span>
+<span class="ln">                 * keeps them to repos that genuinely need Xcode. */</span>
+<span class="ln">            attribute redefines runner = &quot;macos-latest&quot;;</span>
+<span class="ln">            attribute redefines ciContext = &quot;build&quot;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part community  : CommunityRepo;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        part sdk        : FactoryRepo { attribute redefines name = &quot;tollbooth-dpyc&quot;;</span>
+<span class="ln">                                        attribute redefines ciContext = &quot;test (3.12), test (3.13)&quot;; }</span>
+<span class="ln">        part sample     : FactoryRepo { attribute redefines name = &quot;tollbooth-sample&quot;; }</span>
+<span class="ln">        part schwab     : FactoryRepo { attribute redefines name = &quot;schwab-mcp&quot;; }</span>
+<span class="ln">        part cypher     : FactoryRepo { attribute redefines name = &quot;cypher-mcp&quot;; }</span>
+<span class="ln">        part excalibur  : FactoryRepo { attribute redefines name = &quot;excalibur-mcp&quot;; }</span>
+<span class="ln">        part optionality: FactoryRepo { attribute redefines name = &quot;optionality-mcp&quot;; }</span>
+<span class="ln">        part taxsort    : FactoryRepo { attribute redefines name = &quot;taxsort-mcp&quot;; }</span>
+<span class="ln">        part thebrain   : FactoryRepo { attribute redefines name = &quot;thebrain-mcp&quot;; }</span>
+<span class="ln">        part oracle     : FactoryRepo { attribute redefines name = &quot;dpyc-oracle&quot;; }</span>
+<span class="ln">        part authority  : FactoryRepo { attribute redefines name = &quot;tollbooth-authority&quot;; }</span>
+<span class="ln">        part authorityNE: FactoryRepo { attribute redefines name = &quot;tollbooth-authority-newengland&quot;; }</span>
+<span class="ln">        part authorityNA: FactoryRepo { attribute redefines name = &quot;tollbooth-authority-northamerica&quot;; }</span>
+<span class="ln">        part oauth2     : FactoryRepo { attribute redefines name = &quot;tollbooth-oauth2-collector&quot;; }</span>
+<span class="ln">        part shortlinks : FactoryRepo { attribute redefines name = &quot;tollbooth-shortlinks&quot;; }</span>
+<span class="ln">        part wasmcp     : FactoryRepo { attribute redefines name = &quot;tollbooth-wasmcp&quot;; }</span>
+<span class="ln">        part fermyon    : FactoryRepo { attribute redefines name = &quot;tollbooth-fermyon&quot;; }</span>
+<span class="ln">        part studio     : SwiftFactoryRepo { attribute redefines name = &quot;tollbooth-pricing-studio&quot;; }</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    // 11. DEPLOYMENT — the running Factory, as instances.</span>
+<span class="ln">    //     Sections 1-10 define what a role IS; this is the one crew that exists,</span>
+<span class="ln">    //     and it is what the assurance case in section 12 binds its guards to.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Deployment {</span>
+<span class="ln">        private import Roles::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- the shared platform ------------------------------------------</span>
+<span class="ln">        part desk : Platform::GitHubApp {</span>
+<span class="ln">            doc /* One installation, account-wide, across the whole fleet. Its</span>
+<span class="ln">                 * permission SET is the leash every other guard leans on. */</span>
+<span class="ln">        }</span>
+<span class="ln">        part inference : Platform::OpenRouter;</span>
+<span class="ln">        part caller : Platform::ScopedToken;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- the crew ------------------------------------------------------</span>
+<span class="ln">        part scout       : Scout;</span>
+<span class="ln">        part porter      : Porter;</span>
+<span class="ln">        part journeyman  : Journeyman;</span>
+<span class="ln">        part qa          : QA;</span>
+<span class="ln">        part dialogue    : PRDialogue;</span>
+<span class="ln">        part revision    : PRRevision;</span>
+<span class="ln">        part housekeeper : Housekeeper;</span>
+<span class="ln">        part digest      : Digest;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- the deterministic gates ---------------------------------------</span>
+<span class="ln">        part escalation   : Escalation;</span>
+<span class="ln">        part autoMerge    : AutoMerge;</span>
+<span class="ln">        part approvalMerge: ApprovalMerge;</span>
+<span class="ln">        part doctrineLint : DoctrineLint;</span>
+<span class="ln">        part deployVerify : DeployVerify;</span>
+<span class="ln">        part sentinel     : FundingSentinel;</span>
+<span class="ln">        part canary       : CreditCanary;</span>
+<span class="ln">        part blockRetire  : BlockRetire;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- what the crew is made of ---------------------------------------</span>
+<span class="ln">        part thinCaller  : Distribution::ThinCaller;</span>
+<span class="ln">        part porterPrompt : Distribution::PromptFile {</span>
+<span class="ln">            doc /* factory/porter.prompt.md — the crew-editable half. */</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- the sats rail, wired ------------------------------------------</span>
+<span class="ln">        part keyring : Identity::AgentKeyring;</span>
+<span class="ln">        part graph   : IntentionGraph::CypherOperator;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        interface graphRail : Identity::GraphChannel</span>
+<span class="ln">            connect keyring.graphTools to graph.patronCalls;</span>
+<span class="ln">    }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    // 12. ASSURANCE — every guard bound to what bears it and what proves it.</span>
+<span class="ln">    //</span>
+<span class="ln">    //     The point of this section is that none of these verifications is a</span>
+<span class="ln">    //     review checklist. Each one names a deterministic artifact that already</span>
+<span class="ln">    //     runs: a linter rule, a token permission, a caller expression, a Cypher</span>
+<span class="ln">    //     literal. If a guard here has no mechanism beside it, that is a finding</span>
+<span class="ln">    //     about the Factory, not about the model.</span>
+<span class="ln">    // =========================================================================</span>
+<span class="ln">    package Assurance {</span>
+<span class="ln">        private import Guards::*;</span>
+<span class="ln">        private import Deployment::*;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- who bears each guard -------------------------------------------</span>
+<span class="ln">        satisfy requirement NoSelfModificationOfPowers by desk;</span>
+<span class="ln">        satisfy requirement NoSelfMerge by journeyman;</span>
+<span class="ln">        satisfy requirement NoSelfMerge by revision;</span>
+<span class="ln">        satisfy requirement CodeownersMoneyGate by Fleet::community;</span>
+<span class="ln">        satisfy requirement ForkPRsGetNoSecrets by thinCaller;</span>
+<span class="ln">        satisfy requirement WriteCapableRolesAreOwnerGated by revision;</span>
+<span class="ln">        satisfy requirement CrossRepoWritesAreIssuesOnly by escalation;</span>
+<span class="ln">        satisfy requirement NoPingPong by escalation;</span>
+<span class="ln">        satisfy requirement UntrustedInputIsAlwaysData by porter;</span>
+<span class="ln">        satisfy requirement SecretsNeverEnterTheAgentShell by keyring;</span>
+<span class="ln">        satisfy requirement ProvenanceCannotBeForged by graph;</span>
+<span class="ln">        satisfy requirement PromptsRetainSafetyAnchors by porterPrompt;</span>
+<span class="ln">        satisfy requirement ContainmentIsFunding by journeyman;</span>
+<span class="ln">        satisfy requirement AnOutageDefersRatherThanFails by sentinel;</span>
+<span class="ln">        satisfy requirement JudgementGetsAnAgentPolicyGetsBash by approvalMerge;</span>
+<span class="ln">        satisfy requirement JudgementGetsAnAgentPolicyGetsBash by escalation;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        // --- what proves it, and where that thing lives ----------------------</span>
+<span class="ln">        verification def &lt;VC1&gt; DoctrineLintOnEveryPR {</span>
+<span class="ln">            doc /* scripts/doctrine_lint.py, run by doctrine-lint.yml on the CHANGED</span>
+<span class="ln">                 * files of every PR. Four rule tables: banned workflow triggers and</span>
+<span class="ln">                 * permissions, forbidden --allowedTools verbs, the CODEOWNERS</span>
+<span class="ln">                 * catch-all, and the per-prompt safety anchors. Deterministic grep —</span>
+<span class="ln">                 * it cannot hallucinate a pass, and it fails the build red. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC2&gt; AppPermissionSet {</span>
+<span class="ln">            doc /* The permissions granted to the DPYC Agentic Desk installation.</span>
+<span class="ln">                 * Verified by absence: no `workflows: write` exists to be used. This</span>
+<span class="ln">                 * is the only check in the set that holds even if every other one is</span>
+<span class="ln">                 * deleted, which is why it is the leash and not merely a rule. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC3&gt; CallerGuardExpression {</span>
+<span class="ln">            doc /* The `if:` on the thin caller — who may fire a role at all. It lives</span>
+<span class="ln">                 * in the human-only skeleton, so an agent cannot widen the gate that</span>
+<span class="ln">                 * admits it. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC4&gt; TokenScopeAtMint {</span>
+<span class="ln">            doc /* The inputs to actions/create-github-app-token@v2 at each mint:</span>
+<span class="ln">                 * omitting `owner`/`repositories` scopes to this repo; widening scope</span>
+<span class="ln">                 * is always paired with a narrowing `permission-*`. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC5&gt; AllowedToolsEnumeration {</span>
+<span class="ln">            doc /* The --allowedTools string itself: no curl, bash -c, eval or rm, and</span>
+<span class="ln">                 * every gh subcommand named individually so a broad grant cannot</span>
+<span class="ln">                 * smuggle in a merge. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC6&gt; McpConfigEnvIsolation {</span>
+<span class="ln">            doc /* The per-server `env` block of --mcp-config. The nsec is reachable by</span>
+<span class="ln">                 * the keyring subprocess and by nothing else the agent can read. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC7&gt; CypherWriteTemplateLiteral {</span>
+<span class="ln">            doc /* The operator&#x27;s named write template, where the provenance value is a</span>
+<span class="ln">                 * Cypher literal rather than a parameter. There is no argument an</span>
+<span class="ln">                 * agent could pass to claim human authority. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC8&gt; PatronBalance {</span>
+<span class="ln">            doc /* The agent&#x27;s own sats balance at cypher-mcp. Not a policy check — the</span>
+<span class="ln">                 * balance simply runs out, and the agent degrades to GitHub-only work. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC9&gt; OutageSignatureClassifier {</span>
+<span class="ln">            doc /* factory/actions/funding-sentinel/detect_signature.py — is_error and</span>
+<span class="ln">                 * num_turns &lt;= 1 and total_cost_usd == 0, and nothing else. A real</span>
+<span class="ln">                 * failure has turns and cost, so it is never deferred as an outage. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC10&gt; RoleRosterAudit {</span>
+<span class="ln">            doc /* The roster itself: every gate that can land code is a bash job with</span>
+<span class="ln">                 * no model behind it. Verified by reading the workflow set — the crew</span>
+<span class="ln">                 * table in factory/README.md is its human-readable form. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC11&gt; RouteHistoryHopCount {</span>
+<span class="ln">            doc /* The dpyc-route-history marker on the origin issue: a repeat repo or</span>
+<span class="ln">                 * a third hop freezes the issue for a human rather than bouncing it. */</span>
+<span class="ln">        }</span>
+<span class="ln">        verification def &lt;VC12&gt; BranchProtectionProfile {</span>
+<span class="ln">            doc /* scripts/require_ci_checks.py — require_code_owner_reviews with zero</span>
+<span class="ln">                 * required approvals, merged onto each repo&#x27;s OWN posted check names.</span>
+<span class="ln">                 * It refuses to require a context that has never posted, which is what</span>
+<span class="ln">                 * stops a typo from jamming merges forever. */</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        verification lintHolds : VC1 {</span>
+<span class="ln">            verify requirement NoSelfModificationOfPowers;</span>
+<span class="ln">            verify requirement NoSelfMerge;</span>
+<span class="ln">            verify requirement CodeownersMoneyGate;</span>
+<span class="ln">            verify requirement ForkPRsGetNoSecrets;</span>
+<span class="ln">            verify requirement PromptsRetainSafetyAnchors;</span>
+<span class="ln">            verify requirement UntrustedInputIsAlwaysData;</span>
+<span class="ln">        }</span>
+<span class="ln">        verification appScopeHolds : VC2 {</span>
+<span class="ln">            verify requirement NoSelfModificationOfPowers;</span>
+<span class="ln">            verify requirement CrossRepoWritesAreIssuesOnly;</span>
+<span class="ln">        }</span>
+<span class="ln">        verification callerGateHolds : VC3 {</span>
+<span class="ln">            verify requirement WriteCapableRolesAreOwnerGated;</span>
+<span class="ln">            verify requirement ForkPRsGetNoSecrets;</span>
+<span class="ln">        }</span>
+<span class="ln">        verification tokenScopeHolds : VC4 {</span>
+<span class="ln">            verify requirement CrossRepoWritesAreIssuesOnly;</span>
+<span class="ln">            verify requirement SecretsNeverEnterTheAgentShell;</span>
+<span class="ln">        }</span>
+<span class="ln">        verification toolGrantHolds : VC5 {</span>
+<span class="ln">            verify requirement NoSelfMerge;</span>
+<span class="ln">            verify requirement UntrustedInputIsAlwaysData;</span>
+<span class="ln">        }</span>
+<span class="ln">        verification nsecIsolated : VC6 { verify requirement SecretsNeverEnterTheAgentShell; }</span>
+<span class="ln">        verification provenanceHolds : VC7 { verify requirement ProvenanceCannotBeForged; }</span>
+<span class="ln">        verification balanceContains : VC8 { verify requirement ContainmentIsFunding; }</span>
+<span class="ln">        verification outageClassified : VC9 { verify requirement AnOutageDefersRatherThanFails; }</span>
+<span class="ln">        verification rosterHolds : VC10 { verify requirement JudgementGetsAnAgentPolicyGetsBash; }</span>
+<span class="ln">        verification noBounce : VC11 { verify requirement NoPingPong; }</span>
+<span class="ln">        verification protectionHolds : VC12 { verify requirement CodeownersMoneyGate; }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+</pre></div>
+
+  <footer class="colophon-end">
+    <p>Generated from the repository&rsquo;s own sources: the 32-label taxonomy is
+    <code>scripts/apply_labels.sh</code>, the role behavior is <code>factory/*.prompt.md</code>,
+    the guards are <code>scripts/doctrine_lint.py</code> and the caller
+    <code>if:</code> expressions. Semantic colours on this page are the fleet&rsquo;s
+    actual label colours.</p>
+  </footer>
+</div>

@@ -411,11 +411,18 @@ escalated at most once while a re-home stays possible.
 
 ## 7. Guard map — who can change what
 
+Most of these are enforced by something in this repository — a linter rule, a token scope, a
+caller expression — so reading the code tells you whether they hold. **G3 is the exception:
+branch protection is live server-side state that no file here controls.** It was documented as
+holding fleet-wide while six repos had no gate at all. Where a guard's mechanism is
+configuration rather than code, the table says when it was last verified, not that it is
+currently true.
+
 | # | Guard | Enforced by | Mechanism, not a promise |
 |---|---|---|---|
 | G1 | An agent cannot change the powers it is granted | GitHub App scope + `doctrine_lint` | The App holds no `workflows: write`, so the token *cannot* push a `.github/workflows/` edit; the linter fails red if a diff adds the permission |
 | G2 | No self-merge, no self-approval | `doctrine_lint` on `--allowedTools` | Bans `gh pr review`, `Bash(gh:*)`, `Bash(gh pr:*)`, bare and `--admin` `gh pr merge`; permits only the gated `gh pr merge --auto` |
-| G3 | Money paths need a human | CODEOWNERS + branch protection | `* @lonniev` catch-all with `require_code_owner_reviews`; approvals set to 0 so docs still auto-land; `enforce_admins` false keeps the owner's escape hatch |
+| G3 | Money paths need a human | CODEOWNERS + branch protection | `* @lonniev` catch-all with `require_code_owner_reviews`; approvals set to 0 so docs still auto-land; `enforce_admins` false keeps the owner's escape hatch. **Live server-side config, not code — it drifts.** An audit on 2026-07-29 found six repos with no gate at all; all 19 corrected, and `require_ci_checks.py` now *sets* the profile rather than preserving what it finds. Nothing schedules that audit, so read a green G3 as "true when someone last ran it" |
 | G4 | Fork PRs get no secrets | `pull_request` only, banned `pull_request_target` | The trigger is banned outright rather than guarded by an `if`, because a blanket ban is auditable |
 | G5 | Write-capable + human-triggered ⇒ owner-only | Caller `if:` expression | PR Revision requires `author_association == 'OWNER'`; PR Dialogue pays for open access by having no write tools and `contents: read` tokens |
 | G6 | Cross-repo writes are issues-only | Token permission + allowlist | Account-wide token downscoped to `permission-issues: write`; `home_repo` word-boundary-matched against 18 repos before any write |

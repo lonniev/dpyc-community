@@ -51,7 +51,7 @@
       "changelog_url": "https://github.com/lonniev/optionality-mcp/releases"
     },
     "cypher-mcp": {
-      "current": "0.6.0",
+      "current": "0.7.0",
       "minimum": "0.3.0",
       "changelog_url": "https://github.com/lonniev/cypher-mcp/releases"
     },

@@ -951,7 +951,24 @@ package DPYCSoftwareFactory {
                  * docs/tests can still auto-land, and enforce_admins is false so
                  * the owner keeps an --admin escape hatch. Required status checks
                  * are per-repo (fleet CI names differ) and never blanket-pinned —
-                 * a guessed context name jams merges forever. */
+                 * a guessed context name jams merges forever.
+                 *
+                 * UNLIKE MOST GUARDS HERE, THIS ONE LIVES IN LIVE CONFIGURATION, NOT
+                 * IN CODE. Branch protection is server-side state on each repository;
+                 * nothing in this repo can make it true, and reading this file tells
+                 * you what is intended rather than what is set. It drifts, and it had:
+                 * an audit on 2026-07-29 found SIX repos with no code-owner review at
+                 * all — tollbooth-sample, schwab-mcp, excalibur-mcp, taxsort-mcp,
+                 * tollbooth-oauth2-collector and tollbooth-authority — while this
+                 * requirement was documented as holding fleet-wide. All nineteen were
+                 * corrected the same day.
+                 *
+                 * A second gap is open: CODEOWNERS CONTENT is not uniform.
+                 * tollbooth-sample scopes ownership to paths (/src/, /pyproject.toml,
+                 * /uv.lock, /.github/) rather than carrying the catch-all this
+                 * requirement states, so a new top-level file there is ungated. The
+                 * doctrine linter checks the catch-all only on CODEOWNERS files a PR
+                 * actually touches, so a repo that never edits its own is never asked. */
             subject repo : Distribution::CommunityRepo;
         }
 
@@ -1191,6 +1208,14 @@ package DPYCSoftwareFactory {
     //     runs: a linter rule, a token permission, a caller expression, a Cypher
     //     literal. If a guard here has no mechanism beside it, that is a finding
     //     about the Factory, not about the model.
+    //
+    //     And a mechanism is only worth as much as what it ASSERTS. VC12 stood here
+    //     for weeks naming a real script that really ran and really reported success
+    //     — while six repos sat unguarded, because the script preserved the state it
+    //     found instead of setting the state doctrine requires. A verification that
+    //     inherits its answer from the thing it is meant to check proves nothing. When
+    //     reading this section, ask of each entry not "does something run" but "what
+    //     would this fail on".
     // =========================================================================
     package Assurance {
         private import Guards::*;
@@ -1279,10 +1304,24 @@ package DPYCSoftwareFactory {
                  * re-toggling a label during someone else's run. */
         }
         verification def <VC12> BranchProtectionProfile {
-            doc /* scripts/require_ci_checks.py — require_code_owner_reviews with zero
-                 * required approvals, merged onto each repo's OWN posted check names.
-                 * It refuses to require a context that has never posted, which is what
-                 * stops a typo from jamming merges forever. */
+            doc /* scripts/require_ci_checks.py — it SETS require_code_owner_reviews with
+                 * zero required approvals, merged onto each repo's OWN posted check names,
+                 * and refuses to require a context that has never posted, which is what
+                 * stops a typo from jamming merges forever.
+                 *
+                 * "Sets", as of 2026-07-29. It used to re-send whatever profile it found,
+                 * which for a repo created without the gate meant faithfully re-sending
+                 * its ABSENCE — while reporting success. Its docstring promised not to
+                 * weaken the money gate and kept that promise vacuously: there was
+                 * nothing there to weaken. It also short-circuited on "contexts already
+                 * match", so the six unguarded repos never reached the payload builder.
+                 * Running it on them was a no-op that read as confirmation.
+                 *
+                 * WHAT THIS VERIFICATION DOES NOT GIVE YOU: it is a command a human runs.
+                 * Nothing schedules it. It proves the profile was correct at the moment
+                 * of the last run and says nothing about now, so the honest reading of a
+                 * green G3 is "true when someone last checked". Making that continuous
+                 * would mean running the audit on a schedule and complaining on drift. */
         }
 
         verification lintHolds : VC1 {

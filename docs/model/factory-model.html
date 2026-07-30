@@ -24,8 +24,9 @@
   --code-bg:    #eceef4;
   --chip-ink:   #ffffff;
 
-  --measure: 68ch;
-  --rail: 8.5rem;
+  /* One width for prose and figures alike: text that stops short of the diagrams
+     reads as two documents sharing a page. */
+  --measure: 100%;
 
   --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --serif: ui-serif, Georgia, "Iowan Old Style", Cambria, "Times New Roman", serif;
@@ -71,7 +72,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.65;
   -webkit-text-size-adjust: 100%;
 }
@@ -85,8 +86,8 @@ body {
   gap: 3.25rem;
 }
 
-/* Reading column sits to the right of a gutter rail on wide screens. The rail
-   carries the section marks, so numbering stays out of the prose measure. */
+/* Every block shares the page container's width, so prose and figures align on the same
+   left and right edges. */
 .prose,
 .contents,
 .masthead,
@@ -96,7 +97,6 @@ body {
 .listing {
   margin-inline: auto;
   width: 100%;
-  max-width: 60rem;
 }
 
 .prose {
@@ -256,7 +256,7 @@ body {
 }
 
 /* -------------------------------------------------------------- prose type */
-.prose > * { max-width: var(--measure); }
+.prose > * { max-width: 100%; }
 .prose p { margin: 0; text-wrap: pretty; }
 
 .prose h2 {
@@ -267,20 +267,20 @@ body {
   line-height: 1.25;
   margin: 1.9rem 0 0;
   scroll-margin-top: 1.5rem;
-  display: flex;
-  gap: 0.85rem;
-  align-items: baseline;
   text-wrap: balance;
   max-width: 100%;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
 }
+/* The mark rides inline ahead of the words. It used to sit in a fixed-width right-aligned
+   gutter, which indented every heading away from the text it introduced. */
 .prose h2 .mark {
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.62em;
   letter-spacing: 0.08em;
   color: var(--accent);
-  flex: 0 0 var(--rail);
-  text-align: right;
   font-variant-numeric: tabular-nums;
+  margin-right: 0.6rem;
 }
 .prose h3 {
   font-family: var(--sans);
@@ -437,7 +437,6 @@ pre.sysml .ln:hover { background: var(--code-bg); }
 .attribution {
   margin-inline: auto;
   width: 100%;
-  max-width: 60rem;
   background: var(--surface);
   border: 1px solid var(--rule);
   border-top: 3px solid var(--accent);
@@ -484,8 +483,6 @@ a:focus-visible, .toc-part a:focus-visible {
 /* ------------------------------------------------------------ narrow view */
 @media (max-width: 46rem) {
   body { font-size: 16px; }
-  .prose h2 { flex-direction: column; gap: 0.2rem; }
-  .prose h2 .mark { flex: none; text-align: left; }
   .toc-part ol { grid-template-columns: 1fr; }
 }
 
@@ -499,7 +496,6 @@ a:focus-visible, .toc-part a:focus-visible {
   body { font-size: 10.5pt; line-height: 1.5; }
   .page { padding: 0; gap: 1.75rem; max-width: none; }
   .printhint { display: none; }
-  .prose h2 { flex-direction: row; }
   .prose h2, .prose h3 { break-after: avoid; }
   .diagram, table, pre.code { break-inside: avoid; }
   .attribution { break-inside: avoid; border-top-width: 2px; }
@@ -599,61 +595,55 @@ sysml validate docs/model/dpyc-factory.sysml
 <h2 id="ii-1"><span class="mark">II.1</span><span>Tech stack</span></h2>
 <p>The Factory spans four planes. Only the control plane is GitHub; the memory and money planes are the DPYC network itself, which is why an agent&#x27;s graph write is a paid, signed, patron-authenticated call rather than a database connection.</p>
 <figure class="diagram"><div class="scroll"><pre class="mermaid">flowchart TB
-    subgraph SRC[&quot;Source of truth — lonniev/dpyc-community&quot;]
-        RW[&quot;Reusable workflows&lt;br/&gt;&lt;code&gt;.github/workflows/*.yml&lt;/code&gt;&lt;br/&gt;&lt;i&gt;workflow_call · human-only skeletons&lt;/i&gt;&quot;]
-        PR[&quot;Role prompts&lt;br/&gt;&lt;code&gt;factory/*.prompt.md&lt;/code&gt;&lt;br/&gt;&lt;i&gt;crew-editable by PR&lt;/i&gt;&quot;]
-        CA[&quot;Composite actions&lt;br/&gt;&lt;code&gt;factory/actions/{resolve-model,funding-sentinel}&lt;/code&gt;&quot;]
-        DL[&quot;&lt;code&gt;scripts/doctrine_lint.py&lt;/code&gt;&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;]
-        SC[&quot;&lt;code&gt;scripts/{sync-factory-callers,apply_labels,require_ci_checks}&lt;/code&gt;&quot;]
+    subgraph SRC[&quot;📦 Source of truth — lonniev/dpyc-community&quot;]
+        RW[&quot;📜 Reusable workflows&lt;br/&gt;&lt;code&gt;.github/workflows/*.yml&lt;/code&gt;&lt;br/&gt;&lt;i&gt;workflow_call · human-only skeletons&lt;/i&gt;&quot;]:::src
+        PR[&quot;📝 Role prompts&lt;br/&gt;&lt;code&gt;factory/*.prompt.md&lt;/code&gt;&lt;br/&gt;&lt;i&gt;crew-editable by PR&lt;/i&gt;&quot;]:::src
+        CA[&quot;🧩 Composite actions&lt;br/&gt;&lt;code&gt;resolve-model · funding-sentinel&lt;/code&gt;&quot;]:::src
+        DL{{&quot;🚧 doctrine_lint.py&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;}}:::det
+        SC[&quot;🛠 sync-callers · apply_labels · require_ci_checks&quot;]:::src
     end
 
-    subgraph CTRL[&quot;Control plane — GitHub&quot;]
-        TC[&quot;Thin callers in 18 repos&lt;br/&gt;&lt;code&gt;.github/workflows/agentic-*.yml&lt;/code&gt;&lt;br/&gt;&lt;i&gt;byte-identical · the if: guard is the boundary&lt;/i&gt;&quot;]
-        APP[&quot;GitHub App &amp;quot;DPYC Agentic Desk&amp;quot; · id 4292331&lt;br/&gt;&lt;i&gt;account-wide · NO workflows:write&lt;/i&gt;&quot;]
-        BP[&quot;Branch protection + CODEOWNERS&lt;br/&gt;&lt;i&gt;require_code_owner_reviews · approvals 0&lt;/i&gt;&quot;]
+    subgraph CTRL[&quot;🐙 Control plane — GitHub&quot;]
+        TC[&quot;🔗 Thin callers in 18 repos&lt;br/&gt;&lt;i&gt;byte-identical · the if: guard is the boundary&lt;/i&gt;&quot;]:::src
+        APP([&quot;🔐 GitHub App · id 4292331&lt;br/&gt;&lt;i&gt;account-wide · NO workflows:write&lt;/i&gt;&quot;]):::gate
+        BP{{&quot;🛡 Branch protection + CODEOWNERS&lt;br/&gt;&lt;i&gt;code-owner review · approvals 0&lt;/i&gt;&quot;}}:::det
     end
 
-    subgraph EXEC[&quot;Execution plane — GitHub Actions runners&quot;]
-        UB[&quot;ubuntu-latest&lt;br/&gt;&lt;i&gt;default for every role&lt;/i&gt;&quot;]
-        MAC[&quot;macos-latest&lt;br/&gt;&lt;i&gt;auto-selected when *.xcodeproj / Package.swift is found&lt;/i&gt;&quot;]
-        CCA[&quot;&lt;code&gt;anthropics/claude-code-action@v1&lt;/code&gt;&lt;br/&gt;&lt;i&gt;automation mode · bubblewrap sandbox&lt;/i&gt;&quot;]
-        KR[&quot;&lt;code&gt;python -m tollbooth.agent_keyring&lt;/code&gt;&lt;br/&gt;&lt;i&gt;stdio MCP · holds the nsec · signs each call&lt;/i&gt;&quot;]
+    subgraph EXEC[&quot;🖥 Execution plane — Actions runners&quot;]
+        UB[&quot;🐧 ubuntu-latest&lt;br/&gt;&lt;i&gt;default for every role&lt;/i&gt;&quot;]:::ext
+        MAC[&quot;🍎 macos-latest&lt;br/&gt;&lt;i&gt;when *.xcodeproj / Package.swift is found&lt;/i&gt;&quot;]:::ext
+        CCA[&quot;🤖 claude-code-action@v1&lt;br/&gt;&lt;i&gt;automation mode · bubblewrap sandbox&lt;/i&gt;&quot;]:::agent
+        KR[&quot;🔑 tollbooth.agent_keyring&lt;br/&gt;&lt;i&gt;stdio MCP · holds the nsec · signs each call&lt;/i&gt;&quot;]:::agent
     end
 
-    subgraph INF[&quot;Inference&quot;]
-        ORT[&quot;OpenRouter&lt;br/&gt;&lt;code&gt;ANTHROPIC_BASE_URL=https://openrouter.ai/api&lt;/code&gt;&quot;]
-        W[&quot;writer tier — Journeyman, PR Revision&quot;]
-        R[&quot;reader tier — Porter, QA, Housekeeper, Dialogue&quot;]
-        B[&quot;budget tier — Digest&quot;]
+    subgraph INF[&quot;🧠 Inference — OpenRouter&quot;]
+        W[&quot;✍️ writer — Journeyman, Revision&quot;]:::agent
+        R[&quot;🔍 reader — Porter, QA, Housekeeper, Dialogue&quot;]:::agent
+        B[&quot;📰 budget — Digest&quot;]:::agent
     end
 
-    subgraph MEM[&quot;Memory + money plane — the DPYC network&quot;]
-        CY[&quot;cypher-mcp&lt;br/&gt;&lt;i&gt;named priced queries · never raw graph access&lt;/i&gt;&quot;]
-        AU[(&quot;Neo4j AuraDB&lt;br/&gt;&lt;i&gt;ephemeral Bolt · free tier sleeps&lt;/i&gt;&quot;)]
-        LN[&quot;BTCPay Lightning&lt;br/&gt;&lt;i&gt;sats per graph call&lt;/i&gt;&quot;]
-        NR[&quot;Nostr relays&lt;br/&gt;&lt;i&gt;kind-27235 proofs&lt;/i&gt;&quot;]
-        HZ[&quot;Horizon&lt;br/&gt;&lt;i&gt;hosts the MCP operators&lt;/i&gt;&quot;]
-        NE[(&quot;Neon Postgres&lt;br/&gt;&lt;i&gt;operator vaults + ledgers&lt;/i&gt;&quot;)]
+    subgraph MEM[&quot;🕸 Memory + money — the DPYC network&quot;]
+        CY[&quot;🗝 cypher-mcp&lt;br/&gt;&lt;i&gt;named priced queries · never raw access&lt;/i&gt;&quot;]:::ext
+        AU[(&quot;🕸 Neo4j AuraDB&lt;br/&gt;&lt;i&gt;ephemeral Bolt · free tier sleeps&lt;/i&gt;&quot;)]:::data
+        LN([&quot;⚡ BTCPay Lightning&lt;br/&gt;&lt;i&gt;sats per graph call&lt;/i&gt;&quot;]):::money
+        NR([&quot;📡 Nostr relays&lt;br/&gt;&lt;i&gt;kind-27235 proofs&lt;/i&gt;&quot;]):::money
+        HZ[&quot;☁️ Horizon&lt;br/&gt;&lt;i&gt;hosts the MCP operators&lt;/i&gt;&quot;]:::ext
+        NE[(&quot;🗄 Neon Postgres&lt;br/&gt;&lt;i&gt;operator vaults + ledgers&lt;/i&gt;&quot;)]:::data
     end
 
     RW --&gt;|&quot;uses: …@main&quot;| TC
-    SC --&gt;|&quot;fans out, one PR per repo&quot;| TC
+    SC --&gt;|&quot;one PR per repo&quot;| TC
     TC --&gt;|&quot;secrets: inherit&quot;| EXEC
     APP --&gt;|&quot;mints per-run scoped tokens&quot;| EXEC
     DL --&gt; BP
     PR --&gt;|&quot;curl at run time + restricted envsubst&quot;| CCA
     CA --&gt; CCA
-
     TC --&gt; UB
     TC --&gt; MAC
     UB --&gt; CCA
     MAC --&gt; CCA
     CCA --&gt;|&quot;--mcp-config, per-server env&quot;| KR
-    CCA --&gt; ORT
-    ORT --&gt; W
-    ORT --&gt; R
-    ORT --&gt; B
-
+    CCA --&gt; INF
     KR --&gt;|&quot;npub + fresh proof per call&quot;| CY
     CY --&gt; AU
     CY --&gt; LN
@@ -661,63 +651,72 @@ sysml validate docs/model/dpyc-factory.sysml
     CY -.hosted on.-&gt; HZ
     HZ -.-&gt; NE
 
-    style SRC fill:#1a1a2e,stroke:#F7931A,color:#fff
-    style CTRL fill:#16213e,stroke:#58a6ff,color:#fff
-    style EXEC fill:#16213e,stroke:#58a6ff,color:#fff
-    style INF fill:#1a1a2e,stroke:#8b5cf6,color:#fff
-    style MEM fill:#1a1a2e,stroke:#F7931A,color:#fff</pre></div></figure>
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef det   fill:#e2f5e6,stroke:#0e8a16,stroke-width:1.5px,color:#0a4a10
+    classDef gate  fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+    classDef src   fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef ext   fill:#e8eef7,stroke:#5b7fa6,color:#1f3a5f
+    classDef data  fill:#e3edf9,stroke:#3f6fa8,stroke-width:1.5px,color:#12324f
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00</pre></div></figure>
 <p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix; the canonical CI context is <code>test (3.12)</code>, and required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts — a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
 <hr />
 <h2 id="ii-2"><span class="mark">II.2</span><span>The crew, and who is allowed to fire it</span></h2>
 <p>Judgement gets an agent; policy gets bash. Every gate that could land code is on the deterministic side of this line, which is what makes the pipeline immune to both prompt injection <em>and</em> a dry key at exactly the moments that matter.</p>
 <figure class="diagram"><div class="scroll"><pre class="mermaid">flowchart LR
-    subgraph AGENTIC[&quot;LLM roles — judgement&quot;]
-        SCOUT[&quot;&lt;b&gt;Scout&lt;/b&gt;&lt;br/&gt;outside patron via SDK report_issue&lt;br/&gt;&lt;i&gt;dpyc-scout · non-collaborator&lt;/i&gt;&quot;]
-        PORTER[&quot;&lt;b&gt;Porter&lt;/b&gt; — Service Desk&lt;br/&gt;&lt;i&gt;reader · 20 turns · issue ops only&lt;/i&gt;&quot;]
-        JM[&quot;&lt;b&gt;Journeyman&lt;/b&gt; — Engineering&lt;br/&gt;&lt;i&gt;writer · 140 turns · contents:write&lt;/i&gt;&quot;]
-        QA[&quot;&lt;b&gt;QA&lt;/b&gt;&lt;br/&gt;&lt;i&gt;reader · 30 turns · diff only&lt;/i&gt;&quot;]
-        DIA[&quot;&lt;b&gt;PR Dialogue&lt;/b&gt;&lt;br/&gt;&lt;i&gt;read-only by construction · anyone may summon&lt;/i&gt;&quot;]
-        REV[&quot;&lt;b&gt;PR Revision&lt;/b&gt;&lt;br/&gt;&lt;i&gt;writer · OWNER-gated&lt;/i&gt;&quot;]
-        HK[&quot;&lt;b&gt;Housekeeper&lt;/b&gt;&lt;br/&gt;&lt;i&gt;weekly sweep · Porter identity · per repo&lt;/i&gt;&quot;]
-        DG[&quot;&lt;b&gt;Digest&lt;/b&gt; — the Dispatcher&lt;br/&gt;&lt;i&gt;budget · weekly · fleet-wide · not reusable&lt;/i&gt;&quot;]
+    subgraph AGENTIC[&quot;🧠 LLM roles — judgement&quot;]
+        SCOUT[&quot;🔭 &lt;b&gt;Scout&lt;/b&gt;&lt;br/&gt;outside patron via SDK report_issue&lt;br/&gt;&lt;i&gt;dpyc-scout · non-collaborator&lt;/i&gt;&quot;]:::agent
+        PORTER[&quot;🛎 &lt;b&gt;Porter&lt;/b&gt; — Service Desk&lt;br/&gt;&lt;i&gt;reader · 20 turns · issue ops only&lt;/i&gt;&quot;]:::agent
+        JM[&quot;🔧 &lt;b&gt;Journeyman&lt;/b&gt; — Engineering&lt;br/&gt;&lt;i&gt;writer · 140 turns · contents:write&lt;/i&gt;&quot;]:::agent
+        QA[&quot;🔍 &lt;b&gt;QA&lt;/b&gt;&lt;br/&gt;&lt;i&gt;reader · 30 turns · diff only&lt;/i&gt;&quot;]:::agent
+        DIA[&quot;💬 &lt;b&gt;PR Dialogue&lt;/b&gt;&lt;br/&gt;&lt;i&gt;read-only by construction · anyone may summon&lt;/i&gt;&quot;]:::agent
+        REV[&quot;✍️ &lt;b&gt;PR Revision&lt;/b&gt;&lt;br/&gt;&lt;i&gt;writer · OWNER-gated&lt;/i&gt;&quot;]:::agent
+        HK[&quot;🧹 &lt;b&gt;Housekeeper&lt;/b&gt;&lt;br/&gt;&lt;i&gt;weekly sweep · Porter identity&lt;/i&gt;&quot;]:::agent
+        DG[&quot;📰 &lt;b&gt;Digest&lt;/b&gt; — the Dispatcher&lt;br/&gt;&lt;i&gt;budget · fleet-wide · not reusable&lt;/i&gt;&quot;]:::agent
     end
 
-    subgraph DET[&quot;Deterministic roles — policy&quot;]
-        ESC[&quot;&lt;b&gt;Escalation&lt;/b&gt;&lt;br/&gt;&lt;i&gt;only cross-repo writer · issues:write only&lt;/i&gt;&quot;]
-        AM[&quot;&lt;b&gt;Auto-merge&lt;/b&gt;&lt;br/&gt;&lt;i&gt;path allowlist&lt;/i&gt;&quot;]
-        APM[&quot;&lt;b&gt;Merge on Approval&lt;/b&gt;&lt;br/&gt;&lt;i&gt;--auto, cannot bypass protection&lt;/i&gt;&quot;]
-        DLINT[&quot;&lt;b&gt;Doctrine Lint&lt;/b&gt;&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;]
-        DV[&quot;&lt;b&gt;Deploy Verify&lt;/b&gt;&lt;br/&gt;&lt;i&gt;sha compare after merge&lt;/i&gt;&quot;]
-        FS[&quot;&lt;b&gt;Funding Sentinel&lt;/b&gt;&quot;]
-        CC[&quot;&lt;b&gt;Credit Canary&lt;/b&gt;&lt;br/&gt;&lt;i&gt;every 30 min&lt;/i&gt;&quot;]
-        BR[&quot;&lt;b&gt;Block Retire&lt;/b&gt;&quot;]
+    subgraph DET[&quot;⚙️ Deterministic roles — policy&quot;]
+        ESC{{&quot;🚚 &lt;b&gt;Escalation&lt;/b&gt;&lt;br/&gt;&lt;i&gt;only cross-repo writer · issues:write only&lt;/i&gt;&quot;}}:::det
+        AM{{&quot;🚦 &lt;b&gt;Auto-merge&lt;/b&gt;&lt;br/&gt;&lt;i&gt;path allowlist&lt;/i&gt;&quot;}}:::det
+        APM{{&quot;🔏 &lt;b&gt;Merge on Approval&lt;/b&gt;&lt;br/&gt;&lt;i&gt;--auto, cannot bypass protection&lt;/i&gt;&quot;}}:::det
+        DLINT{{&quot;🚧 &lt;b&gt;Doctrine Lint&lt;/b&gt;&lt;br/&gt;&lt;i&gt;the tripwires&lt;/i&gt;&quot;}}:::det
+        DV{{&quot;📡 &lt;b&gt;Deploy Verify&lt;/b&gt;&lt;br/&gt;&lt;i&gt;sha compare after merge&lt;/i&gt;&quot;}}:::det
+        FS{{&quot;🩺 &lt;b&gt;Funding Sentinel&lt;/b&gt;&quot;}}:::det
+        CC{{&quot;🐤 &lt;b&gt;Credit Canary&lt;/b&gt;&lt;br/&gt;&lt;i&gt;every 30 min&lt;/i&gt;&quot;}}:::det
+        BR{{&quot;🗃 &lt;b&gt;Block Retire&lt;/b&gt;&quot;}}:::det
     end
 
-    SCOUT --&gt;|&quot;files an issue&quot;| PORTER
-    HUMAN([&quot;Human or stranger&quot;]) --&gt;|&quot;opens an issue&quot;| PORTER
+    HUMAN([&quot;👤 Human or stranger&quot;]):::human
+    OWNER([&quot;👑 Repository owner&quot;]):::human
+    ANY([&quot;👥 Any reviewer&quot;]):::human
+    MERGED([&quot;✅ merged&quot;]):::done
+
+    SCOUT --&gt;|&quot;files a field report&quot;| PORTER
+    HUMAN --&gt;|&quot;opens an issue&quot;| PORTER
     PORTER --&gt;|&quot;agent/fix&quot;| JM
     PORTER --&gt;|&quot;blocked/upstream&quot;| ESC
-    ESC --&gt;|&quot;agent/fix in the home repo&quot;| JM
+    ESC --&gt;|&quot;files agent/fix upstream&quot;| JM
     JM --&gt;|&quot;opens PR&quot;| QA
     JM --&gt;|&quot;rejected/upstream&quot;| ESC
     ESC --&gt;|&quot;agent/retriage + the decliner&#x27;s reason&quot;| PORTER
     QA --&gt;|&quot;qa/pass&quot;| AM
-    OWNER([&quot;Repository owner&quot;]) --&gt;|&quot;approves&quot;| APM
+    OWNER --&gt;|&quot;approves&quot;| APM
     OWNER --&gt;|&quot;requests changes&quot;| REV
-    ANY([&quot;Any reviewer&quot;]) --&gt;|&quot;@journeyman&quot;| DIA
-    REV --&gt;|&quot;pushes to the head branch&quot;| QA
-    AM --&gt; MERGED([&quot;merged&quot;])
+    ANY --&gt;|&quot;@journeyman&quot;| DIA
+    REV --&gt;|&quot;pushes to head&quot;| QA
+    AM --&gt; MERGED
     APM --&gt; MERGED
     MERGED --&gt; DV
     DV --&gt;|&quot;stale deploy → one agent/fix issue&quot;| JM
     DLINT -.-&gt;|&quot;fails the build red&quot;| AGENTIC
     FS -.-&gt;|&quot;awaiting-funds&quot;| CC
     CC -.-&gt;|&quot;replays the deferred item&quot;| AGENTIC
-    ESC -.-&gt;|&quot;escalation chains reconciled weekly&quot;| DG
-    DG -.-&gt;|&quot;one pinned digest issue · rescues wrongly bounced patrons&quot;| HUMAN
+    ESC -.-&gt;|&quot;chains reconciled weekly&quot;| DG
+    DG -.-&gt;|&quot;one pinned digest&quot;| HUMAN
 
-    style AGENTIC fill:#1a1a2e,stroke:#8b5cf6,color:#fff
-    style DET fill:#16213e,stroke:#0e8a16,color:#fff</pre></div></figure>
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef det   fill:#e2f5e6,stroke:#0e8a16,stroke-width:1.5px,color:#0a4a10
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:2px,color:#08370d</pre></div></figure>
 <hr />
 <h2 id="ii-3"><span class="mark">II.3</span><span>Issue lifecycle</span></h2>
 <p>The Porter takes <strong>exactly one</strong> routing action, which is why these branches are exclusive. Note the ordering constraint that shows up twice: the machine-readable comment is posted <em>first</em>, the label <em>last</em>, because the label is the trigger and a deterministic workflow will read the comments the moment it fires.</p>
@@ -725,17 +724,17 @@ sysml validate docs/model/dpyc-factory.sysml
     direction TB
     [*] --&gt; Opened
 
-    state &quot;Opened&quot; as Opened
-    state &quot;Triaging — Porter&quot; as Triaging
-    state &quot;Rejected — closed&quot; as Rejected
-    state &quot;rejected/needs-info — stays open&quot; as NeedsInfo
-    state &quot;agent/fix — ready for Engineering&quot; as Ready
-    state &quot;agent/working — Journeyman on it&quot; as Working
-    state &quot;blocked/upstream — escalated&quot; as Blocked
-    state &quot;blocked/arbitration — frozen for a human&quot; as Arb
-    state &quot;awaiting-funds — deferred&quot; as Funds
-    state &quot;PR raised&quot; as PRRaised
-    state &quot;Closed&quot; as Closed
+    state &quot;📥 Opened&quot; as Opened
+    state &quot;🛎 Triaging — Porter&quot; as Triaging
+    state &quot;🚫 Rejected — closed&quot; as Rejected
+    state &quot;❓ needs-info — stays open&quot; as NeedsInfo
+    state &quot;🔧 agent/fix — ready for Engineering&quot; as Ready
+    state &quot;🔨 agent/working — Journeyman on it&quot; as Working
+    state &quot;⤴️ blocked/upstream — escalated&quot; as Blocked
+    state &quot;⚖️ blocked/arbitration — a human decides&quot; as Arb
+    state &quot;⏸ awaiting-funds — deferred&quot; as Funds
+    state &quot;🔀 PR raised&quot; as PRRaised
+    state &quot;✅ Closed&quot; as Closed
 
     Opened --&gt; Triaging: issue opened / reopened
     Triaging --&gt; Triaging: claim_issue, then context_pack scopes the grep
@@ -766,7 +765,20 @@ sysml validate docs/model/dpyc-factory.sysml
     Working --&gt; Closed: a human closes it mid-run
     Closed --&gt; Triaging: reopened — the reverse escalation path does this
     Rejected --&gt; Triaging: reopened
-    Closed --&gt; [*]</pre></div></figure>
+    Closed --&gt; [*]
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef stop  fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef warn  fill:#ffe6e2,stroke:#d93f0b,stroke-width:1.5px,color:#6b1c00
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:1.5px,color:#08370d
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+
+    class Triaging,Ready,Working agent
+    class Rejected,NeedsInfo stop
+    class Blocked warn
+    class Arb human
+    class Funds money
+    class PRRaised,Closed done</pre></div></figure>
 <hr />
 <h2 id="ii-4"><span class="mark">II.4</span><span>Pull request lifecycle</span></h2>
 <p>Two merge paths, both deterministic, neither able to bypass branch protection. The &quot;Merge Oops&quot; question answers itself here: <code>--auto</code> never lands on a red required check — it <em>holds</em> until the gates go green, so a bad merge is not a risk this design mitigates, it is one the design cannot express.</p>
@@ -774,15 +786,15 @@ sysml validate docs/model/dpyc-factory.sysml
     direction TB
     [*] --&gt; AwaitingQA
 
-    state &quot;Awaiting QA&quot; as AwaitingQA
-    state &quot;qa/flag — concern raised&quot; as Flagged
-    state &quot;qa/pass&quot; as Passed
-    state &quot;Awaiting the owner — CODEOWNERS holds it&quot; as Human
-    state &quot;agent/revising — PR Revision at the bench&quot; as Revising
-    state &quot;Auto-merge armed — GitHub holds it pending&quot; as Armed
-    state &quot;Merged&quot; as Merged
-    state &quot;awaiting-funds&quot; as PRFunds
-    state &quot;Closed unmerged — the waiting issue is unstranded by the Housekeeper&quot; as Abandoned
+    state &quot;⏳ Awaiting QA&quot; as AwaitingQA
+    state &quot;🚩 qa/flag — concern raised&quot; as Flagged
+    state &quot;🔍 qa/pass&quot; as Passed
+    state &quot;👑 Awaiting the owner — CODEOWNERS holds it&quot; as Human
+    state &quot;✍️ agent/revising — PR Revision at the bench&quot; as Revising
+    state &quot;🔏 Auto-merge armed — GitHub holds it pending&quot; as Armed
+    state &quot;✅ Merged&quot; as Merged
+    state &quot;⏸ awaiting-funds&quot; as PRFunds
+    state &quot;🗃 Closed unmerged — the Housekeeper unstrands the waiting issue&quot; as Abandoned
 
     AwaitingQA --&gt; Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --&gt; Flagged: any concern
@@ -814,13 +826,27 @@ sysml validate docs/model/dpyc-factory.sysml
     Human --&gt; Abandoned
     Revising --&gt; Abandoned
     Merged --&gt; [*]
-    Abandoned --&gt; [*]</pre></div></figure>
+    Abandoned --&gt; [*]
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef stop  fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef warn  fill:#ffe6e2,stroke:#d93f0b,stroke-width:1.5px,color:#6b1c00
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:1.5px,color:#08370d
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+
+    class AwaitingQA,UnderReview,Revising agent
+    class Flagged warn
+    class Passed,Merged done
+    class Human human
+    class Armed done
+    class PRFunds money
+    class Abandoned stop</pre></div></figure>
 <hr />
 <h2 id="ii-5"><span class="mark">II.5</span><span>Funding — two independent rails</span></h2>
 <p>The crew spends on two rails that fail independently, and the design leans on that. LLM credits buy inference; <strong>sats</strong> buy graph writes. When the inference rail is dry, the sats rail still works — which is exactly how &quot;what is currently awaiting funds&quot; stays queryable while every LLM node is dark.</p>
 <figure class="diagram"><div class="scroll"><pre class="mermaid">stateDiagram-v2
     direction LR
-    state &quot;Rail A — LLM credits · one shared key · OpenRouter&quot; as RailA {
+    state &quot;🧠 Rail A — LLM credits · one shared key · OpenRouter&quot; as RailA {
         [*] --&gt; Healthy
         Healthy --&gt; Unknown: transient 429 / 529 / network
         Unknown --&gt; Healthy: next probe returns 200
@@ -831,7 +857,7 @@ sysml validate docs/model/dpyc-factory.sysml
         Replaying --&gt; Healthy: fleet swept, work re-fired
     }
 
-    state &quot;Rail B — sats · per-agent patron balance&quot; as RailB {
+    state &quot;⚡ Rail B — sats · per-agent patron balance&quot; as RailB {
         [*] --&gt; Funded
         Funded --&gt; Drained: balance spent
         Drained --&gt; Funded: the human tops up
@@ -852,11 +878,11 @@ sysml validate docs/model/dpyc-factory.sysml
 <p>The markers named below are HTML comments in the issue thread — <code>&lt;!-- dpyc-escalation --&gt;</code>, <code>&lt;!-- dpyc-rejection --&gt;</code>, <code>&lt;!-- dpyc-route-history: a,b --&gt;</code> — written out in full in §Items of the model. They are named rather than quoted here because a literal <code>--</code> inside a Mermaid sequence message is lexed as the start of an arrow token and breaks the diagram.</p>
 <figure class="diagram"><div class="scroll"><pre class="mermaid">sequenceDiagram
     autonumber
-    participant O as Origin repo
-    participant P as Porter @ origin
-    participant E as Escalation&lt;br/&gt;deterministic
-    participant H as Home repo
-    participant J as Journeyman @ home
+    participant O as 🐙 Origin repo
+    participant P as 🛎 Porter @ origin
+    participant E as ⚙️ Escalation&lt;br/&gt;deterministic
+    participant H as 🐙 Home repo
+    participant J as 🔧 Journeyman @ home
 
     P-&gt;&gt;O: post the dpyc-escalation marker comment
     P-&gt;&gt;O: apply blocked/upstream (the trigger — always last)

@@ -22,8 +22,9 @@
   --code-bg:    #eceef4;
   --chip-ink:   #ffffff;
 
-  --measure: 68ch;
-  --rail: 8.5rem;
+  /* One width for prose and figures alike: text that stops short of the diagrams
+     reads as two documents sharing a page. */
+  --measure: 100%;
 
   --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --serif: ui-serif, Georgia, "Iowan Old Style", Cambria, "Times New Roman", serif;
@@ -69,7 +70,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.65;
   -webkit-text-size-adjust: 100%;
 }
@@ -83,8 +84,8 @@ body {
   gap: 3.25rem;
 }
 
-/* Reading column sits to the right of a gutter rail on wide screens. The rail
-   carries the section marks, so numbering stays out of the prose measure. */
+/* Every block shares the page container's width, so prose and figures align on the same
+   left and right edges. */
 .prose,
 .contents,
 .masthead,
@@ -94,7 +95,6 @@ body {
 .listing {
   margin-inline: auto;
   width: 100%;
-  max-width: 60rem;
 }
 
 .prose {
@@ -254,7 +254,7 @@ body {
 }
 
 /* -------------------------------------------------------------- prose type */
-.prose > * { max-width: var(--measure); }
+.prose > * { max-width: 100%; }
 .prose p { margin: 0; text-wrap: pretty; }
 
 .prose h2 {
@@ -265,20 +265,20 @@ body {
   line-height: 1.25;
   margin: 1.9rem 0 0;
   scroll-margin-top: 1.5rem;
-  display: flex;
-  gap: 0.85rem;
-  align-items: baseline;
   text-wrap: balance;
   max-width: 100%;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
 }
+/* The mark rides inline ahead of the words. It used to sit in a fixed-width right-aligned
+   gutter, which indented every heading away from the text it introduced. */
 .prose h2 .mark {
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.62em;
   letter-spacing: 0.08em;
   color: var(--accent);
-  flex: 0 0 var(--rail);
-  text-align: right;
   font-variant-numeric: tabular-nums;
+  margin-right: 0.6rem;
 }
 .prose h3 {
   font-family: var(--sans);
@@ -435,7 +435,6 @@ pre.sysml .ln:hover { background: var(--code-bg); }
 .attribution {
   margin-inline: auto;
   width: 100%;
-  max-width: 60rem;
   background: var(--surface);
   border: 1px solid var(--rule);
   border-top: 3px solid var(--accent);
@@ -482,8 +481,6 @@ a:focus-visible, .toc-part a:focus-visible {
 /* ------------------------------------------------------------ narrow view */
 @media (max-width: 46rem) {
   body { font-size: 16px; }
-  .prose h2 { flex-direction: column; gap: 0.2rem; }
-  .prose h2 .mark { flex: none; text-align: left; }
   .toc-part ol { grid-template-columns: 1fr; }
 }
 
@@ -497,7 +494,6 @@ a:focus-visible, .toc-part a:focus-visible {
   body { font-size: 10.5pt; line-height: 1.5; }
   .page { padding: 0; gap: 1.75rem; max-width: none; }
   .printhint { display: none; }
-  .prose h2 { flex-direction: row; }
   .prose h2, .prose h3 { break-after: avoid; }
   .diagram, table, pre.code { break-inside: avoid; }
   .attribution { break-inside: avoid; border-top-width: 2px; }

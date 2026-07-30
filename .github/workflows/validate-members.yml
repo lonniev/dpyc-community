@@ -23,7 +23,10 @@ permissions:
   contents: write
 
 jobs:
-  validate:
+  # Named `members`, not `validate`: the required `validate` context is produced
+  # by validate.yml, which runs on every PR. Two workflows publishing the same
+  # required check name made it ambiguous which one satisfied the rule.
+  members:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +46,7 @@ jobs:
 
   regenerate-index:
     if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    needs: validate
+    needs: members
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

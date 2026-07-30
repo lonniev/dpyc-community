@@ -132,7 +132,11 @@ STEPS:
    - Always call `mcp__graph__cypher_record_triage` with:
        repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
        title=<the issue title>, classification=<the type/* you chose, e.g. "bug">,
-       disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">,
+       disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">
+         — record the disposition that ACTUALLY LANDED on GitHub, per your verification
+         above, never the one you decided on. A graph that says `agent/fix` while the
+         issue carries no such label tells every later reader the work is with
+         Engineering when nothing is coming,
        issue_url=<the `url` from step 1>, repo_url=<the repo URL from `gh repo view --json url`>.
    - Always call `mcp__graph__cypher_record_scope` with repo_name="${REPO_NAME}",
        issue_number=${ISSUE_NUMBER}, actionable_text=<your step-1a spec>,
@@ -181,8 +185,25 @@ a narrated intention):
       post a comment on the issue with `gh issue comment` explaining precisely what
       you attempted and what stopped you (the exact error, the ambiguity you could
       not resolve, or the access you lacked). Never stop silently.
-Then VERIFY before finishing: run
-  gh issue view ${ISSUE_NUMBER} --json labels
-and if the labels you intended are not present, apply them again. Do not end the run
-until the issue visibly reflects your decision (labels/close) or carries your
-give-up comment.
+Then VERIFY before finishing — and verify the ROUTING, not just the classification.
+This is the step that has actually failed in practice: an issue was classified
+type/*+sev/*+area/*, handed off with a perfect comment, recorded to the graph as
+`agent/fix`, and then sat untouched for want of the one label that fires Engineering.
+The run reported "verified, ready for Engineering" while `agent/fix` was absent. Both
+halves of step 4 are your job, and the routing half is the one that moves the work.
+  gh issue view ${ISSUE_NUMBER} --json labels,state
+Read the output and confirm BOTH, by name:
+  - the three classification labels you chose in step 3, AND
+  - the outcome of step 4 — one of: `agent/fix` present | `blocked/upstream` present |
+    a `rejected/*` label present AND state CLOSED | `rejected/needs-info` present.
+If the routing label is missing, apply it now and check again. Never report success on
+the strength of what you intended; only the output of that command counts. Do not end
+the run until the issue visibly reflects your decision, or carries your give-up comment.
+
+TWO COMMAND SHAPES THAT HAVE BITTEN THIS ROLE:
+  - Do NOT fold the handoff/escalation comment into the label command. `gh issue edit`
+    has no `--comment` flag, and the combined form has been refused outright by the
+    sandbox. They are two calls, and step 4 requires the comment to land FIRST anyway.
+  - Batch only the step-3 classification labels together. Apply the routing label as its
+    own `gh issue edit` call, after the comment — so a failure in one cannot silently
+    take the other with it.

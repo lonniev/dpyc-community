@@ -62,6 +62,7 @@ package DPYCSoftwareFactory {
             'blocked/upstream';        // -> Escalation, forward path
             'rejected/upstream';       // -> Escalation, reverse (anti-ping-pong) path
             'blocked/arbitration';     // routing standoff frozen for a human
+            'blocked/conflict';        // conflicts with base — NO pr workflow will fire
         }
 
         enum def RejectionLabel {
@@ -690,7 +691,8 @@ package DPYCSoftwareFactory {
             attribute def ItemClosed;          attribute def RetriageApplied;
             attribute def QAPasses;            attribute def QAFlags;
             attribute def IssueReopened;       attribute def PRAbandoned;
-            attribute def QAStarts;
+            attribute def QAStarts;            attribute def BaseMoved;
+            attribute def ConflictResolved;
             attribute def OwnerApproves;       attribute def OwnerRequestsChanges;
             attribute def RevisionPushed;      attribute def ProtectionSatisfied;
             attribute def LowRiskPathsOnly;    attribute def CodePathTouched;
@@ -812,6 +814,15 @@ package DPYCSoftwareFactory {
             state ClosedUnmerged { doc /* Ended without landing. The issue that was waiting on
                                        * it is unstranded by the Housekeeper, not by this
                                        * machine — nothing else in the pipeline notices. */ }
+            state Conflicted {
+                doc /* DIRTY: the branch conflicts with its base. The important property is
+                     * not that the PR is blocked but that it is DEAF — GitHub dispatches no
+                     * PR workflow runs at all in this state, so every transition below is
+                     * unreachable while it holds. An owner can approve and observe nothing
+                     * happen, with no failing check to explain it. Reached from any live
+                     * state simply because the BASE moved, which is not an event on this PR
+                     * at all. Conflict Watch is the only thing that sees it. */
+            }
 
             transition first AwaitingQA  accept QAPasses then Passed;
             transition first AwaitingQA  accept QAFlags  then Flagged;
@@ -861,6 +872,25 @@ package DPYCSoftwareFactory {
             /* Including one QA already passed: qa/pass arms a landing, it does not
              * guarantee one, and a superseding PR closes this one first. */
             transition first Passed        accept PRAbandoned then ClosedUnmerged;
+
+            /* --- deafness, and recovery from it ---------------------------------
+             * A PR does not become conflicted through anything it did: someone else
+             * merged first. So this arrives at whatever state the PR was resting in,
+             * and no amount of activity ON the PR will produce a workflow run until
+             * it is resolved. */
+            transition first AwaitingQA    accept BaseMoved then Conflicted;
+            transition first UnderReview   accept BaseMoved then Conflicted;
+            transition first Flagged       accept BaseMoved then Conflicted;
+            transition first Passed        accept BaseMoved then Conflicted;
+            transition first AwaitingHuman accept BaseMoved then Conflicted;
+            transition first Revising      accept BaseMoved then Conflicted;
+            transition first AutoMergeArmed accept BaseMoved then Conflicted;
+
+            /* Resolution is a push, so the PR re-enters review rather than resuming
+             * where it left off — and on a repo with dismiss_stale_reviews any approval
+             * gathered before the conflict is gone with it. */
+            transition first Conflicted accept ConflictResolved then AwaitingQA;
+            transition first Conflicted accept PRAbandoned      then ClosedUnmerged;
         }
 
         // ---------------------------------------------------------------------

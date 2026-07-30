@@ -687,6 +687,7 @@ sysml validate docs/model/dpyc-factory.sysml
         FS{{&quot;🩺 &lt;b&gt;Funding Sentinel&lt;/b&gt;&quot;}}:::det
         CC{{&quot;🐤 &lt;b&gt;Credit Canary&lt;/b&gt;&lt;br/&gt;&lt;i&gt;every 30 min&lt;/i&gt;&quot;}}:::det
         BR{{&quot;🗃 &lt;b&gt;Block Retire&lt;/b&gt;&quot;}}:::det
+        CW{{&quot;⛔ &lt;b&gt;Conflict Watch&lt;/b&gt;&lt;br/&gt;&lt;i&gt;hourly · flags PRs the pipeline cannot see&lt;/i&gt;&quot;}}:::det
     end
 
     HUMAN([&quot;👤 Human or stranger&quot;]):::human
@@ -714,6 +715,7 @@ sysml validate docs/model/dpyc-factory.sysml
     DLINT -.-&gt;|&quot;fails the build red&quot;| AGENTIC
     FS -.-&gt;|&quot;awaiting-funds&quot;| CC
     CC -.-&gt;|&quot;replays the deferred item&quot;| AGENTIC
+    CW -.-&gt;|&quot;blocked/conflict — a deaf PR, made visible&quot;| OWNER
     ESC -.-&gt;|&quot;chains reconciled weekly&quot;| DG
     DG -.-&gt;|&quot;one pinned digest&quot;| HUMAN
 
@@ -785,6 +787,7 @@ sysml validate docs/model/dpyc-factory.sysml
     class PRRaised,Closed done</pre></div></figure>
 <hr />
 <h2 id="ii-4"><span class="mark">II.4</span><span>Pull request lifecycle</span></h2>
+<p>One state here is unlike the others. <strong><code>blocked/conflict</code> is not blocked, it is deaf</strong>: GitHub dispatches no PR workflow runs at all while a pull request conflicts with its base, so QA, auto-merge and Merge on Approval never hear about it. An owner can approve and watch nothing happen, with no failing check to explain the silence. A PR enters it without doing anything — someone else merged first — which is why the hourly Conflict Watch sweep exists to notice and say so.</p>
 <p>Two merge paths, both deterministic, neither able to bypass branch protection. The &quot;Merge Oops&quot; question answers itself here: <code>--auto</code> never lands on a red required check — it <em>holds</em> until the gates go green, so a bad merge is not a risk this design mitigates, it is one the design cannot express.</p>
 <figure class="diagram"><div class="scroll"><pre class="mermaid">stateDiagram-v2
     direction TB
@@ -799,6 +802,7 @@ sysml validate docs/model/dpyc-factory.sysml
     state &quot;✅ Merged&quot; as Merged
     state &quot;⏸ awaiting-funds&quot; as PRFunds
     state &quot;🗃 Closed unmerged — the Housekeeper unstrands the waiting issue&quot; as Abandoned
+    state &quot;⛔ blocked/conflict — DIRTY: no PR workflow fires at all&quot; as Conflicted
 
     AwaitingQA --&gt; Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --&gt; Flagged: any concern
@@ -829,6 +833,13 @@ sysml validate docs/model/dpyc-factory.sysml
     Passed --&gt; Abandoned
     Human --&gt; Abandoned
     Revising --&gt; Abandoned
+    AwaitingQA --&gt; Conflicted: the base moved — someone else merged first
+    Passed --&gt; Conflicted
+    Human --&gt; Conflicted
+    Revising --&gt; Conflicted
+    Armed --&gt; Conflicted
+    Conflicted --&gt; AwaitingQA: conflict resolved — a push, so review starts over
+    Conflicted --&gt; Abandoned: closed instead
     Merged --&gt; [*]
     Abandoned --&gt; [*]
     classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
@@ -844,7 +855,8 @@ sysml validate docs/model/dpyc-factory.sysml
     class Human human
     class Armed done
     class PRFunds money
-    class Abandoned stop</pre></div></figure>
+    class Abandoned stop
+    class Conflicted warn</pre></div></figure>
 <hr />
 <h2 id="ii-5"><span class="mark">II.5</span><span>Funding — two independent rails</span></h2>
 <p>The crew spends on two rails that fail independently, and the design leans on that. LLM credits buy inference; <strong>sats</strong> buy graph writes. When the inference rail is dry, the sats rail still works — which is exactly how &quot;what is currently awaiting funds&quot; stays queryable while every LLM node is dark.</p>
@@ -1026,6 +1038,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            &#x27;blocked/upstream&#x27;;        // -&gt; Escalation, forward path</span>
 <span class="ln">            &#x27;rejected/upstream&#x27;;       // -&gt; Escalation, reverse (anti-ping-pong) path</span>
 <span class="ln">            &#x27;blocked/arbitration&#x27;;     // routing standoff frozen for a human</span>
+<span class="ln">            &#x27;blocked/conflict&#x27;;        // conflicts with base — NO pr workflow will fire</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        enum def RejectionLabel {</span>
@@ -1654,7 +1667,8 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            attribute def ItemClosed;          attribute def RetriageApplied;</span>
 <span class="ln">            attribute def QAPasses;            attribute def QAFlags;</span>
 <span class="ln">            attribute def IssueReopened;       attribute def PRAbandoned;</span>
-<span class="ln">            attribute def QAStarts;</span>
+<span class="ln">            attribute def QAStarts;            attribute def BaseMoved;</span>
+<span class="ln">            attribute def ConflictResolved;</span>
 <span class="ln">            attribute def OwnerApproves;       attribute def OwnerRequestsChanges;</span>
 <span class="ln">            attribute def RevisionPushed;      attribute def ProtectionSatisfied;</span>
 <span class="ln">            attribute def LowRiskPathsOnly;    attribute def CodePathTouched;</span>
@@ -1776,6 +1790,15 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            state ClosedUnmerged { doc /* Ended without landing. The issue that was waiting on</span>
 <span class="ln">                                       * it is unstranded by the Housekeeper, not by this</span>
 <span class="ln">                                       * machine — nothing else in the pipeline notices. */ }</span>
+<span class="ln">            state Conflicted {</span>
+<span class="ln">                doc /* DIRTY: the branch conflicts with its base. The important property is</span>
+<span class="ln">                     * not that the PR is blocked but that it is DEAF — GitHub dispatches no</span>
+<span class="ln">                     * PR workflow runs at all in this state, so every transition below is</span>
+<span class="ln">                     * unreachable while it holds. An owner can approve and observe nothing</span>
+<span class="ln">                     * happen, with no failing check to explain it. Reached from any live</span>
+<span class="ln">                     * state simply because the BASE moved, which is not an event on this PR</span>
+<span class="ln">                     * at all. Conflict Watch is the only thing that sees it. */</span>
+<span class="ln">            }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">            transition first AwaitingQA  accept QAPasses then Passed;</span>
 <span class="ln">            transition first AwaitingQA  accept QAFlags  then Flagged;</span>
@@ -1825,6 +1848,25 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            /* Including one QA already passed: qa/pass arms a landing, it does not</span>
 <span class="ln">             * guarantee one, and a superseding PR closes this one first. */</span>
 <span class="ln">            transition first Passed        accept PRAbandoned then ClosedUnmerged;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* --- deafness, and recovery from it ---------------------------------</span>
+<span class="ln">             * A PR does not become conflicted through anything it did: someone else</span>
+<span class="ln">             * merged first. So this arrives at whatever state the PR was resting in,</span>
+<span class="ln">             * and no amount of activity ON the PR will produce a workflow run until</span>
+<span class="ln">             * it is resolved. */</span>
+<span class="ln">            transition first AwaitingQA    accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first UnderReview   accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first Flagged       accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first Passed        accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first AwaitingHuman accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first Revising      accept BaseMoved then Conflicted;</span>
+<span class="ln">            transition first AutoMergeArmed accept BaseMoved then Conflicted;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">            /* Resolution is a push, so the PR re-enters review rather than resuming</span>
+<span class="ln">             * where it left off — and on a repo with dismiss_stale_reviews any approval</span>
+<span class="ln">             * gathered before the conflict is gone with it. */</span>
+<span class="ln">            transition first Conflicted accept ConflictResolved then AwaitingQA;</span>
+<span class="ln">            transition first Conflicted accept PRAbandoned      then ClosedUnmerged;</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        // ---------------------------------------------------------------------</span>

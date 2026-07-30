@@ -11,7 +11,9 @@
 #   HEALTHY → clear the alarm AND replay: sweep every repo the factory App is installed on
 #             for open issues tagged `awaiting-funds`, swap the tag for `agent/retriage`,
 #             which re-fires Porter on each (see the Service Desk caller's labeled trigger).
-#             Nothing opened during the outage stays skipped.
+#             Nothing opened during the outage stays skipped. A SCHEDULED role has no
+#             work-item to tag and so cannot be replayed that way, so the sweep also
+#             re-dispatches any Housekeeper whose last run failed.
 #
 # The `awaiting-funds` tag is both the outage marker (set per-issue by the funding
 # sentinel when a node dies) and the replay work-list (cleared here on recovery).
@@ -25,6 +27,7 @@ on:
 permissions:
   contents: read
   issues: write
+  actions: write   # re-dispatch a scheduled role the outage cut (see step 3 of recovery)
 
 concurrency:
   group: factory-credit-canary
@@ -190,3 +193,28 @@ jobs:
             done
           done
           echo "Replayed $replayed deferred item(s)."
+
+          # 3) Re-dispatch SCHEDULED roles the outage cut.
+          #
+          # Everything above is label-driven: the sentinel tags an issue or PR
+          # `awaiting-funds`, and this sweep clears the tag and re-fires. A scheduled role
+          # has no work-item to tag, so none of that reaches it — and on 2026-07-27 the
+          # weekly Housekeeper died on a dry key in all 15 repos, was never marked, never
+          # replayed, and simply skipped a week of backlog hygiene fleet-wide. Nothing
+          # anywhere noticed.
+          #
+          # So: for each repo, if the most recent Housekeeper run FAILED and nothing has
+          # succeeded since, dispatch it. `workflow_dispatch` is already on the caller.
+          # Idempotent by construction — once a run succeeds, the condition stops holding.
+          redispatched=0
+          for repo in $(gh api --paginate /installation/repositories \
+                          --jq '.repositories[].full_name' 2>/dev/null || true); do
+            last=$(gh run list --repo "$repo" --workflow "Agentic Housekeeper" --limit 1 \
+                     --json conclusion --jq '.[0].conclusion' 2>/dev/null || true)
+            [ "$last" = "failure" ] || continue
+            if gh workflow run "Agentic Housekeeper" --repo "$repo" >/dev/null 2>&1; then
+              echo "Re-dispatched the Housekeeper on $repo (last run had failed)"
+              redispatched=$((redispatched + 1))
+            fi
+          done
+          echo "Re-dispatched $redispatched scheduled sweep(s)."

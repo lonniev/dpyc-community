@@ -88,12 +88,41 @@ def gh_json(path: str) -> tuple[int, dict | list | None]:
         return 0, None
 
 
-def observed_contexts(repo: str) -> set[str]:
-    """Check-run names that have actually posted on the default branch."""
-    _, data = gh_json(f"repos/{OWNER}/{repo}/commits/{BRANCH}/check-runs")
-    if not isinstance(data, dict):
-        return set()
-    return {run.get("name", "") for run in data.get("check_runs", [])}
+# How far back to look for evidence that a check exists. The tip of main is usually the
+# hourly `[skip ci] Update OTS status` commit, which runs no CI at all, so a one-commit
+# window sees an empty board and concludes the repo has no checks.
+_HISTORY = 10
+
+
+def observed_contexts(repo: str, want: set[str] | None = None) -> set[str]:
+    """Check-run names that have posted on the default branch RECENTLY.
+
+    Not just on the tip. Bot commits — `[skip ci]` status updates, generated-file
+    refreshes — routinely sit at the head of main and carry no check-runs, so asking only
+    about HEAD answers "has CI ever run here" with a confident no. That produced a
+    ⛔ REQUIRED BUT NOT POSTING alarm for `test (3.12)` on dpyc-community, where it posts
+    on every real commit and had last run four commits back. Worse than the false alarm:
+    the same reading makes the tool REFUSE to require a healthy context, on the grounds
+    that it has never been seen.
+
+    Pass *want* to stop early: once every name asked about has been seen there is nothing
+    left to learn, and the usual case resolves on the first real commit. Without that this
+    walk costs ten API calls per repo on every run, for an answer it already had.
+    """
+    seen: set[str] = set()
+    _, commits = gh_json(f"repos/{OWNER}/{repo}/commits?sha={BRANCH}&per_page={_HISTORY}")
+    if not isinstance(commits, list):
+        return seen
+    for commit in commits:
+        sha = commit.get("sha")
+        if not sha:
+            continue
+        _, data = gh_json(f"repos/{OWNER}/{repo}/commits/{sha}/check-runs")
+        if isinstance(data, dict):
+            seen |= {run.get("name", "") for run in data.get("check_runs", [])}
+        if want and want <= seen:
+            break
+    return seen
 
 
 def current_protection(repo: str) -> dict | None:
@@ -223,7 +252,7 @@ def main(argv: list[str]) -> int:
         # Safety: only require contexts that have actually posted (prevents forever-pending PRs).
         skipped: list[str] = []
         if not args.no_verify_posted:
-            seen = observed_contexts(repo)
+            seen = observed_contexts(repo, want=set(desired) | set(have))
             pinnable = [c for c in desired if c in seen or c in have]
             skipped = [c for c in desired if c not in pinnable]
         else:
@@ -236,8 +265,7 @@ def main(argv: list[str]) -> int:
         # A context that is ALREADY required but never posts is the schwab/fermyon hang:
         # PRs sit forever on "Expected — waiting for status". Flag it loudly.
         if not args.no_verify_posted:
-            seen_now = observed_contexts(repo)
-            phantom = [c for c in have if c not in seen_now]
+            phantom = [c for c in have if c not in seen]
             if phantom:
                 status_note += f"  ⛔ REQUIRED BUT NOT POSTING (hang risk): {phantom}"
 

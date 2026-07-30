@@ -19,7 +19,10 @@
   --critical:   #b60205;   /* sev/critical, awaiting-funds */
   --working:    #1d76db;   /* agent/working */
 
-  --code-bg:    #eceef4;
+  /* Inline code earns its distinction from COLOUR, not from a filled box behind it.
+     One value per theme, each chosen to contrast with that theme's ground. */
+  --code-ink:   #1d4470;
+  --code-bg:    #eceef4;   /* block listings only — a panel, not a text highlight */
   --chip-ink:   #ffffff;
 
   /* One width for prose and figures alike: text that stops short of the diagrams
@@ -41,6 +44,7 @@
     --rule:      #2c3350;
     --rule-soft: #232941;
     --code-bg:   #1e2439;
+    --code-ink:  #9ec5ee;
   }
 }
 :root[data-theme="dark"] {
@@ -52,6 +56,7 @@
   --rule:      #2c3350;
   --rule-soft: #232941;
   --code-bg:   #1e2439;
+  --code-ink:  #9ec5ee;
 }
 :root[data-theme="light"] {
   --paper:     #f3f4f7;
@@ -62,6 +67,7 @@
   --rule:      #d8dbe3;
   --rule-soft: #e6e8ee;
   --code-bg:   #eceef4;
+  --code-ink:  #1d4470;
 }
 
 /* ------------------------------------------------------------------- shell */
@@ -306,9 +312,7 @@ body {
 code {
   font-family: var(--mono);
   font-size: 0.845em;
-  background: var(--code-bg);
-  padding: 0.1em 0.34em;
-  border-radius: 2px;
+  color: var(--code-ink);
   word-break: break-word;
 }
 
@@ -364,7 +368,7 @@ tbody td {
 }
 tbody tr:last-child td { border-bottom: 0; }
 tbody td:first-child { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-soft); }
-table code { font-size: 0.8em; background: transparent; padding: 0; color: var(--ink-soft); }
+table code { font-size: 0.8em; }
 
 /* -------------------------------------------------------------- diagrams */
 .diagram {

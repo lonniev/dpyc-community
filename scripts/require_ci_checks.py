@@ -17,6 +17,7 @@ that have never been observed are SKIPPED with a loud warning — land their CI 
 
 Usage:
     require_ci_checks.py                 # dry-run (default): print current -> desired, no writes
+                                         # (also reports any repo missing the code-owner gate)
     require_ci_checks.py --apply         # perform the branch-protection PUTs
     require_ci_checks.py --apply --repo schwab-mcp   # limit to one repo
     require_ci_checks.py --no-verify-posted          # pin even contexts not yet observed (careful)
@@ -43,7 +44,9 @@ CONTEXTS: dict[str, list[str]] = {
     # Python operators / authorities / utilities — canonical single context.
     "tollbooth-sample": ["test (3.12)"],
     "schwab-mcp": ["test (3.12)"],
-    "excalibur-mcp": ["test (3.12)"],
+    # `frontend` builds the site and asserts the stylesheet is non-trivial — the gate
+    # that was missing when a tailwindcss major auto-merged and broke the deploy for a week.
+    "excalibur-mcp": ["test (3.12)", "frontend"],
     "cypher-mcp": ["test (3.12)"],
     "optionality-mcp": ["test (3.12)"],
     "taxsort-mcp": ["test (3.12)"],
@@ -130,16 +133,22 @@ def build_put_payload(prot: dict | None, contexts: list[str]) -> dict:
 
     payload["enforce_admins"] = bool((prot.get("enforce_admins") or {}).get("enabled", False))
 
-    rpr = prot.get("required_pull_request_reviews")
-    if rpr is None:
-        payload["required_pull_request_reviews"] = None
-    else:
-        payload["required_pull_request_reviews"] = {
-            "dismiss_stale_reviews": rpr.get("dismiss_stale_reviews", False),
-            "require_code_owner_reviews": rpr.get("require_code_owner_reviews", False),
-            "required_approving_review_count": rpr.get("required_approving_review_count", 0),
-            "require_last_push_approval": rpr.get("require_last_push_approval", False),
-        }
+    # ASSERT the money gate; do not merely preserve it. This function used to re-send an
+    # ABSENT required_pull_request_reviews block faithfully, which meant a repo whose
+    # protection had been created without the gate kept not having it every time this ran —
+    # and the docstring's promise not to weaken the gate was vacuously true, because there
+    # was nothing there to weaken. An audit found six factory repos in that state, including
+    # tollbooth-authority and schwab-mcp. Every repo in CONTEXTS is a factory repo, and the
+    # gate is doctrine for all of them (guard G3), so it is applied rather than inherited.
+    # Sibling settings are preserved when present: 0 approvals so docs/tests still
+    # auto-merge, and enforce_admins stays as found so `--admin` remains possible.
+    rpr = prot.get("required_pull_request_reviews") or {}
+    payload["required_pull_request_reviews"] = {
+        "dismiss_stale_reviews": rpr.get("dismiss_stale_reviews", False),
+        "require_code_owner_reviews": True,
+        "required_approving_review_count": rpr.get("required_approving_review_count", 0),
+        "require_last_push_approval": rpr.get("require_last_push_approval", False),
+    }
 
     restrictions = prot.get("restrictions")
     if restrictions is None:
@@ -232,13 +241,23 @@ def main(argv: list[str]) -> int:
             if phantom:
                 status_note += f"  ⛔ REQUIRED BUT NOT POSTING (hang risk): {phantom}"
 
-        if sorted(have) == sorted(pinnable) and prot is not None:
+        # The contexts matching is not enough to call a repo done: the money gate is the
+        # other half of the profile, and a repo can sit here for months with the right
+        # checks and no code-owner review at all. Six did.
+        gate_ok = bool(
+            (( prot or {}).get("required_pull_request_reviews") or {}).get(
+                "require_code_owner_reviews", False
+            )
+        )
+        gate_note = "" if gate_ok else "  [+ adds the missing code-owner gate]"
+
+        if sorted(have) == sorted(pinnable) and prot is not None and gate_ok:
             print(f"{repo}: already required {have} — no change{status_note}")
             continue
 
         arrow = f"{have or '∅'} -> {pinnable}"
         create = "  [CREATE protection]" if prot is None else ""
-        print(f"{repo}: {arrow}{create}{status_note}")
+        print(f"{repo}: {arrow}{create}{status_note}{gate_note}")
 
         if args.apply:
             if not pinnable:

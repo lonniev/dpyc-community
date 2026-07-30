@@ -1,0 +1,81 @@
+# The registry gate that ALWAYS runs.
+#
+# `validate` is a required status check on main. It used to be produced only by
+# the two path-filtered workflows (members, relays), which meant a PR touching
+# anything else — network-status.json, a doc, the README — produced no `validate`
+# check at all. GitHub holds a required check that never reports as forever
+# pending, so those PRs were unmergeable no matter how many approvals they got.
+# A gate that cannot be satisfied is worse than no gate: it teaches people to
+# reach for --admin, which is exactly the bypass the code-owner rule exists to
+# prevent.
+#
+# So this workflow carries the `validate` name and runs on EVERY pull request,
+# unfiltered. The specialized workflows keep their path filters and their own
+# job names — they do the deep, push-time work (index regeneration); this one
+# answers the only question the branch rule is really asking: is the registry
+# still well-formed after this change?
+#
+# Every check here is cheap and unconditional. Nothing is skipped on a path
+# miss, because "skipped because nothing relevant changed" is the state that
+# created the bug.
+
+name: Validate Registry
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Members registry matches its schema and lookup cache
+        run: |
+          python scripts/generate_index.py --check
+          python scripts/validate_members.py
+
+      - name: Relays registry matches its schema
+        run: python scripts/validate_relays.py
+
+      # network-status.json has no schema (its shape is owned by
+      # scripts/generate_network_status.py, which is unit-tested). What it DOES
+      # need is to stay parseable and to keep the human-authored fields the
+      # generator preserves — a hand edit that drops `advisory` or a `minimum`
+      # floor would otherwise reach main unnoticed.
+      - name: network-status.json is parseable and keeps its human-authored fields
+        run: |
+          python - <<'PY'
+          import json, sys
+
+          with open("network-status.json") as f:
+              data = json.load(f)
+
+          missing = [k for k in ("components", "advisory", "protocols",
+                                 "last_updated", "architecture_notes")
+                     if k not in data]
+          if missing:
+              print(f"  network-status.json lost top-level field(s): {missing}")
+              sys.exit(1)
+
+          floorless = [name for name, c in data["components"].items()
+                       if not c.get("minimum")]
+          if floorless:
+              print("  Components with no `minimum` security floor "
+                    f"(only a human may set one): {floorless}")
+              sys.exit(1)
+
+          print(f"network-status.json valid — {len(data['components'])} components.")
+          PY

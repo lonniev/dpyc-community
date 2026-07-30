@@ -1,0 +1,119 @@
+# Open a PR as the factory App — deterministic, NO agent.
+#
+# WHY THIS EXISTS. GitHub refuses to let an account approve a pull request it authored. So
+# work done at the keyboard, pushed with the owner's own credentials, can never pass the
+# code-owner gate — it can only be forced past it with `gh pr merge --admin`. Nine PRs
+# landed that way in a single evening, each one bypassing guard G3 rather than satisfying
+# it, on repos where CODEOWNERS is the money gate.
+#
+# The factory already solved this for its own crew: a Journeyman PR is authored by
+# `app/dpyc-agentic-desk`, which is a different account from the owner, so the owner can
+# review it and `approval-merge.yml` lands it. This workflow lends that same identity to
+# work done outside a runner.
+#
+# WHY IT LIVES IN A WORKFLOW rather than a local script. The App's private key is already a
+# repo secret, and a secret is write-only — nothing can read it back out, which is the
+# point of it being a secret. The alternative was a .pem on someone's laptop, copied to
+# every machine and harness that might want to open a PR. Taking the work to the secret
+# instead means no key on any laptop, and any tool that can run `gh` can use this with no
+# credential setup at all.
+#
+# WHAT IT CANNOT DO. The token is downscoped to pull-requests + contents:read. It cannot
+# push code, cannot merge, and cannot approve. The head branch must already exist, pushed
+# by a human with their own credentials. All this does is turn an existing branch into a
+# PR under a different name — the same bounded posture escalation.yml takes with its
+# issues-only account-wide token.
+name: Open a PR as the factory App
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: Target repository, name only (e.g. tollbooth-dpyc).
+        required: true
+        type: string
+      head:
+        description: Existing head branch to open the PR from.
+        required: true
+        type: string
+      title:
+        description: PR title.
+        required: true
+        type: string
+      body:
+        description: PR body. Must state who actually wrote the change (see below).
+        required: true
+        type: string
+      base:
+        description: Base branch.
+        required: false
+        default: main
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: dpyc-open-pr-as-app-${{ inputs.repo }}-${{ inputs.head }}
+  cancel-in-progress: false
+
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    steps:
+      # Account-wide, because the target is any fleet repo — but narrowed to the two
+      # permissions a PR needs. No contents:write: this workflow never pushes code.
+      - name: Mint a PR-only token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-pull-requests: write
+          permission-contents: read
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ inputs.repo }}
+          HEAD: ${{ inputs.head }}
+          BASE: ${{ inputs.base }}
+          TITLE: ${{ inputs.title }}
+          BODY: ${{ inputs.body }}
+        run: |
+          set -euo pipefail
+          full="$OWNER/$REPO"
+
+          # The branch must already exist. This workflow deliberately cannot create one:
+          # pushing code is the human's act, and keeping it that way is what makes the
+          # narrow token honest.
+          if ! gh api "repos/$full/branches/$HEAD" --jq .name >/dev/null 2>&1; then
+            echo "::error::branch '$HEAD' does not exist on $full — push it first, with your own credentials"
+            exit 1
+          fi
+
+          # Provenance is not optional. A PR wearing the App's name says "the factory did
+          # this", and if a person or an outside harness did it, the body has to say so —
+          # the same reason cypher-mcp hard-codes llm-inferred-unverified as a literal so
+          # an agent cannot claim authority it does not have.
+          if ! printf '%s' "$BODY" | grep -qi "authored by\|written by\|opened on behalf of"; then
+            echo "::error::the body must state who actually wrote this change (e.g. 'Authored by <who> at the owner's direction')."
+            exit 1
+          fi
+
+          existing=$(gh pr list --repo "$full" --head "$HEAD" --state open --json number --jq '.[0].number' 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            echo "PR already open for $HEAD: #$existing — nothing to do."
+            exit 0
+          fi
+
+          url=$(gh pr create --repo "$full" --base "$BASE" --head "$HEAD" \
+                  --title "$TITLE" --body "$BODY")
+          echo "Opened $url"
+
+          # An App-token event does not dispatch workflows, so this PR has NO checks yet.
+          # Saying so on the PR is better than leaving a reviewer to notice an empty
+          # check list and guess why.
+          gh pr comment "$url" --body "$(printf 'ℹ️ Opened under the factory App so the repository owner can review it — GitHub does not permit approving your own PR.\n\n**CI has not run yet.** GitHub suppresses workflow dispatch for events raised by an App token, so no checks fired when this PR was created. Push one more commit to this branch with a human credential to wake them, and do not approve until they are green.')"
+          echo "::notice::CI has NOT run. Push a commit to $HEAD with human credentials to trigger checks."

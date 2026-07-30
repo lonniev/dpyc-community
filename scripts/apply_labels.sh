@@ -37,6 +37,7 @@ labels=(
   "blocked/upstream|e99695|Fix belongs in the SDK or a sibling repo"
   "rejected/upstream|e99695|Target repo declined an escalation; routes the reason back to the origin"
   "blocked/arbitration|b60205|Routing standoff — two repos disagree on ownership; a human must decide"
+  "blocked/conflict|e99695|Conflicts with the base branch — no PR workflow will fire until it is resolved"
 
   "rejected/spam|cfd3d7|Advertising / junk; closed"
   "rejected/out-of-scope|cfd3d7|Out of this repo's scope; closed"

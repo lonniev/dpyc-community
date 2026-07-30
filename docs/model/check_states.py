@@ -105,6 +105,18 @@ IGNORABLE: dict[tuple[str, str, str], str] = {
     ("PullRequestLifecycle", "Passed", "OwnerRequestsChanges"): "Reaches Revising via AwaitingHuman.",
     ("PullRequestLifecycle", "Revising", "OwnerRequestsChanges"): "Already revising.",
 
+    # Conflicted is the DEAF state: these events genuinely arrive and genuinely do
+    # nothing, because GitHub dispatches no PR workflow run while a PR is dirty. That is
+    # not an omission in the machine — it is the property the state exists to represent,
+    # and the reason Conflict Watch has to say so out loud in a comment.
+    ("PullRequestLifecycle", "Conflicted", "CreditOutage"):
+        "No workflow is dispatched, so no agent runs and there is nothing to defer.",
+    ("PullRequestLifecycle", "Conflicted", "OwnerApproves"):
+        "The review is accepted by GitHub and reaches nothing — no run fires, and on a repo "
+        "with dismiss_stale_reviews the resolving push will discard it too.",
+    ("PullRequestLifecycle", "Conflicted", "OwnerRequestsChanges"):
+        "Same deafness: PR Revision is triggered by a review event, and none is dispatched.",
+
     ("FundingBlockLifecycle", "None", "ItemClosed"): "No block exists to retire.",
     ("FundingBlockLifecycle", "Active", "CreditOutage"): "Already blocked.",
     ("FundingBlockLifecycle", "Cleared", "ItemClosed"):

@@ -1,0 +1,95 @@
+# DPYC Conflict Watch — deterministic, NO agent, fleet-wide.
+#
+# A conflicted PR is INVISIBLE to this pipeline. GitHub dispatches no workflow runs at all
+# for a PR whose merge state is DIRTY — not `pull_request_review`, not `labeled`, nothing —
+# so QA, auto-merge and Merge on Approval simply never hear about it. An owner can approve
+# such a PR and watch nothing happen, with no red X anywhere to explain the silence. That
+# happened on tollbooth-dpyc#167: approved at 10:35, no run dispatched, the only conflict a
+# CHANGELOG entry from a PR that had landed on main forty minutes earlier.
+#
+# Nothing else covers this. The Housekeeper's stall sweep reads QA verdicts and age, not
+# mergeability, and it is weekly. So this runs hourly, deterministically, over every repo the
+# factory App is installed on: mark the PRs that have fallen out of mergeability, and unmark
+# them when they come back. No LLM — "does this branch conflict with its base" is a fact
+# GitHub already computed, not a judgement.
+#
+# It deliberately does NOT resolve anything. Resolving a conflict means deciding what the
+# merged text should say, which is the Journeyman's work or a human's, never a sweeper's.
+name: DPYC Conflict Watch
+
+on:
+  schedule:
+    - cron: "37 * * * *"   # hourly, offset off the canary's :00/:30 so the two never collide
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: dpyc-conflict-watch
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      # Fleet-scoped: omitting `repositories` scopes the token to every repo the App is
+      # installed on, which is the same DRY definition of "the fleet" the credit canary uses.
+      - name: Mint fleet-scoped App token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Mark and unmark conflicted PRs
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -uo pipefail
+          marker="<!-- dpyc-conflict -->"
+          flagged=0; cleared=0; unknown=0
+
+          for repo in $(gh api --paginate /installation/repositories \
+                          --jq '.repositories[].full_name' 2>/dev/null || true); do
+            for pr in $(gh pr list --repo "$repo" --state open --json number \
+                          --jq '.[].number' 2>/dev/null || true); do
+
+              # GitHub computes mergeability lazily: the first read after a push returns
+              # UNKNOWN while it works. Asking again is what settles it. Three tries, then
+              # leave the PR alone — guessing from UNKNOWN is how a healthy PR gets labelled.
+              state=""
+              for _ in 1 2 3; do
+                state=$(gh pr view "$pr" --repo "$repo" --json mergeable --jq '.mergeable' 2>/dev/null || echo "")
+                [ "$state" = "UNKNOWN" ] || [ -z "$state" ] || break
+                sleep 4
+              done
+
+              labels=$(gh pr view "$pr" --repo "$repo" --json labels --jq '[.labels[].name]|join(",")' 2>/dev/null || echo "")
+              case ",$labels," in *",blocked/conflict,"*) marked=1 ;; *) marked=0 ;; esac
+
+              if [ "$state" = "CONFLICTING" ]; then
+                [ "$marked" = "1" ] && continue          # already flagged; say nothing twice
+                gh label create "blocked/conflict" --repo "$repo" --color e99695 \
+                  --description "Conflicts with the base branch — no PR workflow will fire until it is resolved" \
+                  --force >/dev/null 2>&1 || true
+                gh pr edit "$pr" --repo "$repo" --add-label "blocked/conflict" >/dev/null 2>&1 || true
+                gh pr comment "$pr" --repo "$repo" --body "$(printf '%s\n**This PR conflicts with its base branch, and that makes it invisible to the pipeline.**\n\nGitHub dispatches no PR workflow runs while a pull request is in this state, so QA, auto-merge and Merge on Approval will not fire — and an approval submitted now would appear to do nothing at all. There is no failing check to explain the silence, which is why this comment exists.\n\nMerge or rebase the base branch into this one and resolve the conflict. The label clears itself on the next sweep once the PR is mergeable again.' "$marker")" >/dev/null 2>&1 || true
+                echo "  FLAGGED  $repo#$pr"
+                flagged=$((flagged + 1))
+              elif [ "$state" = "MERGEABLE" ]; then
+                if [ "$marked" = "1" ]; then
+                  gh pr edit "$pr" --repo "$repo" --remove-label "blocked/conflict" >/dev/null 2>&1 || true
+                  gh pr comment "$pr" --repo "$repo" --body "✅ Conflict resolved — this PR is mergeable again and the pipeline can see it. If you approved while it was conflicted, that approval reached nothing; approve again." >/dev/null 2>&1 || true
+                  echo "  CLEARED  $repo#$pr"
+                  cleared=$((cleared + 1))
+                fi
+              else
+                echo "  unknown mergeability, left alone: $repo#$pr"
+                unknown=$((unknown + 1))
+              fi
+            done
+          done
+          echo "Flagged $flagged, cleared $cleared, undetermined $unknown."

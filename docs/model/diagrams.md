@@ -118,6 +118,7 @@ flowchart LR
         FS{{"🩺 <b>Funding Sentinel</b>"}}:::det
         CC{{"🐤 <b>Credit Canary</b><br/><i>every 30 min</i>"}}:::det
         BR{{"🗃 <b>Block Retire</b>"}}:::det
+        CW{{"⛔ <b>Conflict Watch</b><br/><i>hourly · flags PRs the pipeline cannot see</i>"}}:::det
     end
 
     HUMAN(["👤 Human or stranger"]):::human
@@ -145,6 +146,7 @@ flowchart LR
     DLINT -.->|"fails the build red"| AGENTIC
     FS -.->|"awaiting-funds"| CC
     CC -.->|"replays the deferred item"| AGENTIC
+    CW -.->|"blocked/conflict — a deaf PR, made visible"| OWNER
     ESC -.->|"chains reconciled weekly"| DG
     DG -.->|"one pinned digest"| HUMAN
 
@@ -229,6 +231,13 @@ stateDiagram-v2
 
 ## 4. Pull request lifecycle
 
+One state here is unlike the others. **`blocked/conflict` is not blocked, it is deaf**:
+GitHub dispatches no PR workflow runs at all while a pull request conflicts with its base,
+so QA, auto-merge and Merge on Approval never hear about it. An owner can approve and watch
+nothing happen, with no failing check to explain the silence. A PR enters it without doing
+anything — someone else merged first — which is why the hourly Conflict Watch sweep exists
+to notice and say so.
+
 Two merge paths, both deterministic, neither able to bypass branch protection. The
 "Merge Oops" question answers itself here: `--auto` never lands on a red required check —
 it *holds* until the gates go green, so a bad merge is not a risk this design mitigates,
@@ -248,6 +257,7 @@ stateDiagram-v2
     state "✅ Merged" as Merged
     state "⏸ awaiting-funds" as PRFunds
     state "🗃 Closed unmerged — the Housekeeper unstrands the waiting issue" as Abandoned
+    state "⛔ blocked/conflict — DIRTY: no PR workflow fires at all" as Conflicted
 
     AwaitingQA --> Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --> Flagged: any concern
@@ -278,6 +288,13 @@ stateDiagram-v2
     Passed --> Abandoned
     Human --> Abandoned
     Revising --> Abandoned
+    AwaitingQA --> Conflicted: the base moved — someone else merged first
+    Passed --> Conflicted
+    Human --> Conflicted
+    Revising --> Conflicted
+    Armed --> Conflicted
+    Conflicted --> AwaitingQA: conflict resolved — a push, so review starts over
+    Conflicted --> Abandoned: closed instead
     Merged --> [*]
     Abandoned --> [*]
     classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
@@ -294,6 +311,7 @@ stateDiagram-v2
     class Armed done
     class PRFunds money
     class Abandoned stop
+    class Conflicted warn
 ```
 
 ---

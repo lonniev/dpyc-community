@@ -16,61 +16,55 @@ signed, patron-authenticated call rather than a database connection.
 
 ```mermaid
 flowchart TB
-    subgraph SRC["Source of truth — lonniev/dpyc-community"]
-        RW["Reusable workflows<br/><code>.github/workflows/*.yml</code><br/><i>workflow_call · human-only skeletons</i>"]
-        PR["Role prompts<br/><code>factory/*.prompt.md</code><br/><i>crew-editable by PR</i>"]
-        CA["Composite actions<br/><code>factory/actions/{resolve-model,funding-sentinel}</code>"]
-        DL["<code>scripts/doctrine_lint.py</code><br/><i>the tripwires</i>"]
-        SC["<code>scripts/{sync-factory-callers,apply_labels,require_ci_checks}</code>"]
+    subgraph SRC["📦 Source of truth — lonniev/dpyc-community"]
+        RW["📜 Reusable workflows<br/><code>.github/workflows/*.yml</code><br/><i>workflow_call · human-only skeletons</i>"]:::src
+        PR["📝 Role prompts<br/><code>factory/*.prompt.md</code><br/><i>crew-editable by PR</i>"]:::src
+        CA["🧩 Composite actions<br/><code>resolve-model · funding-sentinel</code>"]:::src
+        DL{{"🚧 doctrine_lint.py<br/><i>the tripwires</i>"}}:::det
+        SC["🛠 sync-callers · apply_labels · require_ci_checks"]:::src
     end
 
-    subgraph CTRL["Control plane — GitHub"]
-        TC["Thin callers in 18 repos<br/><code>.github/workflows/agentic-*.yml</code><br/><i>byte-identical · the if: guard is the boundary</i>"]
-        APP["GitHub App &quot;DPYC Agentic Desk&quot; · id 4292331<br/><i>account-wide · NO workflows:write</i>"]
-        BP["Branch protection + CODEOWNERS<br/><i>require_code_owner_reviews · approvals 0</i>"]
+    subgraph CTRL["🐙 Control plane — GitHub"]
+        TC["🔗 Thin callers in 18 repos<br/><i>byte-identical · the if: guard is the boundary</i>"]:::src
+        APP(["🔐 GitHub App · id 4292331<br/><i>account-wide · NO workflows:write</i>"]):::gate
+        BP{{"🛡 Branch protection + CODEOWNERS<br/><i>code-owner review · approvals 0</i>"}}:::det
     end
 
-    subgraph EXEC["Execution plane — GitHub Actions runners"]
-        UB["ubuntu-latest<br/><i>default for every role</i>"]
-        MAC["macos-latest<br/><i>auto-selected when *.xcodeproj / Package.swift is found</i>"]
-        CCA["<code>anthropics/claude-code-action@v1</code><br/><i>automation mode · bubblewrap sandbox</i>"]
-        KR["<code>python -m tollbooth.agent_keyring</code><br/><i>stdio MCP · holds the nsec · signs each call</i>"]
+    subgraph EXEC["🖥 Execution plane — Actions runners"]
+        UB["🐧 ubuntu-latest<br/><i>default for every role</i>"]:::ext
+        MAC["🍎 macos-latest<br/><i>when *.xcodeproj / Package.swift is found</i>"]:::ext
+        CCA["🤖 claude-code-action@v1<br/><i>automation mode · bubblewrap sandbox</i>"]:::agent
+        KR["🔑 tollbooth.agent_keyring<br/><i>stdio MCP · holds the nsec · signs each call</i>"]:::agent
     end
 
-    subgraph INF["Inference"]
-        ORT["OpenRouter<br/><code>ANTHROPIC_BASE_URL=https://openrouter.ai/api</code>"]
-        W["writer tier — Journeyman, PR Revision"]
-        R["reader tier — Porter, QA, Housekeeper, Dialogue"]
-        B["budget tier — Digest"]
+    subgraph INF["🧠 Inference — OpenRouter"]
+        W["✍️ writer — Journeyman, Revision"]:::agent
+        R["🔍 reader — Porter, QA, Housekeeper, Dialogue"]:::agent
+        B["📰 budget — Digest"]:::agent
     end
 
-    subgraph MEM["Memory + money plane — the DPYC network"]
-        CY["cypher-mcp<br/><i>named priced queries · never raw graph access</i>"]
-        AU[("Neo4j AuraDB<br/><i>ephemeral Bolt · free tier sleeps</i>")]
-        LN["BTCPay Lightning<br/><i>sats per graph call</i>"]
-        NR["Nostr relays<br/><i>kind-27235 proofs</i>"]
-        HZ["Horizon<br/><i>hosts the MCP operators</i>"]
-        NE[("Neon Postgres<br/><i>operator vaults + ledgers</i>")]
+    subgraph MEM["🕸 Memory + money — the DPYC network"]
+        CY["🗝 cypher-mcp<br/><i>named priced queries · never raw access</i>"]:::ext
+        AU[("🕸 Neo4j AuraDB<br/><i>ephemeral Bolt · free tier sleeps</i>")]:::data
+        LN(["⚡ BTCPay Lightning<br/><i>sats per graph call</i>"]):::money
+        NR(["📡 Nostr relays<br/><i>kind-27235 proofs</i>"]):::money
+        HZ["☁️ Horizon<br/><i>hosts the MCP operators</i>"]:::ext
+        NE[("🗄 Neon Postgres<br/><i>operator vaults + ledgers</i>")]:::data
     end
 
     RW -->|"uses: …@main"| TC
-    SC -->|"fans out, one PR per repo"| TC
+    SC -->|"one PR per repo"| TC
     TC -->|"secrets: inherit"| EXEC
     APP -->|"mints per-run scoped tokens"| EXEC
     DL --> BP
     PR -->|"curl at run time + restricted envsubst"| CCA
     CA --> CCA
-
     TC --> UB
     TC --> MAC
     UB --> CCA
     MAC --> CCA
     CCA -->|"--mcp-config, per-server env"| KR
-    CCA --> ORT
-    ORT --> W
-    ORT --> R
-    ORT --> B
-
+    CCA --> INF
     KR -->|"npub + fresh proof per call"| CY
     CY --> AU
     CY --> LN
@@ -78,11 +72,13 @@ flowchart TB
     CY -.hosted on.-> HZ
     HZ -.-> NE
 
-    style SRC fill:#1a1a2e,stroke:#F7931A,color:#fff
-    style CTRL fill:#16213e,stroke:#58a6ff,color:#fff
-    style EXEC fill:#16213e,stroke:#58a6ff,color:#fff
-    style INF fill:#1a1a2e,stroke:#8b5cf6,color:#fff
-    style MEM fill:#1a1a2e,stroke:#F7931A,color:#fff
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef det   fill:#e2f5e6,stroke:#0e8a16,stroke-width:1.5px,color:#0a4a10
+    classDef gate  fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+    classDef src   fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef ext   fill:#e8eef7,stroke:#5b7fa6,color:#1f3a5f
+    classDef data  fill:#e3edf9,stroke:#3f6fa8,stroke-width:1.5px,color:#12324f
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00
 ```
 
 **Stack facts worth keeping in view.** Python 3.12 is canonical fleet-wide, with the SDK
@@ -102,53 +98,60 @@ injection *and* a dry key at exactly the moments that matter.
 
 ```mermaid
 flowchart LR
-    subgraph AGENTIC["LLM roles — judgement"]
-        SCOUT["<b>Scout</b><br/>outside patron via SDK report_issue<br/><i>dpyc-scout · non-collaborator</i>"]
-        PORTER["<b>Porter</b> — Service Desk<br/><i>reader · 20 turns · issue ops only</i>"]
-        JM["<b>Journeyman</b> — Engineering<br/><i>writer · 140 turns · contents:write</i>"]
-        QA["<b>QA</b><br/><i>reader · 30 turns · diff only</i>"]
-        DIA["<b>PR Dialogue</b><br/><i>read-only by construction · anyone may summon</i>"]
-        REV["<b>PR Revision</b><br/><i>writer · OWNER-gated</i>"]
-        HK["<b>Housekeeper</b><br/><i>weekly sweep · Porter identity · per repo</i>"]
-        DG["<b>Digest</b> — the Dispatcher<br/><i>budget · weekly · fleet-wide · not reusable</i>"]
+    subgraph AGENTIC["🧠 LLM roles — judgement"]
+        SCOUT["🔭 <b>Scout</b><br/>outside patron via SDK report_issue<br/><i>dpyc-scout · non-collaborator</i>"]:::agent
+        PORTER["🛎 <b>Porter</b> — Service Desk<br/><i>reader · 20 turns · issue ops only</i>"]:::agent
+        JM["🔧 <b>Journeyman</b> — Engineering<br/><i>writer · 140 turns · contents:write</i>"]:::agent
+        QA["🔍 <b>QA</b><br/><i>reader · 30 turns · diff only</i>"]:::agent
+        DIA["💬 <b>PR Dialogue</b><br/><i>read-only by construction · anyone may summon</i>"]:::agent
+        REV["✍️ <b>PR Revision</b><br/><i>writer · OWNER-gated</i>"]:::agent
+        HK["🧹 <b>Housekeeper</b><br/><i>weekly sweep · Porter identity</i>"]:::agent
+        DG["📰 <b>Digest</b> — the Dispatcher<br/><i>budget · fleet-wide · not reusable</i>"]:::agent
     end
 
-    subgraph DET["Deterministic roles — policy"]
-        ESC["<b>Escalation</b><br/><i>only cross-repo writer · issues:write only</i>"]
-        AM["<b>Auto-merge</b><br/><i>path allowlist</i>"]
-        APM["<b>Merge on Approval</b><br/><i>--auto, cannot bypass protection</i>"]
-        DLINT["<b>Doctrine Lint</b><br/><i>the tripwires</i>"]
-        DV["<b>Deploy Verify</b><br/><i>sha compare after merge</i>"]
-        FS["<b>Funding Sentinel</b>"]
-        CC["<b>Credit Canary</b><br/><i>every 30 min</i>"]
-        BR["<b>Block Retire</b>"]
+    subgraph DET["⚙️ Deterministic roles — policy"]
+        ESC{{"🚚 <b>Escalation</b><br/><i>only cross-repo writer · issues:write only</i>"}}:::det
+        AM{{"🚦 <b>Auto-merge</b><br/><i>path allowlist</i>"}}:::det
+        APM{{"🔏 <b>Merge on Approval</b><br/><i>--auto, cannot bypass protection</i>"}}:::det
+        DLINT{{"🚧 <b>Doctrine Lint</b><br/><i>the tripwires</i>"}}:::det
+        DV{{"📡 <b>Deploy Verify</b><br/><i>sha compare after merge</i>"}}:::det
+        FS{{"🩺 <b>Funding Sentinel</b>"}}:::det
+        CC{{"🐤 <b>Credit Canary</b><br/><i>every 30 min</i>"}}:::det
+        BR{{"🗃 <b>Block Retire</b>"}}:::det
     end
 
-    SCOUT -->|"files an issue"| PORTER
-    HUMAN(["Human or stranger"]) -->|"opens an issue"| PORTER
+    HUMAN(["👤 Human or stranger"]):::human
+    OWNER(["👑 Repository owner"]):::human
+    ANY(["👥 Any reviewer"]):::human
+    MERGED(["✅ merged"]):::done
+
+    SCOUT -->|"files a field report"| PORTER
+    HUMAN -->|"opens an issue"| PORTER
     PORTER -->|"agent/fix"| JM
     PORTER -->|"blocked/upstream"| ESC
-    ESC -->|"agent/fix in the home repo"| JM
+    ESC -->|"files agent/fix upstream"| JM
     JM -->|"opens PR"| QA
     JM -->|"rejected/upstream"| ESC
     ESC -->|"agent/retriage + the decliner's reason"| PORTER
     QA -->|"qa/pass"| AM
-    OWNER(["Repository owner"]) -->|"approves"| APM
+    OWNER -->|"approves"| APM
     OWNER -->|"requests changes"| REV
-    ANY(["Any reviewer"]) -->|"@journeyman"| DIA
-    REV -->|"pushes to the head branch"| QA
-    AM --> MERGED(["merged"])
+    ANY -->|"@journeyman"| DIA
+    REV -->|"pushes to head"| QA
+    AM --> MERGED
     APM --> MERGED
     MERGED --> DV
     DV -->|"stale deploy → one agent/fix issue"| JM
     DLINT -.->|"fails the build red"| AGENTIC
     FS -.->|"awaiting-funds"| CC
     CC -.->|"replays the deferred item"| AGENTIC
-    ESC -.->|"escalation chains reconciled weekly"| DG
-    DG -.->|"one pinned digest issue · rescues wrongly bounced patrons"| HUMAN
+    ESC -.->|"chains reconciled weekly"| DG
+    DG -.->|"one pinned digest"| HUMAN
 
-    style AGENTIC fill:#1a1a2e,stroke:#8b5cf6,color:#fff
-    style DET fill:#16213e,stroke:#0e8a16,color:#fff
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef det   fill:#e2f5e6,stroke:#0e8a16,stroke-width:1.5px,color:#0a4a10
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:2px,color:#08370d
 ```
 
 ---
@@ -165,17 +168,17 @@ stateDiagram-v2
     direction TB
     [*] --> Opened
 
-    state "Opened" as Opened
-    state "Triaging — Porter" as Triaging
-    state "Rejected — closed" as Rejected
-    state "rejected/needs-info — stays open" as NeedsInfo
-    state "agent/fix — ready for Engineering" as Ready
-    state "agent/working — Journeyman on it" as Working
-    state "blocked/upstream — escalated" as Blocked
-    state "blocked/arbitration — frozen for a human" as Arb
-    state "awaiting-funds — deferred" as Funds
-    state "PR raised" as PRRaised
-    state "Closed" as Closed
+    state "📥 Opened" as Opened
+    state "🛎 Triaging — Porter" as Triaging
+    state "🚫 Rejected — closed" as Rejected
+    state "❓ needs-info — stays open" as NeedsInfo
+    state "🔧 agent/fix — ready for Engineering" as Ready
+    state "🔨 agent/working — Journeyman on it" as Working
+    state "⤴️ blocked/upstream — escalated" as Blocked
+    state "⚖️ blocked/arbitration — a human decides" as Arb
+    state "⏸ awaiting-funds — deferred" as Funds
+    state "🔀 PR raised" as PRRaised
+    state "✅ Closed" as Closed
 
     Opened --> Triaging: issue opened / reopened
     Triaging --> Triaging: claim_issue, then context_pack scopes the grep
@@ -207,6 +210,19 @@ stateDiagram-v2
     Closed --> Triaging: reopened — the reverse escalation path does this
     Rejected --> Triaging: reopened
     Closed --> [*]
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef stop  fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef warn  fill:#ffe6e2,stroke:#d93f0b,stroke-width:1.5px,color:#6b1c00
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:1.5px,color:#08370d
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+
+    class Triaging,Ready,Working agent
+    class Rejected,NeedsInfo stop
+    class Blocked warn
+    class Arb human
+    class Funds money
+    class PRRaised,Closed done
 ```
 
 ---
@@ -223,15 +239,15 @@ stateDiagram-v2
     direction TB
     [*] --> AwaitingQA
 
-    state "Awaiting QA" as AwaitingQA
-    state "qa/flag — concern raised" as Flagged
-    state "qa/pass" as Passed
-    state "Awaiting the owner — CODEOWNERS holds it" as Human
-    state "agent/revising — PR Revision at the bench" as Revising
-    state "Auto-merge armed — GitHub holds it pending" as Armed
-    state "Merged" as Merged
-    state "awaiting-funds" as PRFunds
-    state "Closed unmerged — the waiting issue is unstranded by the Housekeeper" as Abandoned
+    state "⏳ Awaiting QA" as AwaitingQA
+    state "🚩 qa/flag — concern raised" as Flagged
+    state "🔍 qa/pass" as Passed
+    state "👑 Awaiting the owner — CODEOWNERS holds it" as Human
+    state "✍️ agent/revising — PR Revision at the bench" as Revising
+    state "🔏 Auto-merge armed — GitHub holds it pending" as Armed
+    state "✅ Merged" as Merged
+    state "⏸ awaiting-funds" as PRFunds
+    state "🗃 Closed unmerged — the Housekeeper unstrands the waiting issue" as Abandoned
 
     AwaitingQA --> Passed: diff fixes the issue, test present, invariants intact
     AwaitingQA --> Flagged: any concern
@@ -264,6 +280,20 @@ stateDiagram-v2
     Revising --> Abandoned
     Merged --> [*]
     Abandoned --> [*]
+    classDef agent fill:#ede4ff,stroke:#5319e7,stroke-width:1.5px,color:#2a0d6e
+    classDef stop  fill:#f1f2f6,stroke:#8b93a7,color:#2a2f3a
+    classDef warn  fill:#ffe6e2,stroke:#d93f0b,stroke-width:1.5px,color:#6b1c00
+    classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00
+    classDef done  fill:#d7f0da,stroke:#0e8a16,stroke-width:1.5px,color:#08370d
+    classDef human fill:#fff0dc,stroke:#f7931a,stroke-width:1.5px,color:#6b3f00
+
+    class AwaitingQA,UnderReview,Revising agent
+    class Flagged warn
+    class Passed,Merged done
+    class Human human
+    class Armed done
+    class PRFunds money
+    class Abandoned stop
 ```
 
 ---
@@ -278,7 +308,7 @@ while every LLM node is dark.
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "Rail A — LLM credits · one shared key · OpenRouter" as RailA {
+    state "🧠 Rail A — LLM credits · one shared key · OpenRouter" as RailA {
         [*] --> Healthy
         Healthy --> Unknown: transient 429 / 529 / network
         Unknown --> Healthy: next probe returns 200
@@ -289,7 +319,7 @@ stateDiagram-v2
         Replaying --> Healthy: fleet swept, work re-fired
     }
 
-    state "Rail B — sats · per-agent patron balance" as RailB {
+    state "⚡ Rail B — sats · per-agent patron balance" as RailB {
         [*] --> Funded
         Funded --> Drained: balance spent
         Drained --> Funded: the human tops up
@@ -338,11 +368,11 @@ Mermaid sequence message is lexed as the start of an arrow token and breaks the 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant O as Origin repo
-    participant P as Porter @ origin
-    participant E as Escalation<br/>deterministic
-    participant H as Home repo
-    participant J as Journeyman @ home
+    participant O as 🐙 Origin repo
+    participant P as 🛎 Porter @ origin
+    participant E as ⚙️ Escalation<br/>deterministic
+    participant H as 🐙 Home repo
+    participant J as 🔧 Journeyman @ home
 
     P->>O: post the dpyc-escalation marker comment
     P->>O: apply blocked/upstream (the trigger — always last)

@@ -25,6 +25,41 @@ customizing YAML.
 | **Escalation** | `blocked/upstream` / `rejected/upstream` | no — routes across repos | `escalation.yml` |
 | **approval-merge / auto-merge** | OWNER approval / `qa/pass` | no — deterministic, no LLM | those workflows |
 
+### Opening a PR you did not author
+
+One piece serves work done *outside* a runner. GitHub refuses to let an account approve a
+PR it authored, so a change made at the keyboard and pushed with the owner's credentials
+**cannot pass the code-owner gate** — it can only be forced past it with
+`gh pr merge --admin`, which bypasses G3 rather than satisfying it.
+
+`open-pr-as-app.yml` lends the crew's identity to that work. Three steps, in order:
+
+1. **Push the branch yourself**, with your own credentials. Nothing here pushes code for
+   you, deliberately — that is what keeps the token narrow.
+2. **Open the PR as the App**, from any machine, with nothing to configure:
+   ```
+   gh workflow run "Open a PR as the factory App" --repo lonniev/dpyc-community \
+     -f repo=<target-repo> -f head=<branch> -f title="…" -f body="…"
+   ```
+   The private key never leaves the runner. It is already a repo secret, and secrets are
+   write-only — which is exactly why the work goes to the secret instead of copying a
+   `.pem` onto a laptop.
+3. **Push one more commit to wake CI.** GitHub suppresses workflow dispatch for events
+   raised by an App token, so a PR opened this way starts with **no checks at all**. One
+   commit from a human credential triggers them. Skip this and you have a PR that is
+   approvable but unverified — strictly worse than the `--admin` merge it replaced. This
+   is the step people miss; the workflow comments on the PR to say so.
+
+The token can only turn an existing branch into a PR: `pull-requests: write` plus
+`contents: read`, so no pushing and no merging. And **the body must name whoever actually
+wrote the change** — the workflow rejects one that does not. A PR wearing the App's name
+reads as "the factory did this", and the same principle that makes cypher-mcp hard-code
+`llm-inferred-unverified` as a Cypher literal applies to a convenience: it may not claim
+authority it does not have.
+
+Filing an **issue** needs none of this — any harness holding a Scout credential can call
+the SDK's `report_issue` and the Porter takes it from there.
+
 Two more pieces run without an LLM: `factory/actions/funding-sentinel` tags an item
 `awaiting-funds` when the shared Anthropic key is exhausted, and
 `factory-credit-canary.yml` replays that deferred work when credit returns.

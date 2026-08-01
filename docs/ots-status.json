@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-01T21:35:14.881244+00:00",
+  "collected_at": "2026-08-01T22:36:44.607950+00:00",
   "summary": {
     "operators": 11,
-    "total_notarizations": 32,
+    "total_notarizations": 31,
     "confirmed": 0,
-    "coverage_percent": 82
+    "coverage_percent": 73
   },
   "operators": [
     {
@@ -97,6 +97,14 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "26",
+          "root_hash": "7fc9595edbcdce0bee096cb95e25bfbff9778ffc954e94120ff76b8ac8df92aa",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-01 22:28:20.730034+00",
+          "receipt_count": 2
+        },
+        {
           "notarization_id": "25",
           "root_hash": "26deaf4ee54610a2e218751d93a41e69c9ade6046ccebf0d6e3f6ef71178f1b5",
           "leaf_count": 3,
@@ -167,14 +175,6 @@
           "status": "submitted",
           "created_at": "2026-07-26 15:18:15.876948+00",
           "receipt_count": 2
-        },
-        {
-          "notarization_id": "16",
-          "root_hash": "6c4c45b3d7f948fabb239a1846480e07eadc3fd831a99d7a3a792ed8b373370a",
-          "leaf_count": 3,
-          "status": "no_receipts",
-          "created_at": "2026-07-26 13:34:46.919249+00",
-          "receipt_count": 0
         }
       ],
       "status": "submitted",
@@ -217,18 +217,9 @@
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "b6b171dd89bb0f25657e4d5163ed11cce282c55822bfccc9ea95d1c082956c7b",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:37:06.019708+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "submitted",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

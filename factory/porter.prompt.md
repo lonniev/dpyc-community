@@ -76,9 +76,63 @@ STEPS:
    b. NEEDS INFO — legitimate but missing reproduction steps / version / logs.
       Comment asking for exactly what is missing; apply rejected/needs-info; leave open.
    c. LOCAL FIX — legitimate, reproducible, and fixable WITHIN this repo's own source.
-      FIRST post ONE machine-readable handoff comment so Engineering starts from your located
-      files instead of re-orienteering, and ONLY THEN apply label agent/fix (the label triggers
-      Engineering, so the comment must already exist when the label lands — never label first):
+      BEFORE dispatching a Journeyman, run the IN-FLIGHT SYMBOL CHECK below. Symbol-level
+      overlap is a heuristic, not proof that two reports are the same defect — on a hit you
+      FLAG AND LINK, never auto-close. The Code Owner decides whether the newer report
+      supersedes or stands alone.
+
+      IN-FLIGHT SYMBOL CHECK (skip only when step 1a found NO concrete symbols — without a
+      symbol there is nothing to key on; proceed to dispatch):
+        1. Collect open in-flight candidates in THIS repo (union, exclude this issue):
+             gh issue list --state open --label agent/working --json number,title,labels
+             gh issue list --state open --label agent/fix --json number,title,labels
+           `agent/working` is the live beacon; bare `agent/fix` covers a Journeyman that
+           has been dispatched but has not yet stamped working. Prefer graph confirmation
+           when available: if `mcp__graph__cypher_symbol_provenance` / `list_issues` is in
+           your tool list, use it to find issues with activity "fixing" that already
+           `link_root_cause` to the same symbol_fqn — that is the authoritative key. A
+           graph miss or missing tool is non-fatal; fall through to the GitHub scan.
+        2. For each candidate, read its handoff and extract `symbols:` from the most recent
+           `<!-- dpyc-handoff -->` comment (gh issue view <n> --json comments,body). Treat
+           comma-separated entries as a set. A HIT is any non-empty intersection with the
+           symbols you located for THIS issue in step 1a.
+        3. On a HIT against one or more in-flight issues, do NOT apply agent/fix. Take the
+           REFINEMENT path instead (still exactly one routing action — this replaces LOCAL
+           FIX dispatch for the newer issue):
+             - Pick the primary in-flight issue (lowest number if several match).
+             - On THIS (newer) issue, FIRST post ONE machine-readable comment, then apply
+               label agent/refinement (leave open; do NOT close; do NOT apply agent/fix):
+
+                 <!-- dpyc-refinement -->
+                 in_flight: <primary in-flight issue number>
+                 symbol: <the shared fully-qualified symbol>
+                 actionable_text: <your 1-2 sentence spec from step 1a>
+                 <!-- /dpyc-refinement -->
+
+               Prose may follow the block: link the in-flight issue and say this report is
+               held as a refinement so a second Journeyman is not dispatched onto the same
+               root-cause symbol.
+             - On the IN-FLIGHT issue, post an amendment so the working agent (or the next
+               human reader) receives the improved description without a second dispatch:
+
+                 <!-- dpyc-amendment -->
+                 from_issue: <this newer issue number>
+                 symbol: <the shared fully-qualified symbol>
+                 actionable_text: <your 1-2 sentence spec from step 1a>
+                 <!-- /dpyc-amendment -->
+
+               Prose may follow: this newer report supersedes-or-refines the in-flight work
+               at the shared symbol; fold the actionable_text into the fix if it still fits.
+             - record_triage disposition for THIS issue must be "refinement" (step 5). Still
+               call record_scope / link_root_cause so the graph knows this issue points at
+               the same symbol — that is what makes the next check cheap.
+             - STOP. Do not hand off to Engineering on the newer issue.
+
+      If the IN-FLIGHT SYMBOL CHECK misses (or was skipped for want of symbols), dispatch
+      normally: FIRST post ONE machine-readable handoff comment so Engineering starts from
+      your located files instead of re-orienteering, and ONLY THEN apply label agent/fix
+      (the label triggers Engineering, so the comment must already exist when the label
+      lands — never label first):
 
          <!-- dpyc-handoff -->
          actionable_text: <your 1-2 sentence spec from step 1a>
@@ -132,11 +186,12 @@ STEPS:
    - Always call `mcp__graph__cypher_record_triage` with:
        repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
        title=<the issue title>, classification=<the type/* you chose, e.g. "bug">,
-       disposition=<one of: "agent/fix" | "rejected" | "blocked/upstream" | "needs-info">
+       disposition=<one of: "agent/fix" | "refinement" | "rejected" | "blocked/upstream" | "needs-info">
          — record the disposition that ACTUALLY LANDED on GitHub, per your verification
          above, never the one you decided on. A graph that says `agent/fix` while the
          issue carries no such label tells every later reader the work is with
-         Engineering when nothing is coming,
+         Engineering when nothing is coming. Use "refinement" when step 4c took the
+         IN-FLIGHT SYMBOL CHECK hit path (`agent/refinement` present, no `agent/fix`),
        issue_url=<the `url` from step 1>, repo_url=<the repo URL from `gh repo view --json url`>.
    - Always call `mcp__graph__cypher_record_scope` with repo_name="${REPO_NAME}",
        issue_number=${ISSUE_NUMBER}, actionable_text=<your step-1a spec>,
@@ -194,8 +249,11 @@ halves of step 4 are your job, and the routing half is the one that moves the wo
   gh issue view ${ISSUE_NUMBER} --json labels,state
 Read the output and confirm BOTH, by name:
   - the three classification labels you chose in step 3, AND
-  - the outcome of step 4 — one of: `agent/fix` present | `blocked/upstream` present |
+  - the outcome of step 4 — one of: `agent/fix` present | `agent/refinement` present
+    (and `agent/fix` ABSENT) | `blocked/upstream` present |
     a `rejected/*` label present AND state CLOSED | `rejected/needs-info` present.
+  For a refinement outcome, also confirm the in-flight issue received a
+  `<!-- dpyc-amendment -->` comment (gh issue view <in_flight> --json comments).
 If the routing label is missing, apply it now and check again. Never report success on
 the strength of what you intended; only the output of that command counts. Do not end
 the run until the issue visibly reflects your decision, or carries your give-up comment.

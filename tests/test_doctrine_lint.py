@@ -62,6 +62,40 @@ def test_journeyman_prompt_encodes_test_first_discipline():
     assert text.index("HUMAN-IN-THE-LOOP for un-runnable checks") < text.index("gh pr create")
 
 
+# --- Porter in-flight symbol refinement (issue #171) -----------------------------
+# A later issue that lands on the same root-cause symbol as an in-flight Journeyman
+# must NOT dispatch a second agent. The Porter flags+links (refinement), amends the
+# in-flight issue's actionable_text, and never auto-closes — symbol overlap is a
+# heuristic, not proof. These markers pin that path into the prompt + label taxonomy.
+def test_porter_prompt_encodes_in_flight_symbol_refinement():
+    text = (REPO_ROOT / "factory" / "porter.prompt.md").read_text(encoding="utf-8")
+    labels = (REPO_ROOT / "scripts" / "apply_labels.sh").read_text(encoding="utf-8")
+
+    # 1. The check exists and sits inside LOCAL FIX, before agent/fix dispatch.
+    assert "IN-FLIGHT SYMBOL CHECK" in text
+    assert text.index("IN-FLIGHT SYMBOL CHECK") < text.index(
+        "If the IN-FLIGHT SYMBOL CHECK misses"
+    )
+
+    # 2. In-flight is detected via the live beacons the factory already stamps.
+    assert "agent/working" in text
+    assert "agent/fix" in text  # bare fix covers dispatched-but-not-yet-working
+
+    # 3. On a hit: link + amend + hold open as refinement — never auto-close, never
+    #    second Journeyman. The caveat that overlap is heuristic (not proof) must stay.
+    assert "agent/refinement" in text
+    assert "dpyc-refinement" in text
+    assert "dpyc-amendment" in text
+    assert "never auto-close" in text.lower() or "FLAG AND LINK" in text
+    assert "Do NOT apply agent/fix" in text  # the hit path forbids a second dispatch
+
+    # 4. record_triage disposition vocabulary includes refinement.
+    assert '"refinement"' in text
+
+    # 5. The shared label taxonomy carries agent/refinement so fleet repos can stamp it.
+    assert "agent/refinement|" in labels
+
+
 # --- Journeyman language-agnostic SDLC (issue #94) ----------------------------
 # The Engineering role must not hard-assume Python. The SDLC (spec → test → code →
 # unit test → build → integration test → deploy) is universal; the toolchain is a

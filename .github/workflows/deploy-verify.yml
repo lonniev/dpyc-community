@@ -40,6 +40,11 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    outputs:
+      # True ONLY when the running service was proven to serve the merged sha. The job
+      # exits 0 on several non-success paths too (it files an issue rather than failing),
+      # so downstream work must gate on THIS, never on job success.
+      deployed: ${{ steps.probe.outputs.deployed }}
     steps:
       - name: Mint scoped App token
         id: token
@@ -49,6 +54,7 @@ jobs:
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
 
       - name: Probe the live service and verify the redeploy
+        id: probe
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           REPO: ${{ github.repository }}
@@ -135,6 +141,9 @@ jobs:
             msg="✅ Deploy verified live: version ${version}, serving \`${short_new}\` (matches the merge)."
             echo "$msg"
             [ -n "$PR" ] && gh pr comment "$PR" --repo "$REPO" --body "$msg" || true
+            # The live tool surface is now the merged one — and that, not the merge itself,
+            # is what the intention graph projects. Tell the follow-on job it may re-read.
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -164,3 +173,21 @@ jobs:
           gh label create agent/fix --repo "$REPO" --color d73a4a --force >/dev/null 2>&1 || true
           gh issue create --repo "$REPO" --label agent/fix --title "$title" --body "$body"
           echo "Opened agent/fix issue for a stale/failed deploy."
+
+  # The graph follows the code — but only once the code is actually SERVING.
+  #
+  # The intention forward map is derived from each service's LIVE tool surface, so a merge
+  # alone changes nothing it can see: `main` moves, the running service does not, and a
+  # harvest fired on merge would faithfully record the pre-merge projection. Gating on the
+  # verified deploy is what makes "a PR alters Cypher's projection" true rather than merely
+  # timely. The weekly sweep stays as the safety net for anything this path misses.
+  #
+  # Scoped to the one service that moved: an unscoped run probes every operator, which on a
+  # per-deploy trigger would cold-start the whole fleet to learn about one of them.
+  project:
+    needs: verify
+    if: needs.verify.outputs.deployed == 'true'
+    uses: lonniev/dpyc-community/.github/workflows/intention-forward-map.yml@main
+    secrets: inherit
+    with:
+      service: ${{ github.event.repository.name }}

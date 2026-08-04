@@ -22,14 +22,38 @@ name: Intention Forward Map
 
 on:
   workflow_dispatch:
+    inputs:
+      service:
+        description: "Optional canonical slug (e.g. excalibur-mcp) to harvest alone; empty = full sweep."
+        type: string
+        default: ""
+  # Called by deploy-verify.yml once an operator's live service is confirmed to be
+  # serving the new sha. A merge changes `main`; it does NOT change the projection,
+  # because the derived map is probed from the RUNNING tool surface. Deploy is the
+  # moment the projection actually moved, so that is when we re-read it.
+  workflow_call:
+    inputs:
+      service:
+        description: "The canonical slug that just redeployed. Scopes the probe to that one service."
+        type: string
+        default: ""
+    secrets:
+      JOURNEYMAN_NSEC:
+        required: false
   schedule:
-    - cron: "23 5 * * 1"   # weekly, Mondays ~05:23 UTC — the map changes only when tools do
+    # The safety net, deliberately kept: it catches a service whose surface changed
+    # without a deploy-verify (a manual push, a rollback, a registry edit) and any
+    # deploy-triggered run that failed to reach a cold service.
+    - cron: "23 5 * * 1"   # weekly, Mondays ~05:23 UTC
 
 permissions:
   contents: read
 
 concurrency:
-  group: intention-forward-map
+  # Per-service, so two operators deploying at once do not serialize behind each other,
+  # while a full sweep still cannot overlap itself. never cancel-in-progress: a half-applied
+  # write plan is worse than a slow one.
+  group: intention-forward-map-${{ inputs.service || 'all' }}
   cancel-in-progress: false
 
 jobs:
@@ -52,10 +76,18 @@ jobs:
         run: pip install --quiet pyyaml fastmcp tollbooth-dpyc
 
       - name: Preview plan (always)
-        run: python scripts/intention_harvest.py --mode derived --dry-run
+        run: |
+          python scripts/intention_harvest.py --mode derived --dry-run \
+            ${SERVICE:+--service "$SERVICE"}
+        env:
+          SERVICE: ${{ inputs.service }}
 
       - name: Harvest the derived forward map
         # Skipped unless the Journeyman identity is configured — keeps the scheduled run
         # green before the secret/var are in place.
         if: ${{ env.JOURNEYMAN_NSEC != '' }}
-        run: python scripts/intention_harvest.py --mode derived
+        run: |
+          python scripts/intention_harvest.py --mode derived \
+            ${SERVICE:+--service "$SERVICE"}
+        env:
+          SERVICE: ${{ inputs.service }}

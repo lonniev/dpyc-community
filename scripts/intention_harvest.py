@@ -455,11 +455,27 @@ def main() -> int:
                     help="OPTIONAL transient capability manifest (uncommitted) for an authoring run.")
     ap.add_argument("--journeyman-npub", default=os.environ.get("JOURNEYMAN_NPUB", ""))
     ap.add_argument("--operator-npub", default=os.environ.get("OPERATOR_NPUB", ""))
+    ap.add_argument("--service", default="",
+                    help="OPTIONAL canonical service slug (e.g. excalibur-mcp) to restrict "
+                         "this run to. A deploy-triggered pass names the ONE service that "
+                         "just redeployed; without it every service is probed, which on a "
+                         "per-deploy trigger would cold-start the whole fleet to learn about "
+                         "one of them. The weekly full pass leaves this empty.")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the write plan; no network, no nsec")
     args = ap.parse_args()
 
     services = load_operators(Path(args.operators_dir))
+    if args.service:
+        wanted = canonical_service_name(args.service)
+        services = [s for s in services if s.name == wanted]
+        if not services:
+            # Loud, not fatal: a repo with no operator record is a legitimate state
+            # (a library, a not-yet-registered service). Failing the caller's deploy
+            # over it would make the graph a gate on shipping, which it must never be.
+            print(f"  ! no operator service named {wanted!r}; nothing to harvest",
+                  file=sys.stderr)
+            return 0
     # The manifest (capability whys + patent links) is optional and never committed. Patent
     # element NODES come from the committed doc regardless.
     manifest = (load_manifest(Path(args.manifest))

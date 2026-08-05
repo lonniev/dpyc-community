@@ -187,13 +187,20 @@ jobs:
   project:
     needs: verify
     if: needs.verify.outputs.deployed == 'true'
-    # The graph must never gate shipping — a principle this job violated the first time
-    # it ran. A harvest that cannot reach cypher, or hits a cold service, turned the
-    # OPERATOR's deploy-verify run red, reporting a deployment problem where there was
-    # none. Projection is bookkeeping that follows a successful deploy; it can never be
-    # a verdict on one. The weekly sweep re-reads whatever a failure here missed.
-    continue-on-error: true
+    # The graph must never gate shipping — a principle this job violated the first time it
+    # ran. A harvest that cannot reach cypher, or hits a cold service, turned the OPERATOR's
+    # deploy-verify run red, reporting a deployment problem where there was none.
+    # Projection is bookkeeping that follows a successful deploy; it can never be a verdict
+    # on one. The weekly sweep re-reads whatever a failure here missed.
+    #
+    # That protection CANNOT be spelled `continue-on-error` here. GitHub accepts only
+    # name/uses/with/secrets/needs/if/permissions/strategy/concurrency on a job that calls a
+    # reusable workflow, and rejects the whole FILE at parse time otherwise — a startup
+    # failure with zero jobs, which took `verify` down with it and left six merges
+    # unverified. A non-fatal callee is the only shape that works, so `advisory` is an
+    # input the callee honours. Keep this job's key set inside that list.
     uses: lonniev/dpyc-community/.github/workflows/intention-forward-map.yml@main
     secrets: inherit
     with:
       service: ${{ github.event.repository.name }}
+      advisory: true

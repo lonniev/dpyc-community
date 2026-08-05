@@ -37,6 +37,17 @@ on:
         description: "The canonical slug that just redeployed. Scopes the probe to that one service."
         type: string
         default: ""
+      advisory:
+        description: >-
+          When true, a harvest failure is reported but does not fail this workflow, so a
+          caller cannot be turned red by bookkeeping. deploy-verify sets it: the graph must
+          never gate an operator's deploy. It lives HERE rather than as the caller's
+          `continue-on-error` because that key is rejected on a reusable-workflow job and
+          takes the entire calling file down at parse time. Native runs (schedule,
+          dispatch) leave it false and stay strict — that is where a real breakage should
+          be loud.
+        type: boolean
+        default: false
     secrets:
       JOURNEYMAN_NSEC:
         required: false
@@ -87,7 +98,11 @@ jobs:
       - name: Install
         run: pip install --quiet pyyaml fastmcp tollbooth-dpyc
 
+      # Both probe steps reach the network — cypher-mcp and the operator's live surface —
+      # which is exactly what `advisory` exists to absorb. `inputs.advisory` is absent on
+      # schedule/dispatch, so the `|| false` keeps native runs strict.
       - name: Preview plan (always)
+        continue-on-error: ${{ inputs.advisory || false }}
         run: |
           python scripts/intention_harvest.py --mode derived --dry-run \
             ${SERVICE:+--service "$SERVICE"}
@@ -98,6 +113,7 @@ jobs:
         # Skipped unless the Journeyman identity is configured — keeps the scheduled run
         # green before the secret/var are in place.
         if: ${{ env.JOURNEYMAN_NSEC != '' }}
+        continue-on-error: ${{ inputs.advisory || false }}
         run: |
           python scripts/intention_harvest.py --mode derived \
             ${SERVICE:+--service "$SERVICE"}

@@ -187,6 +187,12 @@ jobs:
   project:
     needs: verify
     if: needs.verify.outputs.deployed == 'true'
+    # The graph must never gate shipping — a principle this job violated the first time
+    # it ran. A harvest that cannot reach cypher, or hits a cold service, turned the
+    # OPERATOR's deploy-verify run red, reporting a deployment problem where there was
+    # none. Projection is bookkeeping that follows a successful deploy; it can never be
+    # a verdict on one. The weekly sweep re-reads whatever a failure here missed.
+    continue-on-error: true
     uses: lonniev/dpyc-community/.github/workflows/intention-forward-map.yml@main
     secrets: inherit
     with:

@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-04T23:19:24.291395+00:00",
+  "collected_at": "2026-08-05T03:34:14.002269+00:00",
   "summary": {
     "operators": 11,
     "total_notarizations": 31,
     "confirmed": 0,
-    "coverage_percent": 27
+    "coverage_percent": 18
   },
   "operators": [
     {
@@ -80,7 +80,7 @@
           "receipt_count": 4
         }
       ],
-      "status": "submitted",
+      "status": "stale",
       "error": null
     },
     {

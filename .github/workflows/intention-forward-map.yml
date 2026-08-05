@@ -66,7 +66,19 @@ jobs:
     env:
       JOURNEYMAN_NSEC: ${{ secrets.JOURNEYMAN_NSEC }}
     steps:
+      # ALWAYS check out dpyc-community — this workflow's own repo, where the harvest
+      # script and members/ registry live. In a reusable workflow `actions/checkout`
+      # defaults to the CALLER's repository, so a deploy-triggered run from an operator
+      # repo checked that out instead and could not find scripts/intention_harvest.py.
+      # It worked on `schedule` only because caller and host are the same repo there.
+      #
+      # Native runs (schedule / dispatch) keep taking the current sha, so a branch can
+      # still be tested; an external caller pins main, which is the logic on record.
       - uses: actions/checkout@v4
+        with:
+          repository: lonniev/dpyc-community
+          ref: >-
+            ${{ github.repository == 'lonniev/dpyc-community' && github.sha || 'main' }}
 
       - uses: actions/setup-python@v6
         with:

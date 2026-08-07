@@ -112,6 +112,51 @@ def test_unknown_tool_is_rejected():
         ih._call("delete_everything")
 
 
+# --- symbol identity ---------------------------------------------------------
+
+@pytest.mark.parametrize("fqn", [
+    "tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny",   # python
+    "pricing-studio:PricingStudioCore.ConstraintSolver.resolve",        # swift
+    "excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState",  # ts keeps its path
+    "tollbooth-wasmcp:dpyc_crypto::schnorr::verify",                    # rust '::' survives
+])
+def test_canonical_symbol_fqns_are_accepted(fqn):
+    assert ih.check_symbol_fqn(fqn) == fqn
+
+
+@pytest.mark.parametrize("fqn", [
+    "mark_sent",                                        # no repo prefix -> cross-repo collision
+    "excalibur-mcp:",                                   # repo but no symbol
+    ":foo.bar",                                         # no repo
+    "Excalibur-MCP:a.b",                                # display name, not a slug
+    "excalibur-mcp:src.excalibur_mcp.db.posts.mark_sent",   # 'src' prefix
+    "excalibur-mcp:excalibur_mcp/db/posts.py",          # file extension
+    "excalibur-mcp:posts.mark_sent:42",                 # line number
+    "excalibur-mcp:posts.mark_sent(claim_stamp)",       # signature
+    "excalibur-mcp:posts mark_sent",                    # whitespace
+    "",
+    None,
+])
+def test_malformed_symbol_fqn_raises(fqn):
+    with pytest.raises(ValueError):
+        ih.check_symbol_fqn(fqn)
+
+
+def test_authored_symbols_are_validated_not_merely_nudged():
+    """A malformed fqn is refused outright, unlike a MISSING link (which only nudges).
+
+    The distinction is the point: the graph MERGEs every symbol write, so it can never
+    reject a bad name — it mints a junk node instead. A partial graph is fine; a wrong
+    one is not.
+    """
+    with pytest.raises(ValueError):
+        ih.plan_authored({"capabilities": [{"name": "C", "symbols": ["mark_sent"]}]})
+    with pytest.raises(ValueError):
+        ih.plan_authored({"invariants": [{"name": "I", "rule": "r", "guards": ["mark_sent"]}]})
+    # ...while omitting the link entirely stays perfectly legal.
+    assert ih.plan_authored({"invariants": [{"name": "I", "rule": "r"}]})
+
+
 # --- load_operators ----------------------------------------------------------
 
 def test_load_operators_flattens_and_skips_non_operators(tmp_path):
@@ -178,12 +223,12 @@ def _manifest():
             "consumers": ["schwab-mcp"],
             "keywords": "courier",
             "why": "because\n   reasons  wrap",
-            "symbols": ["tollbooth.secure_courier.SecureCourier"],
+            "symbols": ["tollbooth-dpyc:tollbooth.secure_courier.SecureCourier"],
         }],
         "invariants": [{
             "name": "nsec only",
             "rule": "operators are nsec only",
-            "guards": ["tollbooth.identity"],
+            "guards": ["tollbooth-dpyc:tollbooth.identity_proof.verify"],
         }],
     }
 
@@ -231,11 +276,11 @@ def test_connection_coverage_is_a_nudge_never_a_gate():
     # name+rule). Coverage never removes a call or raises.
     manifest = {
         "invariants": [
-            {"name": "fully linked", "rule": "MUST", "guards": ["a.b"], "patent_refs": [610]},
+            {"name": "fully linked", "rule": "MUST", "guards": ["tollbooth-dpyc:a.b"], "patent_refs": [610]},
             {"name": "bare invariant", "rule": "renew"},  # no guards, no patent
         ],
         "capabilities": [
-            {"name": "linked cap", "symbols": ["x.y"], "patent_refs": [400], "why": "because"},
+            {"name": "linked cap", "symbols": ["tollbooth-dpyc:x.y"], "patent_refs": [400], "why": "because"},
             {"name": "bare cap", "owners": ["r"]},  # no symbols/patent/why
         ],
     }

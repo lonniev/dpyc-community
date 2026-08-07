@@ -89,4 +89,15 @@ STEPS:
      reason=<why this satisfies the review — cite the reused primitive when step 4
      found one>.
    - `mcp__graph__cypher_bind_rationale_to_symbol` with the SAME decision_id and
-     symbol_fqn=<the fully-qualified name of the main symbol you revised>.
+     symbol_fqn=<the fully-qualified name of the main symbol you revised>, written
+     `<repo>:<the string a developer of that language would write to import it>`, split on the
+     FIRST colon. The repo prefix is REQUIRED: `fqn` is the graph's only identity for a symbol,
+     so a bare name collides across repos into one node wearing two services.
+       python `tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny`
+       swift  `pricing-studio:PricingStudioCore.ConstraintSolver.resolve`
+       ts     `excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState`
+     TypeScript keeps its path (extension dropped, `#` before the symbol) because in TS the
+     path IS the module identity. Python/Swift/Rust NEVER carry a file path — `anchor_symbol`
+     records `file_path` separately, and baking it in makes a file move orphan every edge.
+     Nothing rejects a malformed fqn — the write MERGEs it into a brand-new node — so match
+     the name the PR's own issue already used whenever there is one.

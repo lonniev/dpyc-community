@@ -119,6 +119,9 @@ def test_unknown_tool_is_rejected():
     "pricing-studio:PricingStudioCore.ConstraintSolver.resolve",        # swift
     "excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState",  # ts keeps its path
     "tollbooth-wasmcp:dpyc_crypto::schnorr::verify",                    # rust '::' survives
+    # Swift argument labels ARE the name — Xcode calls it this, so the graph must too.
+    "pricing-studio:PricingStudio.AuthorityDetailView.classifyBooksHealthLoad(_:)",
+    "pricing-studio:PricingStudio.Services.DMPollingService.postApprovalNotification(npub:dm:challenge:)",
 ])
 def test_canonical_symbol_fqns_are_accepted(fqn):
     assert ih.check_symbol_fqn(fqn) == fqn
@@ -132,7 +135,8 @@ def test_canonical_symbol_fqns_are_accepted(fqn):
     "excalibur-mcp:src.excalibur_mcp.db.posts.mark_sent",   # 'src' prefix
     "excalibur-mcp:excalibur_mcp/db/posts.py",          # file extension
     "excalibur-mcp:posts.mark_sent:42",                 # line number
-    "excalibur-mcp:posts.mark_sent(claim_stamp)",       # signature
+    "excalibur-mcp:posts.mark_sent(claim_stamp)",       # a parameter list, not Swift labels
+    "pricing-studio:Foo.bar(String,Int)",               # types churn; labels don't
     "excalibur-mcp:posts mark_sent",                    # whitespace
     "",
     None,

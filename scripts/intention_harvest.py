@@ -145,6 +145,12 @@ def _call(tool: str, **params: Any) -> Call:
 # Doctrine: ``factory/README.md`` -> "Symbol names in the graph".
 _FQN_REPO = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _FQN_SOURCE_SUFFIXES = (".py", ".ts", ".tsx", ".js", ".jsx", ".swift", ".rs")
+# Swift argument labels are part of a symbol's NAME, not its signature:
+# `postApprovalNotification(npub:dm:challenge:)` is what a Swift developer writes and what
+# Xcode calls it. So a trailing label clause is kept, while a parameter list — `(claim_stamp)`,
+# `(String, Int)` — is still refused, because that is the thing that churns on every refactor.
+# The tell is the trailing colon on every label.
+_FQN_SWIFT_LABELS = re.compile(r"\((?:(?:[A-Za-z_][A-Za-z0-9_]*|_):)*\)$")
 
 
 def check_symbol_fqn(fqn: Any) -> str:
@@ -178,16 +184,21 @@ def check_symbol_fqn(fqn: Any) -> str:
         raise ValueError(f"symbol fqn {fqn!r} names a repo but no symbol.")
     if any(ch.isspace() for ch in rest):
         raise ValueError(f"symbol fqn {fqn!r} contains whitespace.")
-    if "(" in rest:
+    # Peel a Swift argument-label clause off the end before the remaining checks: its colons
+    # are part of the name, not a line number, and its parens are not a signature.
+    body = _FQN_SWIFT_LABELS.sub("", rest)
+    if "(" in body or ")" in body:
         raise ValueError(
-            f"symbol fqn {fqn!r} carries a signature. Omit it — it changes on every refactor."
+            f"symbol fqn {fqn!r} carries a parameter list. Keep Swift argument labels "
+            f"(`foo(npub:dm:)`) — they are the name — but drop parameters and types, which "
+            f"churn on every refactor."
         )
-    if rest.startswith(("src.", "src/")):
+    if body.startswith(("src.", "src/")):
         raise ValueError(f"symbol fqn {fqn!r} carries a 'src' prefix. Drop it.")
-    if rest.endswith(_FQN_SOURCE_SUFFIXES):
+    if body.endswith(_FQN_SOURCE_SUFFIXES):
         raise ValueError(f"symbol fqn {fqn!r} ends in a file extension. Drop it.")
     # A lone ':' in the remainder is a line number; Rust's '::' path separator is fine.
-    if re.search(r"(?<!:):(?!:)", rest):
+    if re.search(r"(?<!:):(?!:)", body):
         raise ValueError(
             f"symbol fqn {fqn!r} carries a line number or a second prefix. A symbol's identity "
             f"must not move when the file does."

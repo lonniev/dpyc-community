@@ -133,6 +133,19 @@ STEPS:
      decision_id="${REPO_NAME}#${ISSUE_NUMBER}-<slug>",
      repo_name, issue_number, statement=<the decision behind your fix, one line>,
      reason=<why this fix, terse>.
+   - SYMBOL NAMES — every `symbol_fqn` below (and in every later step) is written
+     `<repo>:<the string a developer of that language would write to import it>`, split on the
+     FIRST colon. The repo prefix is REQUIRED: `fqn` is the graph's only identity for a symbol,
+     so a bare name collides across repos into one node wearing two services.
+       python `tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny`
+       swift  `pricing-studio:PricingStudioCore.ConstraintSolver.resolve`
+       ts     `excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState`
+     TypeScript keeps its path (extension dropped, `#` before the symbol) because in TS the
+     path IS the module identity. Python/Swift/Rust NEVER carry a file path — `anchor_symbol`
+     records `file_path` separately, and baking it in makes a file move orphan every edge.
+     Omit signatures, arity, line numbers, `src.` prefixes, and file extensions. Nothing
+     rejects a malformed fqn — the write MERGEs it into a brand-new node — so match an
+     existing name from your `context_pack` / `symbol_provenance` reads whenever one exists.
    - `mcp__graph__cypher_bind_rationale_to_symbol` with the SAME decision_id and
      symbol_fqn=<the fully-qualified name of the main symbol you changed>.
    - ANCHOR & CONNECT WHAT YOU TOUCHED — for each symbol you edited, record what you now know

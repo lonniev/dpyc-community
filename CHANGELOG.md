@@ -5,6 +5,28 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — one identity for a code symbol, fleet-wide
+
+- **Symbol naming convention** (`factory/README.md` → "Symbol names in the graph", stated
+  inline in `porter`/`journeyman`/`pr-revision` prompts): a symbol is
+  `<repo>:<what a developer of that language would write to import it>`, split on the first
+  colon. Every symbol-bearing write resolves through `MERGE (sym:Symbol {fqn: $symbol_fqn})`,
+  so `fqn` is a symbol's *only* identity and it is **not** scoped by repo — `index_symbol`'s
+  `repo_name` buys an `IN_SERVICE` edge, which accumulates but cannot disambiguate. Two repos
+  indexing `server.main` produced one node wearing two services; a fleet scaffolded from one
+  template is exactly that population. Python/Swift/Rust carry no file path (`anchor_symbol`
+  already records `file_path` + `verified_at_sha`, so location is deliberately not identity,
+  and baking it in makes a file move orphan every `REALIZED_BY`/`GUARDS`/authored `why`);
+  TypeScript keeps its path because in TS the path *is* the module identity.
+- **`check_symbol_fqn`** in `scripts/intention_harvest.py` — raises on a malformed name where
+  `connection_coverage` only nudges. The two describe different failures: a *missing* link is
+  a partial graph (fine — link generously, never gate); a *malformed* fqn is a wrong graph, a
+  junk node no query will ever find again. Every graph write MERGEs and none MATCHes, so
+  nothing downstream can reject one — the harvester is the last place that can. Shape only;
+  whether the repo exists and the symbol still does belong to a graph-wide audit.
+- Porter's in-flight duplicate check keys on this string, so the convention is what keeps two
+  spellings of one function from reading as two symbols and dispatching a duplicate fix.
+
 ### Added — PR Revision role + REUSE BEFORE BUILD
 
 - **PR Revision** (`factory/pr-revision.prompt.md`, `.github/workflows/pr-revision.yml`,

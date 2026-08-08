@@ -89,6 +89,45 @@ CODEOWNERS as the money-path human gate, and `scripts/doctrine_lint.py` in CI to
 that way — it fails the build on `workflows: write`, on self-approval verbs, on
 unqualified `gh pr merge`, and if a prompt loses its safety anchors.
 
+## Symbol names in the graph
+
+Every graph write that names code — `anchor_symbol`, `index_symbol`,
+`bind_capability_to_symbol`, `bind_rationale_to_symbol`, `guard_invariant_symbol` — resolves
+it through the same line: `MERGE (sym:Symbol {fqn: $symbol_fqn})`. Two consequences set the
+convention, and both fail **silently**:
+
+- **`fqn` is the only identity.** `index_symbol` takes a `repo_name`, but spends it on an
+  `IN_SERVICE` relationship, which can only accumulate — it cannot disambiguate. Two repos
+  indexing `server.main` produce *one* node wearing two services. A fleet of operators
+  scaffolded from one template is exactly the population where that happens.
+- **Every write MERGEs; none MATCHes.** There is no such thing as a rejected `fqn`. A typo,
+  or a second convention from a second author, mints a fresh node and links to it happily.
+
+So the name is:
+
+```
+<repo>:<the string a developer of that language would write to import it>
+```
+
+Split on the **first** colon. The repo prefix is mandatory.
+
+| lang | example |
+|---|---|
+| python | `tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny` |
+| typescript | `excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState` |
+| swift | `pricing-studio:PricingStudioCore.ConstraintSolver.resolve` |
+| rust | `tollbooth-wasmcp:dpyc_crypto::schnorr::verify` |
+
+It is one rule, not four: the surface differs because the languages differ. Python and Swift
+have real module paths; TypeScript's module identity *is* its path, so it keeps the path
+(extension dropped, `#` before the symbol).
+
+**Never put the file path in a Python/Swift/Rust `fqn`.** `anchor_symbol` already records
+`file_path` and `verified_at_sha` as properties — location is deliberately not identity.
+Encode it and a file move renames the node, orphaning every `REALIZED_BY`, `GUARDS`, and
+authored `why` pointing at it, with no error. Also excluded: signatures, arity, line numbers,
+`def`/`class` markers, a leading `src.`, and the file extension.
+
 ## Adding a new role
 
 This is the procedure the PR Revision role was built with; follow it as the worked example.

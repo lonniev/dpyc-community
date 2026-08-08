@@ -101,6 +101,22 @@ STEPS:
       FLAG AND LINK, never auto-close. The Code Owner decides whether the newer report
       supersedes or stands alone.
 
+      SYMBOL NAMES — every symbol you name, in a handoff or in a graph write, is written
+      `<repo>:<the string a developer of that language would write to import it>`, split on the
+      FIRST colon. The repo prefix is REQUIRED: `fqn` is the graph's only identity for a symbol,
+      so a bare name collides across repos into one node wearing two services.
+        python `tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny`
+        swift  `pricing-studio:PricingStudioCore.ConstraintSolver.resolve`
+        ts     `excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState`
+      TypeScript keeps its path (extension dropped, `#` before the symbol) because in TS the
+      path IS the module identity. Python/Swift/Rust NEVER carry a file path — `anchor_symbol`
+      records `file_path` separately, and baking it in makes a file move orphan every edge.
+      Omit signatures, arity, line numbers, `src.` prefixes, and file extensions. Nothing
+      rejects a malformed fqn — the write MERGEs it into a brand-new node — so match an
+      existing name from your `context_pack` / `symbol_provenance` reads whenever one exists.
+      The check below keys on this string: two spellings of one function read as two symbols,
+      the intersection comes up empty, and a duplicate fix gets dispatched.
+
       IN-FLIGHT SYMBOL CHECK (skip only when step 1a found NO concrete symbols — without a
       symbol there is nothing to key on; proceed to dispatch):
         1. Collect open in-flight candidates in THIS repo (union, exclude this issue):

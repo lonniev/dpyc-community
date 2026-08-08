@@ -39,6 +39,15 @@ partially connected.
   capabilities: [{name, keywords, owners[], consumers[], symbols[<fqn>], why, patent_refs[<int>]}]
   invariants:   [{name, rule, guards[<fqn>], patent_refs[<int>]}]
 
+Each ``<fqn>`` is ``<repo>:<what a developer of that language would write to import it>``,
+split on the FIRST colon — e.g. ``tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny``.
+The repo prefix is required (``fqn`` is the graph's only identity for a symbol, so a bare name
+collides across repos), and no Python/Swift/Rust fqn carries a file path (``anchor_symbol``
+records that separately). The graph itself can never reject a malformed one — every write
+MERGEs, so a bad name mints a junk node — which is why ``check_symbol_fqn`` RAISES here,
+unlike ``connection_coverage``, which only nudges. See ``factory/README.md`` → "Symbol names
+in the graph".
+
 The harvest already reflects this: ``assert_invariant`` needs only name+rule, and
 ``guard_invariant_symbol`` / ``link_invariant_to_patent`` / ``bind_capability_to_symbol`` /
 ``link_capability_to_patent`` fire ONLY when their array is populated. Every run prints a
@@ -73,6 +82,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -123,6 +133,77 @@ def _call(tool: str, **params: Any) -> Call:
     if tool not in ROLE_FOR_TOOL:
         raise KeyError(f"unknown factory tool: {tool}")
     return Call(tool=tool, params=params)
+
+
+# Symbol identity. Every symbol-bearing write in the graph resolves through the same line —
+# ``MERGE (sym:Symbol {fqn: $symbol_fqn})`` — so ``fqn`` is a symbol's ONLY identity, unscoped
+# by repo, and NOTHING downstream can reject a bad one: a malformed name simply mints a fresh
+# node and links to it happily. This function is therefore the last place a corrupt identity
+# can be refused, which is why it RAISES where ``connection_coverage`` only nudges. The two
+# are not the same rule: a MISSING link is a partial graph (fine — link generously, never
+# gate); a MALFORMED fqn is a wrong graph (a junk node no query will ever find again).
+# Doctrine: ``factory/README.md`` -> "Symbol names in the graph".
+_FQN_REPO = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_FQN_SOURCE_SUFFIXES = (".py", ".ts", ".tsx", ".js", ".jsx", ".swift", ".rs")
+# Swift argument labels are part of a symbol's NAME, not its signature:
+# `postApprovalNotification(npub:dm:challenge:)` is what a Swift developer writes and what
+# Xcode calls it. So a trailing label clause is kept, while a parameter list — `(claim_stamp)`,
+# `(String, Int)` — is still refused, because that is the thing that churns on every refactor.
+# The tell is the trailing colon on every label.
+_FQN_SWIFT_LABELS = re.compile(r"\((?:(?:[A-Za-z_][A-Za-z0-9_]*|_):)*\)$")
+
+
+def check_symbol_fqn(fqn: Any) -> str:
+    """Return ``fqn`` unchanged if it is a well-formed ``<repo>:<import path>``, else raise.
+
+    The name is what a developer of that language would write to import the symbol, prefixed
+    by its repo slug and a colon::
+
+        tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny
+        excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState
+
+    Only the shape is checked here. Whether the repo actually exists, and whether the symbol
+    still does, are graph-wide questions this per-call planner cannot see — they belong to an
+    audit that can read every Symbol node against every Service.
+    """
+    if not isinstance(fqn, str) or not fqn.strip():
+        raise ValueError(f"symbol fqn must be a non-empty string, got {fqn!r}")
+    fqn = fqn.strip()
+    repo, sep, rest = fqn.partition(":")
+    if not sep:
+        raise ValueError(
+            f"symbol fqn {fqn!r} has no '<repo>:' prefix. The repo prefix is required — fqn is "
+            f"the graph's only identity for a symbol, so a bare name collides across repos "
+            f"into one node wearing two services."
+        )
+    if not _FQN_REPO.match(repo):
+        raise ValueError(
+            f"symbol fqn {fqn!r}: {repo!r} is not a repo slug (lowercase, digits, hyphens)."
+        )
+    if not rest:
+        raise ValueError(f"symbol fqn {fqn!r} names a repo but no symbol.")
+    if any(ch.isspace() for ch in rest):
+        raise ValueError(f"symbol fqn {fqn!r} contains whitespace.")
+    # Peel a Swift argument-label clause off the end before the remaining checks: its colons
+    # are part of the name, not a line number, and its parens are not a signature.
+    body = _FQN_SWIFT_LABELS.sub("", rest)
+    if "(" in body or ")" in body:
+        raise ValueError(
+            f"symbol fqn {fqn!r} carries a parameter list. Keep Swift argument labels "
+            f"(`foo(npub:dm:)`) — they are the name — but drop parameters and types, which "
+            f"churn on every refactor."
+        )
+    if body.startswith(("src.", "src/")):
+        raise ValueError(f"symbol fqn {fqn!r} carries a 'src' prefix. Drop it.")
+    if body.endswith(_FQN_SOURCE_SUFFIXES):
+        raise ValueError(f"symbol fqn {fqn!r} ends in a file extension. Drop it.")
+    # A lone ':' in the remainder is a line number; Rust's '::' path separator is fine.
+    if re.search(r"(?<!:):(?!:)", body):
+        raise ValueError(
+            f"symbol fqn {fqn!r} carries a line number or a second prefix. A symbol's identity "
+            f"must not move when the file does."
+        )
+    return fqn
 
 
 # --------------------------------------------------------------------------- #
@@ -243,7 +324,8 @@ def plan_authored(manifest: dict[str, Any]) -> list[Call]:
         for consumer in cap.get("consumers", []) or []:
             calls.append(_call("link_capability_consumer", name=name, consumer_repo=consumer))
         for fqn in cap.get("symbols", []) or []:
-            calls.append(_call("bind_capability_to_symbol", name=name, symbol_fqn=fqn))
+            calls.append(_call("bind_capability_to_symbol", name=name,
+                               symbol_fqn=check_symbol_fqn(fqn)))
         # Authoritative why (Operator).
         if cap.get("why"):
             calls.append(_call("authorize_capability_why", name=name,
@@ -253,7 +335,8 @@ def plan_authored(manifest: dict[str, Any]) -> list[Call]:
         calls.append(_call("assert_invariant", name=name,
                            rule=" ".join(inv.get("rule", "").split())))
         for fqn in inv.get("guards", []) or []:
-            calls.append(_call("guard_invariant_symbol", name=name, symbol_fqn=fqn))
+            calls.append(_call("guard_invariant_symbol", name=name,
+                               symbol_fqn=check_symbol_fqn(fqn)))
     return calls
 
 

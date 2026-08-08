@@ -24,8 +24,24 @@ break. Verdicts:
     ok          the anchored file exists and the symbol is in it
     file_gone   the anchored path does not exist at HEAD
     symbol_gone the file is there; the symbol is not (the half a path check misses)
+    in_flight   absent at HEAD, but its verified_at_sha is NOT an ancestor of HEAD — the
+                anchor was recorded from an unmerged branch, so this is work in progress,
+                not rot
     unanchored  the graph never recorded a file_path — nothing to check
     no_repo     the repo is not checked out locally, so this row was not judged
+
+``in_flight`` exists because the first run of this audit called
+``metrics_harvest.profile_click_rate`` and ``time_of_day_cohort`` DELETED. They were not:
+they were new in excalibur-mcp#362, and the Journeyman had indexed them into the graph while
+working the branch, before the code ever reached main. Reporting live work as rot is the
+expensive direction. The distinction needs ``verified_at_sha`` — absent at HEAD *and* its sha
+is an ancestor means genuinely deleted; absent at HEAD *and* its sha is not means unmerged.
+That field has existed since Task 2 and this is the first thing to read it.
+
+⚠️ ``symbols_in_service`` does NOT return ``verified_at_sha`` — only fqn/lang/file. So rows
+sourced from it cannot make this distinction and will report ``symbol_gone`` for in-flight
+work. ``symbol_provenance`` does return it, one symbol per call. The listing read omitting the
+one field that dates an anchor is a gap in the read surface, not in this audit.
 
 Naming conformance (``factory/README.md`` -> "Symbol names in the graph") is reported on a
 SEPARATE axis, never as a verdict: before the migration nothing conforms, and an audit that
@@ -43,6 +59,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from collections import Counter
 from dataclasses import dataclass
@@ -139,6 +156,23 @@ def symbol_present(text: str, fqn: str, lang: str | None,
     return True, ""
 
 
+def sha_is_ancestor(repo_root: Path, sha: str) -> bool:
+    """Is ``sha`` reachable from HEAD? False for an unmerged branch — or an unknown sha.
+
+    Unknown counts as "not an ancestor" deliberately: a sha this clone has never fetched is
+    far more likely to be un-merged work than a deletion we can prove, and calling live code
+    deleted is the costlier mistake.
+    """
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(repo_root), "merge-base", "--is-ancestor", sha, "HEAD"],
+            capture_output=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return done.returncode == 0
+
+
 def _naming(fqn: str) -> tuple[bool, str]:
     try:
         check_symbol_fqn(fqn)
@@ -171,6 +205,9 @@ def audit_row(row: dict, repos_root: Path) -> Finding:
     present, missing = symbol_present(target.read_text(errors="replace"), fqn, lang,
                                       file_stem=target.stem)
     if not present:
+        sha = row.get("verified_at_sha")
+        if sha and not sha_is_ancestor(root, sha):
+            return finding("in_flight", f"anchored at {sha[:9]}, not an ancestor of HEAD")
         return finding("symbol_gone", f"missing: {missing}")
     return finding("ok")
 
@@ -193,7 +230,7 @@ def audit(rows: list[dict], repos_root: Path) -> list[Finding]:
 def format_report(findings: list[Finding], only: str | None = None) -> str:
     counts = Counter(f.verdict for f in findings)
     lines = [f"{len(findings)} distinct symbols audited", "", "ANCHORS"]
-    for verdict in ("ok", "symbol_gone", "file_gone", "unanchored", "no_repo"):
+    for verdict in ("ok", "symbol_gone", "file_gone", "in_flight", "unanchored", "no_repo"):
         if counts.get(verdict):
             lines.append(f"  {verdict:12s} {counts[verdict]}")
     stale = counts.get("symbol_gone", 0) + counts.get("file_gone", 0)

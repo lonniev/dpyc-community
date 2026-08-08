@@ -146,3 +146,61 @@ def test_report_is_never_a_gate():
     src = (REPO_ROOT / "scripts" / "symbol_audit.py").read_text()
     assert "return 0  # a report, never a gate" in src
     assert not hasattr(symbol_audit, "SystemExit_on_findings")
+
+
+# --- in-flight vs deleted ----------------------------------------------------
+
+def _git(repo: Path, *args: str) -> str:
+    import subprocess
+    return subprocess.run(["git", "-C", str(repo), *args],
+                          capture_output=True, text=True, check=True).stdout.strip()
+
+
+def test_a_symbol_from_an_unmerged_branch_is_in_flight_not_deleted(tmp_path):
+    """The audit's first run called excalibur-mcp#362's brand-new `profile_click_rate`
+    DELETED. It was not — the Journeyman had indexed it from the branch before the code
+    reached main. Absent-at-HEAD alone cannot tell rot from work in progress."""
+    import subprocess
+    repo = tmp_path / "r"
+    (repo / "src").mkdir(parents=True)
+    for a in (["init", "-q"], ["config", "user.email", "t@t"], ["config", "user.name", "t"]):
+        subprocess.run(["git", "-C", str(repo), *a], capture_output=True, check=True)
+    (repo / "src" / "m.py").write_text("def old(): ...\n")
+    _git(repo, "add", "-A"); _git(repo, "commit", "-qm", "base")
+    _git(repo, "checkout", "-qb", "feature")
+    (repo / "src" / "m.py").write_text("def old(): ...\ndef brand_new(): ...\n")
+    _git(repo, "add", "-A"); _git(repo, "commit", "-qm", "new symbol")
+    branch_sha = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "checkout", "-q", "-")           # back to the trunk, where it does not exist
+
+    row = {"fqn": "r:src.m.brand_new", "file": "src/m.py", "repo": "r", "lang": "python",
+           "verified_at_sha": branch_sha}
+    assert audit_row(row, tmp_path).verdict == "in_flight"
+    # ...while a symbol anchored at a sha that IS an ancestor is genuinely deleted
+    base_sha = _git(repo, "rev-parse", "HEAD")
+    gone = {**row, "fqn": "r:src.m.deleted", "verified_at_sha": base_sha}
+    assert audit_row(gone, tmp_path).verdict == "symbol_gone"
+
+
+def test_an_unknown_sha_is_treated_as_unmerged(tmp_path):
+    """Calling live code deleted is the costlier mistake, so an unfetched sha errs safe."""
+    import subprocess
+    repo = tmp_path / "r"
+    (repo / "src").mkdir(parents=True)
+    for a in (["init", "-q"], ["config", "user.email", "t@t"], ["config", "user.name", "t"]):
+        subprocess.run(["git", "-C", str(repo), *a], capture_output=True, check=True)
+    (repo / "src" / "m.py").write_text("def old(): ...\n")
+    _git(repo, "add", "-A"); _git(repo, "commit", "-qm", "base")
+    row = {"fqn": "r:src.m.absent", "file": "src/m.py", "repo": "r", "lang": "python",
+           "verified_at_sha": "0" * 40}
+    assert audit_row(row, tmp_path).verdict == "in_flight"
+
+
+def test_without_a_sha_the_verdict_stays_symbol_gone(tmp_path):
+    """symbols_in_service does not return verified_at_sha, so rows from it cannot make the
+    distinction — the audit must not silently pretend they can."""
+    repo = tmp_path / "r"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src" / "m.py").write_text("def alive(): ...\n")
+    row = {"fqn": "r:src.m.absent", "file": "src/m.py", "repo": "r", "lang": "python"}
+    assert audit_row(row, tmp_path).verdict == "symbol_gone"

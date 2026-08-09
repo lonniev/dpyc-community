@@ -191,6 +191,56 @@ def lint_codeowners(text: str) -> list[str]:
     ]
 
 
+# The commit-phase gate must run the same check the deploy performs. Horizon builds by
+# running `fastmcp inspect <entrypoint>`, which IMPORTS the module — so anything registered
+# at module scope is exercised there and nowhere else unless CI does it too.
+#
+# optionality-mcp went four days and eighteen commits without deploying because
+# tollbooth-dpyc 0.82.0 deleted `register_job_spec`, which `server.py` still called at import
+# time. Every build failed; the service kept serving the last image that had built. CI was
+# green throughout, because no test imported the entrypoint — the suite could not fail for
+# the reason production was broken. Fifteen "fix the deploy" PRs merged green against a
+# module that could not be loaded.
+#
+# `ci.yml` may legitimately differ between repos (extra frontend/worker/Rust jobs, a wider
+# python matrix), so this is not enforced by copying a file. The STEP is the invariant, and
+# this is its canonical text:
+CI_ENTRYPOINT_STEP = """      - name: Entrypoint inspects (the check Horizon performs at build time)
+        run: |
+          [ -f fastmcp.json ] || { echo "no fastmcp.json — not a FastMCP deployment; skipping"; exit 0; }
+          ENTRY=$(python -c "import json;print(json.load(open('fastmcp.json'))['server'])")
+          case "$ENTRY" in *:*) TARGET="$ENTRY";; *) TARGET="$ENTRY:mcp";; esac
+          echo "inspecting $TARGET"
+          fastmcp inspect -f fastmcp -o /tmp/server-info.json "$TARGET"
+"""
+
+# Matched loosely so reformatting, renaming the step, or changing the output path does not
+# trip the rule — only actually dropping the check does.
+CI_ENTRYPOINT_MARKER = "fastmcp inspect"
+
+
+def lint_ci_workflow(text: str) -> list[str]:
+    """A Python CI workflow must inspect the deploy entrypoint, not only run tests.
+
+    Scoped to workflows that run pytest, which is what makes a repo's `ci.yml` the
+    commit-phase gate. The step self-skips where there is no `fastmcp.json`, so the rule
+    needs no per-repo exception — a repo that is not a FastMCP deployment still carries the
+    step and it costs nothing.
+    """
+    if "pytest" not in text:
+        return []
+    if CI_ENTRYPOINT_MARKER in text:
+        return []
+    return [
+        (
+            "ci.yml runs pytest but never inspects the deploy entrypoint. A suite that does "
+            "not import the entrypoint cannot fail for the reason a build fails — this is the "
+            "optionality-mcp outage (four days stale, CI green throughout). Add:\n"
+            + CI_ENTRYPOINT_STEP
+        )
+    ]
+
+
 def lint_factory_prompt(name: str, text: str) -> list[str]:
     """A factory role prompt must retain its load-bearing safety anchors. Removing the
     SECURITY/UNTRUSTED framing or (for Porter) the MANDATORY OUTCOME clause via a
@@ -266,6 +316,8 @@ def main(argv: list[str]) -> int:
                 print(f"::warning file={path}::doctrine: {w}")
         if workflow:
             hard += lint_workflow(text)
+            if path.name in {"ci.yml", "ci.yaml"}:
+                hard += lint_ci_workflow(text)
         if codeowners:
             hard += lint_codeowners(text)
         if factory_prompt:

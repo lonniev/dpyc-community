@@ -1,0 +1,2 @@
+<!-- dpyc-awaiting-funds -->
+⏳ **Deferred — the factory is out of LLM credits.** Credit preflight read the OpenRouter balance before the model ran and found remaining ≤ 0, so the agent was **not started** (no partial work, no stranded graph claim). It is tagged `awaiting-funds`; the credit canary clears the tag and re-runs the agent automatically once funding is restored — nothing here is skipped for good. Tracking: lonniev/dpyc-community#102.

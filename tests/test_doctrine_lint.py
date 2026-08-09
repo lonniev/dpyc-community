@@ -260,3 +260,29 @@ def test_main_fails_on_bad_codeowners(tmp_path):
     bad = tmp_path / "CODEOWNERS"
     bad.write_text("/tests/\n*.md\n", encoding="utf-8")
     assert dl.main([str(bad)]) == 1
+
+
+# ---------------------------------------------------------------------------
+# ci.yml must run the deploy's own entrypoint check (the optionality outage)
+# ---------------------------------------------------------------------------
+
+
+def test_ci_running_pytest_without_entrypoint_inspect_is_a_violation() -> None:
+    """The exact shape that let optionality sit four days stale behind a green suite."""
+    ci = "jobs:\n  test:\n    steps:\n      - run: pytest -v\n"
+    assert dl.lint_ci_workflow(ci), "a pytest CI with no entrypoint check must fail"
+
+
+def test_ci_with_the_entrypoint_step_passes() -> None:
+    ci = "jobs:\n  test:\n    steps:\n      - run: pytest -v\n" + dl.CI_ENTRYPOINT_STEP
+    assert dl.lint_ci_workflow(ci) == []
+
+
+def test_the_canonical_step_satisfies_its_own_rule() -> None:
+    """Guard the guard: the advice the linter prints must actually pass the linter."""
+    assert dl.CI_ENTRYPOINT_MARKER in dl.CI_ENTRYPOINT_STEP
+
+
+def test_a_workflow_that_does_not_run_pytest_is_out_of_scope() -> None:
+    """Rust/frontend/deploy workflows are not the commit-phase Python gate."""
+    assert dl.lint_ci_workflow("jobs:\n  build:\n    steps:\n      - run: cargo test\n") == []

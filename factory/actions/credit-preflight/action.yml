@@ -1,0 +1,149 @@
+# Credit preflight — DETERMINISTIC, no LLM.
+#
+# Reads the OpenRouter credit balance BEFORE an agentic model call. A 1-token
+# probe only answers "can I make one cheap call right now", which stays true
+# through a partial drain (issue #181). The balance endpoint answers the real
+# question: "will the next real run finish?"
+#
+#   broke  → outputs.ok=false; caller tags awaiting-funds, comments, skips model
+#   low    → outputs.ok=true but warns (floor is the operator dial)
+#   healthy / unknown → outputs.ok=true (unknown fails open so a blip doesn't
+#                       halt the fleet; the post-run sentinel still catches 402s)
+#
+# Always writes remaining balance into $GITHUB_STEP_SUMMARY so a human looking
+# at the job already sees the number — today it appears in no log otherwise.
+name: Credit preflight
+description: Read OpenRouter credit balance; surface it; signal whether to skip the model.
+
+inputs:
+  api-key:
+    description: OpenRouter key (the same value carried in ANTHROPIC_API_KEY).
+    required: true
+  floor:
+    description: "Operator floor in USD-equivalent credits. remaining < floor → 'low' warning. Default 0 (only overdrawn is broke)."
+    required: false
+    default: "0"
+  # Optional: when set and state=broke, tag this issue/PR and leave the breadcrumb
+  # so the canary can replay. Leave empty for canary-only / summary-only use.
+  target:
+    description: Issue or PR number to tag awaiting-funds when broke. Empty = report only.
+    required: false
+    default: ""
+  kind:
+    description: "issue or pr (selects the gh subcommand)."
+    required: false
+    default: issue
+  gh-token:
+    description: Token with issues:write / pull-requests:write when target is set.
+    required: false
+    default: ""
+  cypher-nsec:
+    description: "Patron nsec that stamps the outage onto the cypher graph. Omit to tag GitHub only."
+    required: false
+    default: ""
+  cypher-upstream:
+    description: "Operator MCP URL for the graph stamp."
+    required: false
+    default: "https://cypher-mcp.fastmcp.app/mcp"
+
+outputs:
+  ok:
+    description: "true if the model call may proceed; false when broke (skip the model)."
+    value: ${{ steps.check.outputs.ok }}
+  state:
+    description: "healthy | low | broke | unknown"
+    value: ${{ steps.check.outputs.state }}
+  remaining:
+    description: Remaining credits (total_credits - total_usage).
+    value: ${{ steps.check.outputs.remaining }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        API_KEY: ${{ inputs.api-key }}
+        CREDIT_FLOOR: ${{ inputs.floor }}
+        GH_TOKEN: ${{ inputs.gh-token }}
+        TARGET: ${{ inputs.target }}
+        KIND: ${{ inputs.kind }}
+        REPO: ${{ github.repository }}
+        SERVER_URL: ${{ github.server_url }}
+        STAMP_NSEC: ${{ inputs.cypher-nsec }}
+        DPYC_KEYRING_UPSTREAM: ${{ inputs.cypher-upstream }}
+      run: |
+        set -euo pipefail
+        here="${{ github.action_path }}"
+
+        # Fail OPEN: a probe blip must not halt the fleet. The post-run sentinel
+        # still catches a mid-run 402. Only an explicit broke classification skips.
+        ok=true
+        state=unknown
+        remaining=
+
+        code=$(curl -sS -o /tmp/or-credits.json -w '%{http_code}' \
+          https://openrouter.ai/api/v1/credits \
+          -H "Authorization: Bearer $API_KEY" \
+          -H "content-type: application/json" \
+          || echo "000")
+        echo "OpenRouter /credits HTTP $code"
+
+        if [ "$code" = "200" ]; then
+          # Parse + classify; also append the balance card to the job summary.
+          summary_target="${GITHUB_STEP_SUMMARY:-/dev/null}"
+          eval "$(python3 "$here/check_credits.py" \
+                   --json /tmp/or-credits.json \
+                   --floor "${CREDIT_FLOOR:-0}" \
+                   --summary "$summary_target" \
+                   | sed -n 's/^\(state\|remaining\|total\|usage\|floor\)=/export cf_\1=/p')"
+          state="${cf_state:-unknown}"
+          remaining="${cf_remaining:-}"
+          echo "Credit preflight: state=$state remaining=${remaining:-?} floor=${cf_floor:-0}"
+        else
+          echo "Credit preflight: balance endpoint returned HTTP $code — failing open (state=unknown)."
+          {
+            echo "## Factory LLM credits"
+            echo ""
+            echo "Balance endpoint returned HTTP \`$code\` — could not classify. Proceeding (fail-open); the post-run funding sentinel still catches a 402."
+            echo ""
+          } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+        fi
+
+        if [ "$state" = "broke" ]; then
+          ok=false
+        fi
+
+        echo "ok=$ok" >> "$GITHUB_OUTPUT"
+        echo "state=$state" >> "$GITHUB_OUTPUT"
+        echo "remaining=$remaining" >> "$GITHUB_OUTPUT"
+
+        # When broke and a target was supplied, tag + breadcrumb + graph stamp so the
+        # canary can replay — same contract as the post-run funding-sentinel, but we
+        # never spent a turn to learn it.
+        if [ "$ok" = "false" ] && [ -n "${TARGET:-}" ] && [ -n "${GH_TOKEN:-}" ]; then
+          echo "Credits broke — tagging $KIND #$TARGET awaiting-funds and skipping the model."
+          gh "$KIND" edit "$TARGET" --repo "$REPO" --add-label awaiting-funds || true
+          if ! gh "$KIND" view "$TARGET" --repo "$REPO" --json comments \
+                 --jq '.comments[].body' 2>/dev/null | grep -q 'dpyc-awaiting-funds'; then
+            # Prefer the preflight-specific comment when present; fall back to the sentinel's.
+            body="$here/../funding-sentinel/awaiting_funds_comment.md"
+            pre="$here/awaiting_funds_comment.md"
+            [ -f "$pre" ] && body="$pre"
+            gh "$KIND" comment "$TARGET" --repo "$REPO" --body-file "$body" || true
+          fi
+
+          # Graph stamp — BEST-EFFORT, sats rail, must never fail the preflight.
+          if [ -n "${STAMP_NSEC:-}" ]; then
+            set +e
+            python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]" \
+              && {
+                gh_path="issues"; [ "$KIND" = "pr" ] && gh_path="pull"
+                item_url="$SERVER_URL/$REPO/$gh_path/$TARGET"
+                python3 "$here/../funding-sentinel/stamp_cypher.py" \
+                  --repo "${REPO##*/}" --kind "$KIND" --number "$TARGET" \
+                  --state awaiting-funds --url "$item_url"
+              }
+            set -e
+          fi
+        fi

@@ -1,0 +1,412 @@
+diff --git a/.github/workflows/engineering.yml b/.github/workflows/engineering.yml
+index a36d425..e3e3aac 100644
+--- a/.github/workflows/engineering.yml
++++ b/.github/workflows/engineering.yml
+@@ -137,8 +137,24 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181). A broke
++      # balance tags awaiting-funds and skips the model green — no partial work, no
++      # stranded graph claim, no red X. The post-run sentinel below still catches a
++      # mid-run 402 the balance could not foresee.
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++          target: ${{ github.event.issue.number }}
++          kind: issue
++          gh-token: ${{ steps.token.outputs.token }}
++          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
++
+       - name: Implement the fix and open a PR
+         id: implement
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+@@ -175,12 +191,13 @@ jobs:
+             # still cannot reach the network or destroy the tree.
+             --allowedTools "Bash(gh issue view:*),Bash(gh repo view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(gh pr create:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(mypy:*),Bash(uv:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(xcode-select:*),Bash(open:*),Bash(defaults:*),Bash(brew:*),Bash(ruby:*),Bash(gem:*),Bash(bundle:*),Bash(sw_vers:*),Bash(sysctl:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(sed:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_which_service_handles,mcp__graph__cypher_explain_capability,mcp__graph__cypher_list_capabilities,mcp__graph__cypher_record_triage,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol,mcp__graph__cypher_upsert_capability,mcp__graph__cypher_bind_capability_to_symbol,mcp__graph__cypher_suggest_capability_why,mcp__graph__cypher_link_pr,mcp__graph__cypher_context_pack,mcp__graph__cypher_anchor_symbol,mcp__graph__cypher_index_symbol,mcp__graph__cypher_route_rejection,mcp__graph__cypher_claim_issue"
+ 
+-      # If the fix run died because the shared key is exhausted/capped, tag the issue
++      # If the fix run died mid-flight on a 402 (or hard-reject), tag the issue
+       # awaiting-funds so it re-runs on recovery instead of silently stalling with no PR.
+       # The issue keeps its agent/fix label, which is how the canary knows to re-fire
+-      # ENGINEERING (not Porter) on recovery. Deterministic; matches only the credit signature.
++      # ENGINEERING (not Porter) on recovery. Deterministic; matches only the credit signature
++      # (including mid-run api_error_status==402 — issue #181).
+       - name: Flag a funding outage (deterministic)
+-        if: ${{ failure() && steps.token.outputs.token != '' }}
++        if: ${{ failure() && steps.token.outputs.token != '' && steps.preflight.outputs.ok == 'true' }}
+         uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+         with:
+           target: ${{ github.event.issue.number }}
+diff --git a/.github/workflows/factory-credit-canary.yml b/.github/workflows/factory-credit-canary.yml
+index 3da186e..f95e977 100644
+--- a/.github/workflows/factory-credit-canary.yml
++++ b/.github/workflows/factory-credit-canary.yml
+@@ -1,27 +1,38 @@
+ # DPYC Factory Credit Canary — the awareness + auto-replay brain for the fleet.
+ #
+-# Every agent node (Porter, Journeyman, QA, Housekeeper) shares one ANTHROPIC_API_KEY.
+-# When it is exhausted/capped, those nodes fail INSTANTLY and SILENTLY — a red X in
+-# Actions, no signal, the issue skipped. A failing LLM step cannot report its own
+-# failure, so this canary is fully DETERMINISTIC: it probes the key with a 1-token
+-# Anthropic request and reads the HTTP result — no agent, no LLM judgment.
++# Every agent node (Porter, Journeyman, QA, Housekeeper) shares one ANTHROPIC_API_KEY
++# (an OpenRouter key). When it is exhausted/capped, those nodes fail mid-flight — a red
++# X in Actions, partial work, stranded graph claims. A failing LLM step cannot report
++# its own failure, so this canary is fully DETERMINISTIC: it reads the OpenRouter
++# *balance* (not a 1-token probe) and classifies remaining credit against an operator
++# floor — no agent, no LLM judgment (issue #181).
+ #
+-#   BROKE   → ensure the tracking issue (#102 / any open `factory/outage`) is open and
+-#             labeled, so a human sees "we're out of money" without digging through logs.
+-#   HEALTHY → clear the alarm AND replay: sweep every repo the factory App is installed on
+-#             for open issues tagged `awaiting-funds`, swap the tag for `agent/retriage`,
+-#             which re-fires Porter on each (see the Service Desk caller's labeled trigger).
+-#             Nothing opened during the outage stays skipped. A SCHEDULED role has no
+-#             work-item to tag and so cannot be replayed that way, so the sweep also
+-#             re-dispatches any Housekeeper whose last run failed.
++# Why balance, not a 1-token probe: OpenRouter reserves max_tokens up front. A nearly-
++# dry account still serves one cheap ping (probe = healthy) and then refuses the first
++# expensive real turn (402 after spend). The balance answers "will the next real run
++# finish"; the probe only answers "can I make one cheap call right now".
+ #
+-# The `awaiting-funds` tag is both the outage marker (set per-issue by the funding
+-# sentinel when a node dies) and the replay work-list (cleared here on recovery).
++#   BROKE   → remaining <= 0. Ensure the tracking issue (any open `factory/outage`) is
++#             open and labeled, so a human sees "we're out of money" without digging logs.
++#   LOW     → 0 < remaining < CREDIT_FLOOR. Same alarm path as broke, but the body says
++#             "forecast" rather than "corpse" — an early warning before work dies.
++#   HEALTHY → remaining >= floor. Clear the alarm AND replay: sweep every repo the
++#             factory App is installed on for open issues tagged `awaiting-funds`, swap
++#             the tag for `agent/retriage`, which re-fires Porter on each. Nothing opened
++#             during the outage stays skipped. A SCHEDULED role has no work-item to tag,
++#             so the sweep also re-dispatches any Housekeeper whose last run failed.
++#   UNKNOWN → balance endpoint blip. Neither raise nor clear (avoid false alarms/flapping).
++#
++# The `awaiting-funds` tag is both the outage marker (set per-issue by credit-preflight
++# or the funding sentinel) and the replay work-list (cleared here on recovery).
++#
++# Operator dial: repo variable `CREDIT_FLOOR` (USD-equivalent credits). Default 0 =
++# only overdrawn is broke; set e.g. 5 to alarm while a few dollars remain.
+ name: Factory Credit Canary
+ 
+ on:
+   schedule:
+-    - cron: "*/30 * * * *"   # every 30 min — cheap (1 token) and catches an outage fast
++    - cron: "*/30 * * * *"   # every 30 min — cheap (one balance GET) and catches drain fast
+   workflow_dispatch:          # run on demand right after topping up the key
+ 
+ permissions:
+@@ -48,64 +59,80 @@ jobs:
+           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+           owner: ${{ github.repository_owner }}
+ 
+-      # Deterministic health probe: one 1-token message. 200 = healthy. A non-200 whose
+-      # body names a credit/billing/quota problem = broke. Anything else (transient 429/529,
+-      # network) is "unknown" — we neither raise nor clear, to avoid false alarms and flapping.
+       # Needed by the healthy branch to reach factory/actions/funding-sentinel/stamp_cypher.py,
+-      # which clears each FundingBlock in the graph in lockstep with its awaiting-funds label.
+-      - name: Check out the factory (for the graph-clear helper)
++      # which clears each FundingBlock in the graph in lockstep with its awaiting-funds label,
++      # and by the balance classifier in factory/actions/credit-preflight/check_credits.py.
++      - name: Check out the factory (for the graph-clear + balance helpers)
+         uses: actions/checkout@v4
+ 
+-      - name: Probe the shared key
++      - name: Read the shared-key balance
+         id: probe
+         env:
+           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
++          # Operator dial — repo/org variable. Default 0: only overdrawn is broke.
++          CREDIT_FLOOR: ${{ vars.CREDIT_FLOOR || '0' }}
+         run: |
+           set -euo pipefail
+-          # Probe the endpoint the agents actually use. The Factory routes through
+-          # OpenRouter, so probing api.anthropic.com would reject the OpenRouter key
+-          # on every run and report a permanent, false outage against a healthy
+-          # Factory. Model choice is deliberately a cheap one — this asks for a
+-          # single token purely to learn whether the key can still buy anything.
+-          code=$(curl -sS -o /tmp/probe.json -w '%{http_code}' \
+-            https://openrouter.ai/api/v1/messages \
+-            -H "x-api-key: $ANTHROPIC_API_KEY" \
+-            -H "anthropic-version: 2023-06-01" \
++          # Balance endpoint, not a 1-token probe (issue #181). A probe stays green through
++          # a partial drain; remaining credit is what tells us the next real run will finish.
++          code=$(curl -sS -o /tmp/or-credits.json -w '%{http_code}' \
++            https://openrouter.ai/api/v1/credits \
++            -H "Authorization: Bearer $ANTHROPIC_API_KEY" \
+             -H "content-type: application/json" \
+-            -d '{"model":"x-ai/grok-4.3","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}' \
+             || echo "000")
+-          body="$(cat /tmp/probe.json 2>/dev/null || true)"
+-          echo "HTTP $code"
++          echo "OpenRouter /credits HTTP $code"
+           state="unknown"
++          remaining=""
+           if [ "$code" = "200" ]; then
+-            state="healthy"
+-          elif echo "$body" | grep -qiE 'credit|billing|quota|too low|exceeded|insufficient|spend'; then
+-            state="broke"
++            eval "$(python3 factory/actions/credit-preflight/check_credits.py \
++                     --json /tmp/or-credits.json \
++                     --floor "${CREDIT_FLOOR:-0}" \
++                     --summary "${GITHUB_STEP_SUMMARY:-/dev/null}" \
++                     | sed -n 's/^\(state\|remaining\|total\|usage\|floor\)=/export cf_\1=/p')"
++            state="${cf_state:-unknown}"
++            remaining="${cf_remaining:-}"
++          else
++            echo "Balance endpoint returned HTTP $code — verdict unknown (no raise, no clear)."
+           fi
+           echo "state=$state" >> "$GITHUB_OUTPUT"
+-          echo "Canary verdict: $state"
++          echo "remaining=$remaining" >> "$GITHUB_OUTPUT"
++          echo "Canary verdict: $state remaining=${remaining:-?}"
+ 
+-      - name: Raise the alarm (broke)
+-        if: ${{ steps.probe.outputs.state == 'broke' }}
++      # Alarm on broke OR low — forecast, not just corpse. Idempotent: refresh body/label
++      # on an existing open factory/outage rather than opening a second issue.
++      - name: Raise the alarm (broke or low)
++        if: ${{ steps.probe.outputs.state == 'broke' || steps.probe.outputs.state == 'low' }}
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+           HUB: ${{ github.repository }}
++          STATE: ${{ steps.probe.outputs.state }}
++          REMAINING: ${{ steps.probe.outputs.remaining }}
+         run: |
+           set -euo pipefail
+-          # Idempotent: if an open factory/outage issue already exists, do nothing (no spam).
++          if [ "$STATE" = "broke" ]; then
++            title="Factory outage: LLM-router credits exhausted (remaining=${REMAINING:-0})"
++            body="The credit canary read the OpenRouter balance for the shared \`ANTHROPIC_API_KEY\` and found **remaining ≤ 0** (\`remaining=${REMAINING:-?}\`). Every LLM-routed factory node is dark until it is topped up. Issues arriving now are tagged \`awaiting-funds\` (by per-run credit-preflight or the funding sentinel) and will be re-run automatically on recovery. See lonniev/dpyc-community#181 / #102."
++          else
++            title="Factory forecast: LLM-router credits below floor (remaining=${REMAINING:-?})"
++            body="The credit canary read the OpenRouter balance and found **remaining below the operator floor** (\`remaining=${REMAINING:-?}\`, floor=\`CREDIT_FLOOR\` repo variable). This is an early warning — top up before the next real agentic run dies mid-flight. See lonniev/dpyc-community#181."
++          fi
+           existing=$(gh issue list --repo "$HUB" --state open --label factory/outage \
+             --json number --jq '.[0].number' 2>/dev/null || true)
+           if [ -n "$existing" ]; then
+-            echo "Outage already tracked in #$existing — not re-alerting."
++            echo "Outage/forecast already tracked in #$existing — refreshing label, not re-opening."
+             gh issue edit "$existing" --repo "$HUB" --add-label awaiting-funds >/dev/null 2>&1 || true
++            # Refresh the human-visible number without spamming a new issue.
++            gh issue comment "$existing" --repo "$HUB" \
++              --body "Canary re-check: state=\`$STATE\` remaining=\`${REMAINING:-?}\`." >/dev/null 2>&1 || true
+             exit 0
+           fi
+           gh issue create --repo "$HUB" \
+-            --title "Factory outage: agent nodes failing — ANTHROPIC_API_KEY exhausted/capped" \
++            --title "$title" \
+             --label factory/outage --label awaiting-funds --label sev/critical --label type/bug \
+-            --body "The credit canary probed the shared \`ANTHROPIC_API_KEY\` and it was rejected for a credit/billing/quota reason. Every LLM-routed factory node is dark until it is topped up or its cap raised. Issues arriving now are tagged \`awaiting-funds\` and will be re-run automatically on recovery. See lonniev/dpyc-community#102 for the pattern."
++            --body "$body"
+ 
+       # Recovery: clear the alarm and replay everything deferred during the outage.
++      # Only on healthy (remaining >= floor). low/broke keep the alarm up; unknown is a no-op.
+       - name: Clear alarm + replay backlog (healthy)
+         if: ${{ steps.probe.outputs.state == 'healthy' }}
+         env:
+diff --git a/.github/workflows/housekeeper.yml b/.github/workflows/housekeeper.yml
+index f85d71f..b5b765c 100644
+--- a/.github/workflows/housekeeper.yml
++++ b/.github/workflows/housekeeper.yml
+@@ -97,7 +97,18 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181). A scheduled
++      # role has no work-item to tag, so this is summary + skip only; the canary still
++      # re-dispatches a failed Housekeeper on recovery.
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++
+       - name: Tidy the backlog
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+diff --git a/.github/workflows/pr-dialogue.yml b/.github/workflows/pr-dialogue.yml
+index 8224707..c26b2d9 100644
+--- a/.github/workflows/pr-dialogue.yml
++++ b/.github/workflows/pr-dialogue.yml
+@@ -114,7 +114,20 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181).
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++          target: ${{ inputs.pr_number }}
++          kind: pr
++          gh-token: ${{ steps.token.outputs.token }}
++          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
++
+       - name: Investigate and answer
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+@@ -194,11 +207,9 @@ jobs:
+             --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1m5quz5w0e96t36s7qw9tgnk90n0r0l2gxra75px4qnlu08lwaqnsskw7rk","DPYC_KEYRING_NSEC":"${{ secrets.JOURNEYMAN_NSEC }}"}}}}'
+             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(git:*),Read,Grep,Glob,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol"
+ 
+-      # Deferred by a broke ANTHROPIC_API_KEY? Tag this PR awaiting-funds and stamp the graph so
+-      # the credit canary re-fires the dialogue on recovery. Deterministic; a failing LLM step
+-      # cannot report its own failure, and this matches ONLY the credit-exhaustion signature.
++      # Mid-run 402 / hard-reject backstop (issue #181).
+       - name: Flag a funding outage (deterministic)
+-        if: ${{ failure() && steps.token.outputs.token != '' }}
++        if: ${{ failure() && steps.token.outputs.token != '' && steps.preflight.outputs.ok == 'true' }}
+         uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+         with:
+           target: ${{ inputs.pr_number }}
+diff --git a/.github/workflows/pr-revision.yml b/.github/workflows/pr-revision.yml
+index 7e68602..c178f0d 100644
+--- a/.github/workflows/pr-revision.yml
++++ b/.github/workflows/pr-revision.yml
+@@ -164,8 +164,21 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181).
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++          target: ${{ inputs.pr_number }}
++          kind: pr
++          gh-token: ${{ steps.token.outputs.token }}
++          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
++
+       - name: Apply the requested changes
+         id: revise
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+@@ -194,11 +207,10 @@ jobs:
+             # reach the network or destroy the tree.
+             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh pr checkout:*),Bash(gh pr checks:*),Bash(gh repo view:*),Bash(gh issue view:*),Bash(git:*),Bash(pytest:*),Bash(ruff:*),Bash(mypy:*),Bash(uv:*),Bash(pip:*),Bash(python:*),Bash(python3:*),Bash(swift:*),Bash(xcodebuild:*),Bash(xcrun:*),Bash(xcode-select:*),Bash(open:*),Bash(defaults:*),Bash(brew:*),Bash(ruby:*),Bash(gem:*),Bash(bundle:*),Bash(sw_vers:*),Bash(sysctl:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(make:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(sed:*),Edit,Write,Read,Glob,Grep,mcp__graph__cypher_which_service_handles,mcp__graph__cypher_explain_capability,mcp__graph__cypher_list_capabilities,mcp__graph__cypher_context_pack,mcp__graph__cypher_assert_rationale,mcp__graph__cypher_bind_rationale_to_symbol,mcp__graph__cypher_anchor_symbol,mcp__graph__cypher_index_symbol"
+ 
+-      # If the revision died because the shared key is exhausted/capped, tag the PR
+-      # awaiting-funds. agent/revising stays on (it is only cleared on success), which is
+-      # how the canary tells a stalled revision from a PR merely awaiting QA.
++      # Mid-run 402 / hard-reject backstop (issue #181). agent/revising stays on
++      # (cleared only on success) so the canary can tell a stalled revision from QA.
+       - name: Flag a funding outage (deterministic)
+-        if: ${{ failure() && steps.token.outputs.token != '' }}
++        if: ${{ failure() && steps.token.outputs.token != '' && steps.preflight.outputs.ok == 'true' }}
+         uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+         with:
+           target: ${{ inputs.pr_number }}
+diff --git a/.github/workflows/qa.yml b/.github/workflows/qa.yml
+index 2a55ec8..92af694 100644
+--- a/.github/workflows/qa.yml
++++ b/.github/workflows/qa.yml
+@@ -71,8 +71,21 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181).
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++          target: ${{ github.event.pull_request.number }}
++          kind: pr
++          gh-token: ${{ steps.token.outputs.token }}
++          cypher-nsec: ${{ secrets.JOURNEYMAN_NSEC }}
++
+       - name: Adversarially review the PR
+         id: review
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+@@ -126,12 +139,10 @@ jobs:
+             --max-turns 30
+             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(sed:*),Bash(grep:*),Read,Glob,Grep"
+ 
+-      # If the review died because the shared key is exhausted/capped, tag the PR
+-      # awaiting-funds so it re-runs on recovery instead of silently sitting unreviewed
+-      # (and blocking auto-merge). The canary re-fires QA by swapping the tag for
+-      # agent/retriage. Deterministic; matches only the credit signature.
++      # Mid-run 402 / hard-reject backstop (issue #181). Preflight already handled a
++      # known-broke balance; this catches the death the balance could not foresee.
+       - name: Flag a funding outage (deterministic)
+-        if: ${{ failure() && steps.token.outputs.token != '' }}
++        if: ${{ failure() && steps.token.outputs.token != '' && steps.preflight.outputs.ok == 'true' }}
+         uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+         with:
+           target: ${{ github.event.pull_request.number }}
+diff --git a/.github/workflows/service-desk.yml b/.github/workflows/service-desk.yml
+index ea54b41..47f1339 100644
+--- a/.github/workflows/service-desk.yml
++++ b/.github/workflows/service-desk.yml
+@@ -102,8 +102,22 @@ jobs:
+         with:
+           tier: ${{ inputs.model }}
+ 
++      # Pre-flight the OpenRouter balance BEFORE the model (issue #181). Broke →
++      # tag awaiting-funds, skip model green (no partial triage, no stranded claim).
++      - name: Credit preflight
++        id: preflight
++        uses: lonniev/dpyc-community/factory/actions/credit-preflight@main
++        with:
++          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
++          floor: ${{ vars.CREDIT_FLOOR || '0' }}
++          target: ${{ github.event.issue.number }}
++          kind: issue
++          gh-token: ${{ steps.token.outputs.token }}
++          cypher-nsec: ${{ secrets.PORTER_NSEC }}
++
+       - name: Triage the issue
+         id: triage
++        if: ${{ steps.preflight.outputs.ok == 'true' }}
+         uses: anthropics/claude-code-action@v1
+         env:
+           GH_TOKEN: ${{ steps.token.outputs.token }}
+@@ -144,7 +158,7 @@ jobs:
+       # summary (turns / denials count), so a no-op or a permission-denied call can't
+       # be diagnosed after the fact without this. Best-effort, short retention.
+       - name: Archive the triage transcript
+-        if: ${{ always() }}
++        if: ${{ always() && steps.preflight.outputs.ok == 'true' }}
+         uses: actions/upload-artifact@v4
+         with:
+           name: triage-transcript-${{ github.event.issue.number }}-${{ github.run_id }}
+@@ -152,13 +166,10 @@ jobs:
+           if-no-files-found: warn
+           retention-days: 14
+ 
+-      # If triage died because the shared key is exhausted/capped, DON'T silently
+-      # leave a red X — tag the issue awaiting-funds so it re-runs on recovery. The
+-      # sentinel matches ONLY the credit-exhaustion signature; a real triage error
+-      # falls through untagged. Deterministic (no LLM) because the failing LLM step
+-      # cannot report its own failure.
++      # Mid-run 402 / hard-reject backstop (issue #181). Preflight already handled a
++      # known-broke balance; this catches the death the balance could not foresee.
+       - name: Flag a funding outage (deterministic)
+-        if: ${{ failure() && steps.token.outputs.token != '' }}
++        if: ${{ failure() && steps.token.outputs.token != '' && steps.preflight.outputs.ok == 'true' }}
+         uses: lonniev/dpyc-community/factory/actions/funding-sentinel@main
+         with:
+           target: ${{ github.event.issue.number }}

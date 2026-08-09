@@ -60,9 +60,19 @@ authority it does not have.
 Filing an **issue** needs none of this — any harness holding a Scout credential can call
 the SDK's `report_issue` and the Porter takes it from there.
 
-Two more pieces run without an LLM: `factory/actions/funding-sentinel` tags an item
-`awaiting-funds` when the shared Anthropic key is exhausted, and
-`factory-credit-canary.yml` replays that deferred work when credit returns.
+Three more pieces run without an LLM (issue #181):
+
+- `factory/actions/credit-preflight` reads the OpenRouter **balance** before every
+  agentic model call, writes remaining credit into `$GITHUB_STEP_SUMMARY`, and —
+  when overdrawn — tags `awaiting-funds` and skips the model green (no partial work,
+  no stranded graph claim). The operator dial is the repo variable `CREDIT_FLOOR`
+  (default 0 = only overdrawn is broke).
+- `factory/actions/funding-sentinel` is the post-run backstop: it tags an item
+  `awaiting-funds` on a hard reject *or* a mid-run HTTP 402 (`api_error_status == 402`,
+  regardless of turns/spend).
+- `factory-credit-canary.yml` reads the same balance on a 30-minute tick, alarms on
+  broke **or** below-floor (forecast, not just corpse), and replays deferred work when
+  remaining is healthy again.
 
 ### Dialogue vs Revision
 

@@ -211,7 +211,13 @@ CI_ENTRYPOINT_STEP = """      - name: Entrypoint inspects (the check Horizon per
           ENTRY=$(python -c "import json;print(json.load(open('fastmcp.json'))['server'])")
           case "$ENTRY" in *:*) TARGET="$ENTRY";; *) TARGET="$ENTRY:mcp";; esac
           echo "inspecting $TARGET"
-          fastmcp inspect -f fastmcp -o /tmp/server-info.json "$TARGET"
+          # Repos install either with pip (CLI on PATH) or with uv (CLI inside the
+          # project venv). Invoke it the way this repo resolves its own deps.
+          if [ -f uv.lock ] && command -v uv >/dev/null 2>&1; then
+            uv run fastmcp inspect -f fastmcp -o /tmp/server-info.json "$TARGET"
+          else
+            fastmcp inspect -f fastmcp -o /tmp/server-info.json "$TARGET"
+          fi
 """
 
 # Matched loosely so reformatting, renaming the step, or changing the output path does not

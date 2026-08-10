@@ -75,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           export REPO_NAME="${REPO##*/}"
-          curl -fsSL \
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/housekeeper.prompt.md" \
             -o /tmp/housekeeper.prompt.md
           rendered=$(envsubst '${REPO} ${REPO_NAME}' < /tmp/housekeeper.prompt.md)

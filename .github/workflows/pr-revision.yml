@@ -143,7 +143,7 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
-          curl -fsSL \
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/pr-revision.prompt.md" \
             -o /tmp/pr-revision.prompt.md
           rendered=$(envsubst '${REPO} ${REPO_NAME} ${PR_NUMBER}' < /tmp/pr-revision.prompt.md)

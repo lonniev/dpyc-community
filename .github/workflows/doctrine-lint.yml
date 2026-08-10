@@ -27,7 +27,7 @@ jobs:
 
       - name: Fetch the canonical linter from dpyc-community
         run: |
-          curl -fsSL \
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/scripts/doctrine_lint.py" \
             -o /tmp/doctrine_lint.py
 

@@ -79,7 +79,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -euo pipefail
-          curl -fsSL \
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/porter.prompt.md" \
             -o /tmp/porter.prompt.md
           rendered=$(envsubst '${REPO} ${REPO_NAME} ${ISSUE_NUMBER}' < /tmp/porter.prompt.md)

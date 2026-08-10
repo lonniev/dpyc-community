@@ -222,21 +222,34 @@ CI_ENTRYPOINT_MARKER = "fastmcp inspect"
 def lint_ci_workflow(text: str) -> list[str]:
     """A Python CI workflow must inspect the deploy entrypoint, not only run tests.
 
-    Scoped to workflows that run pytest, which is what makes a repo's `ci.yml` the
-    commit-phase gate. The step self-skips where there is no `fastmcp.json`, so the rule
-    needs no per-repo exception — a repo that is not a FastMCP deployment still carries the
-    step and it costs nothing.
+    Scoped by BEHAVIOUR, not filename: any workflow that runs pytest is a commit-phase
+    gate and owes the same guarantee. Keying on ``ci.yml`` was the first shape of this
+    rule and it had a hole — the three Authorities call their workflow ``test.yml``, so
+    they escaped the invariant entirely while appearing to be covered. A guard whose
+    scope depends on a filename silently exempts whoever renamed the file.
+
+    The step self-skips where there is no ``fastmcp.json``, so the rule needs no per-repo
+    exception — a repo that is not a FastMCP deployment still carries it at no cost.
     """
-    if "pytest" not in text:
+    # An agent-driven workflow is not a gate — it mentions pytest because its PROMPT
+    # tells the Journeyman to run tests. Linting those demanded a deploy-inspect step
+    # inside engineering.yml, which would be nonsense.
+    if ("claude-code-action" in text) or ("allowedTools" in text):
+        return []
+    # Must actually RUN pytest, not merely name it.
+    if not any(
+        "pytest" in line and ("run:" in line or line.lstrip().startswith("-"))
+        for line in text.splitlines()
+    ):
         return []
     if CI_ENTRYPOINT_MARKER in text:
         return []
     return [
         (
-            "ci.yml runs pytest but never inspects the deploy entrypoint. A suite that does "
-            "not import the entrypoint cannot fail for the reason a build fails — this is the "
-            "optionality-mcp outage (four days stale, CI green throughout). Add:\n"
-            + CI_ENTRYPOINT_STEP
+            "this workflow runs pytest but never inspects the deploy entrypoint. A suite "
+            "that does not import the entrypoint cannot fail for the reason a build fails "
+            "— this is the optionality-mcp outage (four days stale, CI green throughout). "
+            "Add:\n" + CI_ENTRYPOINT_STEP
         )
     ]
 
@@ -316,8 +329,9 @@ def main(argv: list[str]) -> int:
                 print(f"::warning file={path}::doctrine: {w}")
         if workflow:
             hard += lint_workflow(text)
-            if path.name in {"ci.yml", "ci.yaml"}:
-                hard += lint_ci_workflow(text)
+            # Any workflow that runs pytest is the commit-phase gate, whatever it is
+            # called — `ci.yml` here, `test.yml` on the Authorities.
+            hard += lint_ci_workflow(text)
         if codeowners:
             hard += lint_codeowners(text)
         if factory_prompt:

@@ -286,3 +286,11 @@ def test_the_canonical_step_satisfies_its_own_rule() -> None:
 def test_a_workflow_that_does_not_run_pytest_is_out_of_scope() -> None:
     """Rust/frontend/deploy workflows are not the commit-phase Python gate."""
     assert dl.lint_ci_workflow("jobs:\n  build:\n    steps:\n      - run: cargo test\n") == []
+
+
+def test_the_rule_is_scoped_by_behaviour_not_filename() -> None:
+    """The Authorities call it test.yml; a filename-scoped guard exempted them silently."""
+    ci = "jobs:\n  test:\n    steps:\n      - run: pytest -v\n"
+    assert dl.lint_ci_workflow(ci), (
+        "any workflow running pytest is the commit-phase gate, whatever it is named"
+    )

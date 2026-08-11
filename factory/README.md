@@ -60,6 +60,19 @@ authority it does not have.
 Filing an **issue** needs none of this — any harness holding a Scout credential can call
 the SDK's `report_issue` and the Porter takes it from there.
 
+### Bringing a new repo into all of this
+
+The pieces above only reach a repo that carries the thin callers, the five secrets, a
+CODEOWNERS, and branch protection. Wiring those up is its own procedure, and it is
+deliberately separate from building an operator: `bootstrap-dpyc-operator` (shipped in
+`tollbooth-sample`) serves anyone who wants to run a DPYC service, while adoption binds a
+repo to *this* account — `@lonniev` as code owner, this App's key, the Porter and Journeyman
+nsecs, `io.github.lonniev/*` in the registry.
+
+See `skills/adopt-dpyc-operator/`. A repo can be a working operator and not be adopted;
+roastify-mcp was exactly that for a day — live, credentialled, serving real data, and merging
+its own commits to `main` with nothing watching.
+
 Three more pieces run without an LLM (issue #181):
 
 - `factory/actions/credit-preflight` reads the OpenRouter **balance** before every

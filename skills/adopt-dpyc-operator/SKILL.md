@@ -109,6 +109,17 @@ The account is a user, not an org, so there is no org-level fallback: every repo
 own five. Fork PRs never receive them, which is deliberate — never reach for
 `pull_request_target` to work around it.
 
+**Two more, only if the repo ships a frontend.** Not every operator does, and a deploy
+credential on a repo with nothing to deploy is one more thing to rotate for no reason:
+
+```bash
+scripts/set_pages_secrets.sh <repo>   # CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+```
+
+That token deploys a Pages project and can do nothing else — notably it cannot create the
+DNS record a custom domain needs, so `deploy-frontend.yml` attaches the domain and a human
+still adds the CNAME in the dashboard.
+
 ### 6. Install the App on the repo
 
 Separate from the secrets, and the step most likely to be missed — because it fails *after*
@@ -158,6 +169,12 @@ adoption is incomplete — see `factory/README.md` for the PR procedure itself.
 - **`server.json` left with the exemplar's identity.** Publishes the wrong name and endpoint
   to the MCP registry, under your account.
 - **Setting secrets from a harness.** Silent empties. See step 5.
+- **A Python `.gitignore` swallowing a JS app.** The exemplar's root `.gitignore` carries a
+  bare `lib/` from its virtualenv section, which matches ANY directory of that name —
+  including `frontend/src/lib`. The files stay on disk, so `tsc` and `vite build` both pass
+  locally; only a deploy, checking out what git actually has, finds the app has no lib, and
+  it reports that as a wall of unrelated-looking type errors rather than as an absence. Any
+  operator that grows a frontend needs `!src/lib/` in `frontend/.gitignore`.
 - **Provisioning the secrets and stopping there.** The App still has no access to the repo,
   so every agentic workflow dies at its first step with a 404 that names an *apps* endpoint
   rather than a secret. See step 6 — and do not re-set the secrets in response; that 404 is

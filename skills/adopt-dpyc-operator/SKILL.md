@@ -109,7 +109,34 @@ The account is a user, not an org, so there is no org-level fallback: every repo
 own five. Fork PRs never receive them, which is deliberate — never reach for
 `pull_request_target` to work around it.
 
-### 6. Verify, then let it prove itself
+### 6. Install the App on the repo
+
+Separate from the secrets, and the step most likely to be missed — because it fails *after*
+everything else looks correctly configured. The secrets let a workflow authenticate **as**
+the App; the installation is what gives that App access **to this repo**. Every agentic
+workflow mints a scoped App token as its first step, so without it they all fail identically.
+
+**https://github.com/settings/installations** → the factory App → **Configure** → under
+*Repository access*, add the repo.
+
+There is no CLI path worth relying on: a normal `gh` token gets
+`403 — You must authenticate with an access token authorized to a GitHub App` from
+`/user/installations`. Do it in the browser.
+
+**Read the failure carefully, because it is good news in disguise.** A missing installation
+surfaces as:
+
+```
+Not Found … /rest/apps/apps#get-a-repository-installation-for-the-authenticated-app  (404)
+```
+
+That 404 means the App *authenticated successfully* and then found no installation covering
+this repo — which simultaneously proves `DPYC_BOT_APP_ID` and `DPYC_BOT_PRIVATE_KEY` are
+correct and non-empty, ruling out the silent-empty-secret trap from step 5. A bad or blank
+key fails earlier, and differently. Distinguish the two before re-provisioning secrets that
+were fine.
+
+### 7. Verify, then let it prove itself
 ```bash
 gh secret list --repo <owner>/<repo>          # expect five NAMES
 gh api repos/<owner>/<repo>/branches/main/protection --jq .required_status_checks.contexts
@@ -129,6 +156,10 @@ adoption is incomplete — see `factory/README.md` for the PR procedure itself.
 - **`server.json` left with the exemplar's identity.** Publishes the wrong name and endpoint
   to the MCP registry, under your account.
 - **Setting secrets from a harness.** Silent empties. See step 5.
+- **Provisioning the secrets and stopping there.** The App still has no access to the repo,
+  so every agentic workflow dies at its first step with a 404 that names an *apps* endpoint
+  rather than a secret. See step 6 — and do not re-set the secrets in response; that 404 is
+  evidence they already work.
 - **Reaching for `gh pr merge --admin` when a PR stalls.** That bypasses the code-owner gate
   instead of satisfying it, on repos that move money. If a PR is blocked, find out which
   required check or review is missing — the answer is usually a repo setting from step 3 or 4.

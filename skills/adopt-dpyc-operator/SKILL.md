@@ -141,6 +141,8 @@ were fine.
 gh secret list --repo <owner>/<repo>          # expect five NAMES
 gh api repos/<owner>/<repo>/branches/main/protection --jq .required_status_checks.contexts
 gh run list --repo <owner>/<repo> --limit 5   # agentic runs green, not red
+# and one that exercises the App end to end:
+gh run rerun <deploy-verify-run-id> --repo <owner>/<repo> --failed
 ```
 
 The real proof is the next PR: opened by the factory App, checks woken by a human-credential

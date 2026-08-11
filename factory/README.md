@@ -69,7 +69,7 @@ deliberately separate from building an operator: `bootstrap-dpyc-operator` (ship
 repo to *this* account — `@lonniev` as code owner, this App's key, the Porter and Journeyman
 nsecs, `io.github.lonniev/*` in the registry.
 
-See `skills/adopt-dpyc-operator/`. A repo can be a working operator and not be adopted;
+See [`skills/adopt-dpyc-operator/`](../skills/adopt-dpyc-operator/SKILL.md). A repo can be a working operator and not be adopted;
 roastify-mcp was exactly that for a day — live, credentialled, serving real data, and merging
 its own commits to `main` with nothing watching.
 

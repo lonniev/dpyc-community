@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-08-12T21:04:27.681849+00:00",
+  "collected_at": "2026-08-12T22:03:52.606949+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 34,
+    "total_notarizations": 35,
     "confirmed": 0,
     "coverage_percent": 33
   },
@@ -233,9 +233,18 @@
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "1",
+          "root_hash": "b6b171dd89bb0f25657e4d5163ed11cce282c55822bfccc9ea95d1c082956c7b",
+          "leaf_count": 2,
+          "status": "submitted",
+          "created_at": "2026-07-26 00:37:06.019708+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

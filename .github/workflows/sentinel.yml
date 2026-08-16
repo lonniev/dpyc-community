@@ -1,0 +1,183 @@
+# DPYC Sentinel — fleet-wide dependency-CVE audit, hub-resident, DETERMINISTIC (no LLM).
+#
+# Fires (via the hub caller) on a SCHEDULE. Runs osv-scanner over every fleet repo's
+# lockfiles/manifests and files one plain `audit/security` issue per real advisory into
+# the affected repo, where Porter triages it. No agent runs here: a CVE match is an
+# objective lockfile fact, and a scanner never inherits the OpenRouter credit-cap that
+# stalls the LLM roles. It only clones (read-only), scans, and files issues — never a
+# merge, approve, edit, or push.
+#
+# Two owner-wide App tokens, each proven elsewhere: a contents:READ-ONLY token wired into
+# git's global auth header for cloning siblings (the pr-dialogue.yml discipline), and an
+# issues:WRITE token (the escalation.yml cross-repo-writer scope) for filing.
+name: DPYC Sentinel (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      repos:
+        description: >-
+          Space-separated fleet repos to scan (owner implicit). Empty = the full
+          canonical fleet (resolved in the scan step, the single source of truth).
+        type: string
+        default: ""
+    secrets:
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+# One scan at a time — a fleet sweep is global. An overlapping scan would race the
+# dedup check and double-file the same advisory.
+concurrency:
+  group: dpyc-sentinel
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint the read-only clone token (owner-wide)
+        id: read_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: read
+          permission-metadata: read
+
+      - name: Enable read-only cloning of sibling repos
+        env:
+          READ_TOKEN: ${{ steps.read_token.outputs.token }}
+        run: |
+          AUTH=$(printf 'x-access-token:%s' "$READ_TOKEN" | base64 | tr -d '\n')
+          git config --global "http.https://github.com/${{ github.repository_owner }}/.extraheader" "AUTHORIZATION: basic ${AUTH}"
+          mkdir -p siblings
+
+      - name: Mint the issues-only filing token (owner-wide)
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+          permission-metadata: read
+
+      # osv-scanner reads lockfiles/manifests STATICALLY (no dependency install) across
+      # Python + npm + more, so one binary covers the fleet. Installed via `go install`
+      # (Go ships on ubuntu-latest); @latest is intentional — a security scanner wants the
+      # current detector set, and the run fails loudly if the module path ever moves.
+      - name: Install osv-scanner
+        run: |
+          set -euo pipefail
+          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Scan the fleet and file CVE issues
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+          REPOS_IN: ${{ inputs.repos }}
+        run: |
+          set -uo pipefail
+
+          # Canonical fleet — single source of truth. Empty input (scheduled path) = all.
+          # Includes the JS frontends (osv reads package-lock.json) and Python operators;
+          # excludes Swift/docs repos that carry no osv-readable lockfile.
+          REPOS="${REPOS_IN:-}"
+          if [ -z "${REPOS// }" ]; then
+            REPOS="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp roastify-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks"
+          fi
+
+          # osv-scanner exits 1 when vulnerabilities are found, 0 when clean, >1 on a real
+          # scan error. Try the v2 subcommand form, fall back to the legacy top-level form.
+          scan_repo() {  # $1 = path, $2 = output json ; returns scanner rc
+            local path="$1" out="$2" rc
+            osv-scanner scan source --recursive --format json --output "$out" "$path" >/dev/null 2>&1
+            rc=$?
+            if [ "$rc" -gt 1 ]; then
+              osv-scanner --recursive --format json --output "$out" "$path" >/dev/null 2>&1
+              rc=$?
+            fi
+            return $rc
+          }
+
+          scanned=0; vuln=0; filed=0; skipped=0; errored=0
+          for repo in $REPOS; do
+            dir="siblings/$repo"
+            rm -rf "$dir"
+            if ! git clone --quiet --depth 1 "https://github.com/$OWNER/$repo.git" "$dir" 2>/dev/null; then
+              echo "::warning::could not clone $repo — skipping"
+              errored=$((errored+1)); continue
+            fi
+            out="/tmp/osv-$repo.json"
+            scan_repo "$dir" "$out"; rc=$?
+            if [ "$rc" -gt 1 ] || [ ! -s "$out" ]; then
+              echo "::warning::osv-scanner errored on $repo (rc=$rc) — skipping"
+              errored=$((errored+1)); continue
+            fi
+            scanned=$((scanned+1))
+
+            # Flatten findings to: <pkg>|<version>|<ecosystem>|<osv-id>|<summary>
+            findings=$(jq -r '
+              .results[]?.packages[]? as $p
+              | ($p.vulnerabilities[]? ) as $v
+              | [ $p.package.name, $p.package.version, $p.package.ecosystem,
+                  $v.id, (($v.summary // $v.details // "") | gsub("[\r\n]+";" ") | .[0:180]) ]
+              | @tsv' "$out" 2>/dev/null | sort -u)
+            [ -z "$findings" ] && { echo "$repo: clean"; continue; }
+
+            while IFS=$'\t' read -r name version eco id summary; do
+              [ -z "$name" ] && continue
+              vuln=$((vuln+1))
+              # Dedup: an open audit/security issue already naming this pkg + advisory.
+              existing=$(gh issue list --repo "$OWNER/$repo" --state open --label audit/security \
+                --search "$name $id in:title" --json number --jq '.[0].number' 2>/dev/null || true)
+              if [ -n "$existing" ]; then
+                echo "$repo: $name $id already tracked in #$existing"
+                skipped=$((skipped+1)); continue
+              fi
+              gh label create audit/security --repo "$OWNER/$repo" --color b60205 \
+                --description "Security sweep: dependency CVE finding" --force >/dev/null 2>&1 || true
+              title="CVE: $name $version — $id"
+              body=$(cat <<EOF
+          osv-scanner found a known vulnerability in a dependency of \`$repo\`.
+
+          - **Package:** \`$name\` \`$version\` ($eco)
+          - **Advisory:** $id — https://osv.dev/vulnerability/$id
+          - **Summary:** ${summary:-see advisory}
+
+          Filed by the DPYC Sentinel (fleet dependency-CVE sweep). Fix by upgrading the
+          dependency to a patched version (see the advisory for the fixed range); if the
+          bump lives in the SDK, Porter will route it upstream.
+          EOF
+          )
+              if gh issue create --repo "$OWNER/$repo" --label audit/security \
+                   --title "$title" --body "$body" >/dev/null 2>&1; then
+                echo "$repo: filed $name $id"
+                filed=$((filed+1))
+              else
+                echo "::warning::failed to file $name $id on $repo"
+                errored=$((errored+1))
+              fi
+            done <<< "$findings"
+          done
+
+          {
+            echo "## DPYC Sentinel — fleet dependency-CVE sweep"
+            echo ""
+            echo "| metric | count |"
+            echo "|---|---|"
+            echo "| repos scanned | $scanned |"
+            echo "| vulnerable findings | $vuln |"
+            echo "| issues filed | $filed |"
+            echo "| skipped (already tracked) | $skipped |"
+            echo "| clone/scan errors | $errored |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Sentinel done: scanned=$scanned vuln=$vuln filed=$filed skipped=$skipped errored=$errored"

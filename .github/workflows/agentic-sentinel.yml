@@ -1,0 +1,27 @@
+# Thin caller — Sentinel (fleet-wide dependency-CVE audit). Hub-resident: it scans the
+# WHOLE fleet, so it lives only here, not in factory-callers. Deterministic (no LLM), so
+# no credit dependency. Weekly SCHEDULE; workflow_dispatch runs a scan on demand and can
+# scope it to a subset. All logic is in the reusable (@main). A daily cadence is a
+# one-line change ("11 9 * * *") if CVE latency matters.
+name: Agentic Sentinel
+
+on:
+  schedule:
+    - cron: "11 9 * * 1"   # weekly, Mondays ~09:11 UTC (clear of the canary :00/:30, ots :17, conflict-watch :37)
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: Space-separated repos to scan. Empty = the full canonical fleet.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  scan:
+    uses: lonniev/dpyc-community/.github/workflows/sentinel.yml@main
+    secrets: inherit
+    with:
+      repos: ${{ inputs.repos }}

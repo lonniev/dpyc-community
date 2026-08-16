@@ -50,6 +50,9 @@ labels=(
   "qa/pass|0e8a16|QA verified the PR"
   "qa/flag|d93f0b|QA raised a concern on the PR"
 
+  "audit/dry|c5def5|Surveyor sweep: DRY / elegance finding"
+  "audit/security|b60205|Sentinel sweep: dependency CVE finding"
+
   "awaiting-funds|b60205|Deferred: factory out of LLM credits; canary re-runs on recovery"
   "agent/retriage|5319e7|Replay marker: re-fire Porter after a funding outage"
 )

@@ -22,6 +22,8 @@ customizing YAML.
 | **PR Dialogue** | any `@journeyman` mention on a PR | no — answers on the record | inline in `pr-dialogue.yml` |
 | **PR Revision** | OWNER requests changes, or `@journeyman revise` | **yes** — pushes to the PR branch | `pr-revision.prompt.md` |
 | **Housekeeper** | schedule | no — tidies stale state | `housekeeper.prompt.md` |
+| **Surveyor** | schedule (hub) | no — files cross-repo `audit/dry` issues | `surveyor.prompt.md` |
+| **Sentinel** | schedule (hub) | no — deterministic; files `audit/security` issues | `sentinel.yml` |
 | **Escalation** | `blocked/upstream` / `rejected/upstream` | no — routes across repos | `escalation.yml` |
 | **approval-merge / auto-merge** | OWNER approval / `qa/pass` | no — deterministic, no LLM | those workflows |
 

@@ -17,20 +17,23 @@
   "minimumReleaseAge": "3 days",
   "packageRules": [
     {
-      "description": "SDK pin — the ONE thing that self-merges (via a per-repo Renovate branch-protection bypass). Patch/minor auto-merge on green CI; not delayed by minimumReleaseAge because we trust our own wheel immediately.",
+      "description": "SDK pin — keep tollbooth-dpyc pinned to the exact == version on every update type. (rangeStrategy lives in its OWN rule: Renovate rejects combining it with matchUpdateTypes.)",
+      "matchPackageNames": ["tollbooth-dpyc"],
+      "rangeStrategy": "pin"
+    },
+    {
+      "description": "SDK patch/minor — the ONE thing that self-merges (via a per-repo Renovate branch-protection bypass), on green CI; not delayed by minimumReleaseAge because we trust our own wheel immediately.",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["patch", "minor"],
-      "rangeStrategy": "pin",
       "minimumReleaseAge": "0 days",
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
     },
     {
-      "description": "SDK major bumps — pin, always manual review (breaking changes).",
+      "description": "SDK major bumps — always manual review (breaking changes).",
       "matchPackageNames": ["tollbooth-dpyc"],
       "matchUpdateTypes": ["major"],
-      "rangeStrategy": "pin",
       "automerge": false
     },
     {

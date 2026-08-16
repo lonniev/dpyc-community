@@ -27,11 +27,15 @@ def test_rule_tables_present():
     # The Surveyor (fleet DRY/elegance auditor) carries the full anchor set.
     assert "surveyor.prompt.md" in dl.FACTORY_PROMPT_ANCHORS
     assert "MANDATORY OUTCOME" in dl.FACTORY_PROMPT_ANCHORS["surveyor.prompt.md"]
+    # Sentinel Review (LLM security-architecture auditor) carries it too.
+    assert "sentinel-review.prompt.md" in dl.FACTORY_PROMPT_ANCHORS
+    assert "MANDATORY OUTCOME" in dl.FACTORY_PROMPT_ANCHORS["sentinel-review.prompt.md"]
 
 
 # --- the real repo files must lint clean --------------------------------------
 def test_real_factory_prompts_are_clean():
-    for name in ("porter.prompt.md", "journeyman.prompt.md", "surveyor.prompt.md"):
+    for name in ("porter.prompt.md", "journeyman.prompt.md", "surveyor.prompt.md",
+                 "sentinel-review.prompt.md"):
         text = (REPO_ROOT / "factory" / name).read_text(encoding="utf-8")
         assert dl.lint_factory_prompt(name, text) == []
 
@@ -134,6 +138,7 @@ def test_real_factory_workflows_are_clean():
     for wf in (
         "service-desk.yml", "engineering.yml", "qa.yml", "pr-dialogue.yml", "digest.yml",
         "surveyor.yml", "agentic-surveyor.yml", "sentinel.yml", "agentic-sentinel.yml",
+        "sentinel-review.yml", "agentic-sentinel-review.yml",
     ):
         text = (REPO_ROOT / ".github" / "workflows" / wf).read_text(encoding="utf-8")
         assert dl.lint_workflow(text) == [], f"{wf} tripped a workflow invariant"

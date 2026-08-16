@@ -1,11 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate preset for DPYC ecosystem repos. Tuned for LOW NOISE: one weekly batch, throttled PR volume, aggressively grouped, and settled-release-only. The ONLY thing that self-merges is the tollbooth-dpyc == pin (patch/minor) — and only where the repo grants the Renovate app a branch-protection bypass. Everything else waits for owner review by design (crypto/PII federation: a human sees every dependency change).",
+  "description": "Shared Renovate preset for DPYC ecosystem repos. Tuned for LOW NOISE: one weekly batch, throttled PR volume, aggressively grouped, and settled-release-only. The ONLY thing that self-merges is the tollbooth-dpyc == pin (patch/minor) — and only where the repo grants the Renovate app a branch-protection bypass. Everything else waits for owner review by design (crypto/PII federation: a human sees every dependency change). OSV vulnerability alerts are ON: Renovate detects and opens security bump PRs fleet-wide (no LLM) — dependency CVEs are Renovate's job, never the Journeyman's.",
   "extends": [
     "config:recommended"
   ],
   "dependencyDashboard": false,
   "labels": ["dependencies"],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "area/ci"],
+    "automerge": false
+  },
   "schedule": ["* 0-6 * * 1"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,

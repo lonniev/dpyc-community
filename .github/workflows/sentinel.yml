@@ -1,16 +1,17 @@
 # DPYC Sentinel — fleet-wide security scan, hub-resident, DETERMINISTIC (no LLM).
 #
-# Fires (via the hub caller) on a SCHEDULE. Two deterministic arms per repo: osv-scanner
-# over the lockfiles (dependency CVEs) and semgrep over the source (static security
-# anti-patterns — disabled TLS, weak crypto, injection sinks, cleartext transport,
-# hardcoded secrets). Files ONE aggregated `audit/security` issue per repo per KIND
-# (a CVE issue and a static-scan issue coexist, each kind-deduped), where Porter triages.
-# No agent runs here: a CVE match and a semgrep rule hit are objective facts, and a
-# scanner never inherits the OpenRouter credit-cap that stalls the LLM roles. It only
-# clones (read-only), scans, and files issues — never a merge, approve, edit, or push.
-# The WEIGHTIER architecture judgments (unauthenticated multi-tenant DB access, a
-# restricted tool missing debit_or_deny, PII outside the vault) are the LLM Sentinel
-# Review role's job — see sentinel-review.yml.
+# Fires (via the hub caller) on a SCHEDULE. Runs semgrep over each repo's source for
+# static security anti-patterns — disabled TLS, weak crypto, injection sinks, cleartext
+# transport, hardcoded secrets (public registry rulesets, ERROR severity). Files ONE
+# aggregated `audit/security` "Static security scan" issue per repo, where Porter triages.
+# No agent runs here: a semgrep rule hit is an objective fact, and a scanner never inherits
+# the OpenRouter credit-cap that stalls the LLM roles. It only clones (read-only), scans,
+# and files issues — never a merge, approve, edit, or push.
+#
+# DEPENDENCY CVEs are deliberately NOT scanned here — that is Renovate's job (osv
+# vulnerability alerts on in the shared preset), free and deterministic, no LLM downstream.
+# The WEIGHTIER architecture judgments (unauthenticated multi-tenant DB access, a restricted
+# tool missing debit_or_deny, PII outside the vault) are the LLM Sentinel Review role's job.
 #
 # Two owner-wide App tokens, each proven elsewhere: a contents:READ-ONLY token wired into
 # git's global auth header for cloning siblings (the pr-dialogue.yml discipline), and an
@@ -74,38 +75,32 @@ jobs:
           permission-issues: write
           permission-metadata: read
 
-      # osv-scanner reads lockfiles/manifests STATICALLY (no dependency install) across
-      # Python + npm + more, so one binary covers the fleet. Installed via `go install`
-      # (Go ships on ubuntu-latest); @latest is intentional — a security scanner wants the
-      # current detector set, and the run fails loudly if the module path ever moves.
-      - name: Install osv-scanner
-        run: |
-          set -euo pipefail
-          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-
-      # semgrep adds the STATIC security-anti-pattern arm — the judgment-free tells: disabled
+      # semgrep is the STATIC security-anti-pattern arm — the judgment-free tells: disabled
       # TLS verification, weak crypto primitives (MD5/SHA1/DES/ECB, low PBKDF2/RSA), injection
       # sinks, cleartext http:// transport, hardcoded secrets — via PUBLIC registry rulesets,
       # so no SEMGREP_APP_TOKEN is needed. The weightier architecture judgments (unauth
       # multi-tenant DB access, missing debit_or_deny, PII outside the vault) are the LLM
       # Sentinel Review's job, not this deterministic pass.
+      #
+      # There is NO dependency-CVE (osv-scanner) arm here anymore: dependency CVE detection
+      # and bumping is Renovate's job (osvVulnerabilityAlerts is on in the shared preset) —
+      # free, deterministic, no LLM downstream. See renovate-config.json + CLAUDE.md §7.
       - name: Install semgrep
         run: |
           set -euo pipefail
           python -m pip install --quiet semgrep
           semgrep --version
 
-      - name: Scan the fleet (dependency CVEs + static security)
+      - name: Scan the fleet (static security)
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           OWNER: ${{ github.repository_owner }}
           REPOS_IN: ${{ inputs.repos }}
         run: |
           set -uo pipefail
-          # osv-scanner AND semgrep exit non-zero when they FIND something — that is data,
-          # not failure. GitHub runs this step under `bash -e {0}`, so errexit must be OFF
-          # here or the first finding aborts the sweep before any rc handling or filing.
+          # semgrep exits non-zero when it FINDS something — that is data, not failure.
+          # GitHub runs this step under `bash -e {0}`, so errexit must be OFF here or the
+          # first finding aborts the sweep before any rc handling or filing.
           set +e
 
           # Canonical fleet — single source of truth. Empty input (scheduled path) = all.
@@ -115,23 +110,10 @@ jobs:
             REPOS="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp roastify-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks"
           fi
 
-          # osv-scanner exits 1 when vulnerabilities are found, 0 when clean, >1 on a real
-          # scan error. Try the v2 subcommand form, fall back to the legacy top-level form.
-          scan_repo() {  # $1 = path, $2 = output json ; returns scanner rc
-            local path="$1" out="$2" rc
-            osv-scanner scan source --recursive --format json --output "$out" "$path" >/dev/null 2>&1
-            rc=$?
-            if [ "$rc" -gt 1 ]; then
-              osv-scanner --recursive --format json --output "$out" "$path" >/dev/null 2>&1
-              rc=$?
-            fi
-            return $rc
-          }
-
-          # File ONE aggregated issue per (repo, KIND). Kind-scoped dedup (match the title
-          # prefix) so the CVE issue and the static-scan issue COEXIST, each refiled only
-          # when its own kind is absent. A per-finding issue floods (the 197-issue lesson) —
-          # always aggregate. Mutates the shared counters below (bash functions see globals).
+          # File ONE aggregated static-scan issue per repo, deduped by title prefix so a
+          # re-run leaves the open issue alone instead of piling on. A per-finding issue
+          # floods (the 197-issue lesson) — always aggregate. Mutates the shared counters
+          # below (bash functions see globals).
           file_aggregated() {  # $1=repo  $2=title-prefix(dedup key)  $3=title  $4=bodyfile
             local repo="$1" prefix="$2" title="$3" bf="$4" existing
             existing=$(gh issue list --repo "$OWNER/$repo" --state open --label audit/security \
@@ -140,7 +122,7 @@ jobs:
               echo "$repo: '$prefix' already tracked in #$existing"; skipped=$((skipped+1)); return
             fi
             gh label create audit/security --repo "$OWNER/$repo" --color b60205 \
-              --description "Security sweep: dependency CVE or static-analysis finding" --force >/dev/null 2>&1 || true
+              --description "Security sweep: static-analysis or architecture finding" --force >/dev/null 2>&1 || true
             if gh issue create --repo "$OWNER/$repo" --label audit/security \
                  --title "$title" --body-file "$bf" >/dev/null 2>&1; then
               echo "$repo: filed \"$title\""; filed=$((filed+1))
@@ -149,7 +131,7 @@ jobs:
             fi
           }
 
-          scanned=0; vuln=0; sast=0; filed=0; skipped=0; errored=0
+          scanned=0; sast=0; filed=0; skipped=0; errored=0
           for repo in $REPOS; do
             dir="siblings/$repo"
             rm -rf "$dir"
@@ -159,41 +141,7 @@ jobs:
             fi
             scanned=$((scanned+1))
 
-            # ---- Arm 1: dependency CVEs (osv-scanner) ----------------------------------
-            out="/tmp/osv-$repo.json"
-            scan_repo "$dir" "$out"; rc=$?
-            if [ "$rc" -gt 1 ] || [ ! -s "$out" ]; then
-              echo "::warning::osv-scanner errored on $repo (rc=$rc)"
-            else
-              findings=$(jq -r '
-                .results[]?.packages[]? as $p
-                | ($p.vulnerabilities[]? ) as $v
-                | [ $p.package.name, $p.package.version, $p.package.ecosystem,
-                    $v.id, (($v.summary // $v.details // "") | gsub("[\r\n]+";" ") | .[0:160]) ]
-                | @tsv' "$out" 2>/dev/null | sort -u)
-              n=$(printf '%s\n' "$findings" | grep -c .)
-              if [ "$n" -eq 0 ]; then echo "$repo: no CVEs"; else
-                vuln=$((vuln+n))
-                npkgs=$(printf '%s\n' "$findings" | cut -f1 | sort -u | grep -c .)
-                rows=$(printf '%s\n' "$findings" \
-                  | awk -F'\t' 'NF>=4{printf "| `%s` `%s` | [%s](https://osv.dev/vulnerability/%s) | %s |\n",$1,$2,$4,$4,$5}' \
-                  | head -200)
-                bf="/tmp/sentinel-cve-$repo.md"
-                {
-                  echo "osv-scanner found **$n** known advisories across **$npkgs** dependencies of \`$repo\`."
-                  echo
-                  echo "Fix by upgrading each affected package to a patched version (follow each advisory for the fixed range). If a bump belongs in the SDK, Porter routes it upstream."
-                  echo
-                  echo "| package | advisory | summary |"
-                  echo "|---|---|---|"
-                  printf '%s\n' "$rows"
-                  [ "$n" -gt 200 ] && { echo; echo "_…and $((n-200)) more advisories (truncated)._"; }
-                } > "$bf"
-                file_aggregated "$repo" "Dependency CVE sweep:" "Dependency CVE sweep: $n advisories across $npkgs packages" "$bf"
-              fi
-            fi
-
-            # ---- Arm 2: static security anti-patterns (semgrep) ------------------------
+            # ---- static security anti-patterns (semgrep) -------------------------------
             # ERROR severity only, for high signal. Public registry rulesets, no token.
             sgout="/tmp/semgrep-$repo.json"
             semgrep scan --config p/security-audit --config p/insecure-transport \
@@ -234,15 +182,14 @@ jobs:
           done
 
           {
-            echo "## DPYC Sentinel — fleet security sweep (CVE + static)"
+            echo "## DPYC Sentinel — fleet static-security sweep (semgrep)"
             echo ""
             echo "| metric | count |"
             echo "|---|---|"
             echo "| repos scanned | $scanned |"
-            echo "| CVE advisories | $vuln |"
             echo "| static findings | $sast |"
             echo "| issues filed | $filed |"
             echo "| skipped (already tracked) | $skipped |"
             echo "| clone/scan errors | $errored |"
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "Sentinel done: scanned=$scanned cve=$vuln sast=$sast filed=$filed skipped=$skipped errored=$errored"
+          echo "Sentinel done: scanned=$scanned sast=$sast filed=$filed skipped=$skipped errored=$errored"

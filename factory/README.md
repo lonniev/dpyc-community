@@ -23,7 +23,7 @@ customizing YAML.
 | **PR Revision** | OWNER requests changes, or `@journeyman revise` | **yes** — pushes to the PR branch | `pr-revision.prompt.md` |
 | **Housekeeper** | schedule | no — tidies stale state | `housekeeper.prompt.md` |
 | **Surveyor** | schedule (hub) | no — files cross-repo `audit/dry` issues | `surveyor.prompt.md` |
-| **Sentinel** | schedule (hub) | no — deterministic; CVE (osv) + static (semgrep) → `audit/security` | `sentinel.yml` |
+| **Sentinel** | schedule (hub) | no — deterministic semgrep static scan → `audit/security` (dep CVEs are Renovate's) | `sentinel.yml` |
 | **Sentinel Review** | schedule (hub) | no — LLM security-architecture judgment → `audit/security` | `sentinel-review.prompt.md` |
 | **Escalation** | `blocked/upstream` / `rejected/upstream` | no — routes across repos | `escalation.yml` |
 | **approval-merge / auto-merge** | OWNER approval / `qa/pass` | no — deterministic, no LLM | those workflows |

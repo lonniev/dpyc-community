@@ -22,6 +22,10 @@
 #             x-ai/grok-4.3              $1.25 / $2.50 (was anthropic/claude-sonnet-5 $2 / $10)
 #   budget  — Digest only. Cheapest route measured to still do the job.
 #             nvidia/nemotron-3-ultra-550b-a55b:free
+#   mechanical — rote agent work that needs no real expertise: Housekeeper's backlog
+#             tidy, and an Engineering fix Porter has marked `agent/mechanical` (a one-line
+#             doc/test/lint/config change). FAST and cheap, unlike budget's 25-min route.
+#             x-ai/grok-build-0.1        $1 / $2   (a coding-oriented Grok; ~3x under writer)
 #
 # The budget route is NOT free, despite the `:free` suffix. Its first real run — a
 # 67-turn fleet sweep — billed $0.1155, against roughly $1 for the same work on the
@@ -64,6 +68,7 @@ runs:
         WRITER_SLUG: x-ai/grok-4.5
         READER_SLUG: x-ai/grok-4.3
         BUDGET_SLUG: nvidia/nemotron-3-ultra-550b-a55b:free
+        MECH_SLUG: x-ai/grok-build-0.1
       run: |
         set -euo pipefail
 
@@ -74,6 +79,7 @@ runs:
           claude-opus-4-8|claude-opus-4.8|opus|writer)   slug="$WRITER_SLUG" ;;
           claude-sonnet-5|claude-sonnet-5.0|sonnet|reader) slug="$READER_SLUG" ;;
           budget)                                        slug="$BUDGET_SLUG" ;;
+          mechanical|cheap)                              slug="$MECH_SLUG" ;;
           *)
             echo "::error::Unknown model tier '$TIER'. Add it to factory/actions/resolve-model, or pass a provider slug like x-ai/grok-4.5." >&2
             exit 1

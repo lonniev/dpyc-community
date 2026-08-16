@@ -86,6 +86,10 @@ jobs:
           REPOS_IN: ${{ inputs.repos }}
         run: |
           set -uo pipefail
+          # osv-scanner exits 1 when it FINDS vulnerabilities — that is data, not failure.
+          # GitHub runs this step under `bash -e {0}`, so errexit must be turned OFF here or
+          # the first vulnerable repo aborts the sweep before any rc handling or filing runs.
+          set +e
 
           # Canonical fleet — single source of truth. Empty input (scheduled path) = all.
           # Includes the JS frontends (osv reads package-lock.json) and Python operators;

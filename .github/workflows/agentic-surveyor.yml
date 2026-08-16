@@ -1,0 +1,27 @@
+# Thin caller — Surveyor (fleet-wide DRY / elegance audit). Hub-resident: it reads the
+# WHOLE fleet, so unlike the per-repo roles it lives only here, not in factory-callers.
+# Runs weekly on a SCHEDULE; workflow_dispatch lets a human run a sweep on demand and
+# optionally scope it to a subset of repos. All logic is in the reusable (@main).
+name: Agentic Surveyor
+
+on:
+  schedule:
+    - cron: "43 7 * * 1"   # weekly, Mondays ~07:43 UTC (clear of the canary :00/:30, ots :17, conflict-watch :37)
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: Space-separated repos to survey. Empty = the full canonical fleet.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  survey:
+    uses: lonniev/dpyc-community/.github/workflows/surveyor.yml@main
+    secrets: inherit
+    with:
+      model: claude-sonnet-5
+      repos: ${{ inputs.repos }}

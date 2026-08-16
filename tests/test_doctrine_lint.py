@@ -24,11 +24,14 @@ def test_rule_tables_present():
     assert dl.CODEOWNERS_MONEY_GATE == "* @lonniev"
     assert "porter.prompt.md" in dl.FACTORY_PROMPT_ANCHORS
     assert "MANDATORY OUTCOME" in dl.FACTORY_PROMPT_ANCHORS["porter.prompt.md"]
+    # The Surveyor (fleet DRY/elegance auditor) carries the full anchor set.
+    assert "surveyor.prompt.md" in dl.FACTORY_PROMPT_ANCHORS
+    assert "MANDATORY OUTCOME" in dl.FACTORY_PROMPT_ANCHORS["surveyor.prompt.md"]
 
 
 # --- the real repo files must lint clean --------------------------------------
 def test_real_factory_prompts_are_clean():
-    for name in ("porter.prompt.md", "journeyman.prompt.md"):
+    for name in ("porter.prompt.md", "journeyman.prompt.md", "surveyor.prompt.md"):
         text = (REPO_ROOT / "factory" / name).read_text(encoding="utf-8")
         assert dl.lint_factory_prompt(name, text) == []
 
@@ -128,7 +131,10 @@ def test_journeyman_prompt_is_language_agnostic():
 
 
 def test_real_factory_workflows_are_clean():
-    for wf in ("service-desk.yml", "engineering.yml", "qa.yml", "pr-dialogue.yml", "digest.yml"):
+    for wf in (
+        "service-desk.yml", "engineering.yml", "qa.yml", "pr-dialogue.yml", "digest.yml",
+        "surveyor.yml", "agentic-surveyor.yml", "sentinel.yml", "agentic-sentinel.yml",
+    ):
         text = (REPO_ROOT / ".github" / "workflows" / wf).read_text(encoding="utf-8")
         assert dl.lint_workflow(text) == [], f"{wf} tripped a workflow invariant"
 

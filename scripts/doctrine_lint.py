@@ -112,6 +112,10 @@ FACTORY_PROMPT_ANCHORS: dict[str, tuple[str, ...]] = {
     # the MANDATORY OUTCOME anchor too: a run that silently pushes nothing and says
     # nothing is indistinguishable from a run that never fired.
     "pr-revision.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
+    # The Surveyor files issues across the fleet from an owner-wide issues:write token,
+    # so it carries MANDATORY OUTCOME too: a silent run that files nothing is
+    # indistinguishable from one that never fired, and its digest is the accountable trail.
+    "surveyor.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
 }
 
 

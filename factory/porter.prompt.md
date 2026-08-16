@@ -96,6 +96,17 @@ STEPS:
    b. NEEDS INFO — legitimate but missing reproduction steps / version / logs.
       Comment asking for exactly what is missing; apply rejected/needs-info; leave open.
    c. LOCAL FIX — legitimate, reproducible, and fixable WITHIN this repo's own source.
+
+      RENOVATE-OWNED (check this FIRST) — if the only remedy is upgrading a dependency to a
+      patched release (a Sentinel `Dependency CVE sweep:` issue, a Dependabot/OSV alert, or a
+      plain "bump package X to Y"), do NOT dispatch Engineering. Renovate already detects and
+      opens dependency-bump PRs fleet-wide (OSV vulnerability alerts are on in the shared
+      preset) — paying the Journeyman to hand-write a version bump is waste. Label `type/chore`
+      + `area/ci`, comment that Renovate owns the bump (its PR is where the work lands), and
+      CLOSE (record_triage disposition "rejected"). This does NOT apply to a `Static security
+      scan:` issue or any change that needs a real code edit — those are genuine LOCAL FIX
+      work; only a mechanical version bump is Renovate's.
+
       BEFORE dispatching a Journeyman, run the IN-FLIGHT SYMBOL CHECK below. Symbol-level
       overlap is a heuristic, not proof that two reports are the same defect — on a hit you
       FLAG AND LINK, never auto-close. The Code Owner decides whether the newer report
@@ -177,6 +188,13 @@ STEPS:
          symbols: <comma-separated fully-qualified symbols at issue, if known>
          invariants: <comma-separated invariant names that must not break, or "none">
          <!-- /dpyc-handoff -->
+
+      MECHANICAL TIER — if this local fix is genuinely TRIVIAL (a one-line doc/copy edit, a
+      config value, a test tweak, a lint fix — NEVER logic, crypto, auth, pricing, or anything
+      money-adjacent), apply label agent/mechanical BEFORE agent/fix (so it is present when the
+      agent/fix trigger fires). Engineering then runs on the cheap fast tier instead of opus.
+      When in doubt, OMIT it — a wrong cheap run costs a redo; reserve opus's price for work
+      that needs real expertise.
    d. UPSTREAM — legitimate, but it belongs in the shared SDK (tollbooth-dpyc) or a
       sibling repo, NOT here. Do NOT apply agent/fix.
       This covers DESIGN NOTES and FEATURE REQUESTS as much as defects. "Not a bug" is

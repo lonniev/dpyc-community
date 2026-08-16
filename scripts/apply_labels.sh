@@ -32,6 +32,7 @@ labels=(
   "sev/low|0e8a16|Minor / cosmetic"
 
   "agent/fix|5319e7|Handed to the Engineering agent"
+  "agent/mechanical|c5def5|Trivial fix — run Engineering on the cheap fast tier, not opus"
   "agent/working|1d76db|An agent is actively working this issue right now"
   "agent/revising|1d76db|Journeyman is revising this PR; persists if the run did not finish"
   "agent/refinement|c5def5|Held open: shares a root-cause symbol with an in-flight fix; not a second Journeyman dispatch"

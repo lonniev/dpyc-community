@@ -131,11 +131,15 @@ jobs:
           sudo chmod 0777 /home
           sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
 
+      # A fix Porter judged TRIVIAL (a one-line doc/test/lint/config change) carries
+      # `agent/mechanical`; run it on the cheap fast tier instead of the writer. Porter
+      # applies that label BEFORE agent/fix, so it is present on this trigger event. Real
+      # code work has no such label and falls through to inputs.model (writer/opus).
       - name: Resolve the model tier
         id: model
         uses: lonniev/dpyc-community/factory/actions/resolve-model@main
         with:
-          tier: ${{ inputs.model }}
+          tier: ${{ contains(github.event.issue.labels.*.name, 'agent/mechanical') && 'mechanical' || inputs.model }}
 
       - name: Implement the fix and open a PR
         id: implement

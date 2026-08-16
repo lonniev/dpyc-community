@@ -91,11 +91,13 @@ jobs:
           sudo chmod 0777 /home
           sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
 
+      # Housekeeper is rote backlog bookkeeping — no real expertise needed — so it always
+      # runs on the cheap fast `mechanical` tier regardless of the caller's model input.
       - name: Resolve the model tier
         id: model
         uses: lonniev/dpyc-community/factory/actions/resolve-model@main
         with:
-          tier: ${{ inputs.model }}
+          tier: mechanical
 
       - name: Tidy the backlog
         uses: anthropics/claude-code-action@v1

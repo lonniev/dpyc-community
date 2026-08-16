@@ -128,49 +128,55 @@ jobs:
             fi
             scanned=$((scanned+1))
 
-            # Flatten findings to: <pkg>|<version>|<ecosystem>|<osv-id>|<summary>
+            # Flatten findings to TSV: <pkg>\t<version>\t<ecosystem>\t<osv-id>\t<summary>
             findings=$(jq -r '
               .results[]?.packages[]? as $p
               | ($p.vulnerabilities[]? ) as $v
               | [ $p.package.name, $p.package.version, $p.package.ecosystem,
-                  $v.id, (($v.summary // $v.details // "") | gsub("[\r\n]+";" ") | .[0:180]) ]
+                  $v.id, (($v.summary // $v.details // "") | gsub("[\r\n]+";" ") | .[0:160]) ]
               | @tsv' "$out" 2>/dev/null | sort -u)
-            [ -z "$findings" ] && { echo "$repo: clean"; continue; }
+            n=$(printf '%s\n' "$findings" | grep -c .)
+            if [ "$n" -eq 0 ]; then echo "$repo: clean"; continue; fi
+            vuln=$((vuln+n))
 
-            while IFS=$'\t' read -r name version eco id summary; do
-              [ -z "$name" ] && continue
-              vuln=$((vuln+1))
-              # Dedup: an open audit/security issue already naming this pkg + advisory.
-              existing=$(gh issue list --repo "$OWNER/$repo" --state open --label audit/security \
-                --search "$name $id in:title" --json number --jq '.[0].number' 2>/dev/null || true)
-              if [ -n "$existing" ]; then
-                echo "$repo: $name $id already tracked in #$existing"
-                skipped=$((skipped+1)); continue
-              fi
-              gh label create audit/security --repo "$OWNER/$repo" --color b60205 \
-                --description "Security sweep: dependency CVE finding" --force >/dev/null 2>&1 || true
-              title="CVE: $name $version — $id"
-              body=$(cat <<EOF
-          osv-scanner found a known vulnerability in a dependency of \`$repo\`.
+            # ONE aggregated issue per repo. A per-advisory issue FLOODS — the first smoke
+            # test filed 197 across three repos, each firing Porter. Dedup on the whole
+            # sweep: if an open audit/security issue already exists here, leave it for the
+            # weekly refresh rather than pile a second one on.
+            existing=$(gh issue list --repo "$OWNER/$repo" --state open --label audit/security \
+              --json number --jq '.[0].number' 2>/dev/null || true)
+            if [ -n "$existing" ]; then
+              echo "$repo: $n advisories — already tracked in #$existing"
+              skipped=$((skipped+1)); continue
+            fi
 
-          - **Package:** \`$name\` \`$version\` ($eco)
-          - **Advisory:** $id — https://osv.dev/vulnerability/$id
-          - **Summary:** ${summary:-see advisory}
+            npkgs=$(printf '%s\n' "$findings" | cut -f1 | sort -u | grep -c .)
+            rows=$(printf '%s\n' "$findings" \
+              | awk -F'\t' 'NF>=4{printf "| `%s` `%s` | [%s](https://osv.dev/vulnerability/%s) | %s |\n",$1,$2,$4,$4,$5}' \
+              | head -200)
+            bodyfile="/tmp/sentinel-body-$repo.md"
+            {
+              echo "osv-scanner found **$n** known advisories across **$npkgs** dependencies of \`$repo\`."
+              echo
+              echo "Fix by upgrading each affected package to a patched version (follow each advisory for the fixed range). If a bump belongs in the SDK, Porter routes it upstream. Filed by the DPYC Sentinel (fleet dependency-CVE sweep)."
+              echo
+              echo "| package | advisory | summary |"
+              echo "|---|---|---|"
+              printf '%s\n' "$rows"
+              [ "$n" -gt 200 ] && { echo; echo "_…and $((n-200)) more advisories (truncated; re-run after the top ones are cleared)._"; }
+            } > "$bodyfile"
 
-          Filed by the DPYC Sentinel (fleet dependency-CVE sweep). Fix by upgrading the
-          dependency to a patched version (see the advisory for the fixed range); if the
-          bump lives in the SDK, Porter will route it upstream.
-          EOF
-          )
-              if gh issue create --repo "$OWNER/$repo" --label audit/security \
-                   --title "$title" --body "$body" >/dev/null 2>&1; then
-                echo "$repo: filed $name $id"
-                filed=$((filed+1))
-              else
-                echo "::warning::failed to file $name $id on $repo"
-                errored=$((errored+1))
-              fi
-            done <<< "$findings"
+            gh label create audit/security --repo "$OWNER/$repo" --color b60205 \
+              --description "Security sweep: dependency CVE finding" --force >/dev/null 2>&1 || true
+            title="Dependency CVE sweep: $n advisories across $npkgs packages"
+            if gh issue create --repo "$OWNER/$repo" --label audit/security \
+                 --title "$title" --body-file "$bodyfile" >/dev/null 2>&1; then
+              echo "$repo: filed 1 aggregated issue ($n advisories, $npkgs packages)"
+              filed=$((filed+1))
+            else
+              echo "::warning::failed to file the aggregated issue on $repo"
+              errored=$((errored+1))
+            fi
           done
 
           {

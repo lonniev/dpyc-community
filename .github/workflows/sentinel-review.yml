@@ -1,0 +1,150 @@
+# DPYC Sentinel Review — fleet-wide security-ARCHITECTURE audit, hub-resident, LLM.
+#
+# The judgment arm of the Sentinel. The deterministic sentinel.yml scans dependencies (osv)
+# and code anti-patterns (semgrep); this role reasons about the WEIGHTY matters no scanner
+# knows because they are DPYC-specific: unauthenticated access to the multi-tenant database,
+# a restricted/paid tool missing its debit_or_deny gate, credentials/PII leaving the vault,
+# hand-rolled or downgraded crypto, cross-patron reads. It grades each repo against the
+# doctrine that already exists (THREAT-MODEL.md §7, CLAUDE.md §2/§3, the SDK's canonical
+# primitives) and files plain `audit/security` issues for Porter to triage.
+#
+# It cannot write code. Two owner-wide App tokens, each proven elsewhere: a contents:READ-ONLY
+# token wired into git's global auth header to clone siblings (the pr-dialogue.yml discipline,
+# kept OUT of the agent env) and an issues:WRITE token (the escalation.yml scope) as GH_TOKEN.
+# allowedTools is read + enumerated `gh issue`/`gh label` subcommands only — no merge, approve,
+# edit, or push — so even a successful injection from a code/issue body cannot land code.
+name: DPYC Sentinel Review (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: Claude model tier for the review (reader tier).
+        type: string
+        default: claude-sonnet-5
+      ref:
+        description: dpyc-community ref to fetch the Sentinel Review prompt from.
+        type: string
+        default: main
+      repos:
+        description: >-
+          Space-separated fleet repos to review (owner implicit). Empty = the full
+          canonical fleet (resolved in the render step, the single source of truth).
+        type: string
+        default: ""
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+      DPYC_BOT_APP_ID:
+        required: true
+      DPYC_BOT_PRIVATE_KEY:
+        required: true
+      PORTER_NSEC:
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+# One review at a time — a fleet sweep is global, so the group is the workflow.
+concurrency:
+  group: dpyc-sentinel-review
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Investigation token — every repo the App is installed on, contents:READ ONLY.
+      - name: Mint the read-only clone token (owner-wide)
+        id: read_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: read
+          permission-metadata: read
+
+      # Teach git to authenticate github.com clones with the read-only token via a GLOBAL
+      # auth header — so `git clone` just works, tokenlessly, and the token is NOT copied
+      # into each clone's config nor exposed in the agent's environment.
+      - name: Enable read-only cloning of sibling repos
+        env:
+          READ_TOKEN: ${{ steps.read_token.outputs.token }}
+        run: |
+          AUTH=$(printf 'x-access-token:%s' "$READ_TOKEN" | base64 | tr -d '\n')
+          git config --global "http.https://github.com/${{ github.repository_owner }}/.extraheader" "AUTHORIZATION: basic ${AUTH}"
+          mkdir -p siblings
+
+      # Filing token — account-wide but ONLY issues:write (the escalation.yml scope).
+      - name: Mint the issues-only filing token (owner-wide)
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+          permission-metadata: read
+
+      # The reviewer's signing hand (Porter's reader identity): queries the intention graph
+      # for the canonical owner of a concern. The nsec lives only in the keyring subprocess.
+      - name: Install the agent keyring
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+
+      # Behavior lives in factory/sentinel-review.prompt.md (agent may evolve it via PR; this
+      # skeleton — schedule, tokens, tools — stays human-only). Fill only OWNER / REPOS.
+      - name: Render the Sentinel Review prompt
+        id: prompt
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPOS: ${{ inputs.repos }}
+        run: |
+          set -euo pipefail
+          # Canonical fleet — the single source of truth. Empty input (the scheduled path;
+          # workflow_dispatch defaults are also empty on non-dispatch events) means "all".
+          # Swift (pricing-studio, tollbooth-pricing-studio) and docs (network-states) are
+          # excluded from the review LIST; the doctrine repos are always cloned in the prompt.
+          if [ -z "${REPOS// }" ]; then
+            REPOS="tollbooth-dpyc schwab-mcp thebrain-mcp excalibur-mcp cypher-mcp optionality-mcp taxsort-mcp roastify-mcp tollbooth-authority tollbooth-authority-newengland tollbooth-authority-northamerica tollbooth-wasmcp tollbooth-fermyon dpyc-oracle tollbooth-sample tollbooth-oauth2-collector tollbooth-shortlinks"
+          fi
+          export REPOS
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
+            "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/sentinel-review.prompt.md" \
+            -o /tmp/sentinel-review.prompt.md
+          rendered=$(envsubst '${OWNER} ${REPOS}' < /tmp/sentinel-review.prompt.md)
+          { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
+
+      # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at /home.
+      - name: Unbreak the agent bash sandbox (bwrap /home/.mcp.json)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo chmod 0777 /home
+          sudo touch /home/.mcp.json && sudo chmod 0666 /home/.mcp.json
+
+      - name: Resolve the model tier
+        id: model
+        uses: lonniev/dpyc-community/factory/actions/resolve-model@main
+        with:
+          tier: ${{ inputs.model }}
+
+      - name: Review the fleet for security-architecture flaws
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          # The Factory routes through OpenRouter. ANTHROPIC_API_KEY carries the OpenRouter
+          # key: its Anthropic-compatible endpoint reads x-api-key, the header this variable
+          # produces, so the secret NAME stays put and only its value changed.
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: |
+            --model ${{ steps.model.outputs.slug }}
+            --max-turns 60
+            --mcp-config '{"mcpServers":{"graph":{"type":"stdio","command":"python","args":["-m","tollbooth.agent_keyring"],"env":{"DPYC_KEYRING_UPSTREAM":"https://cypher-mcp.fastmcp.app/mcp","DPYC_KEYRING_NPUB":"npub1ymgfh46ace33zgld5zdc7gyhc5keyu42v36td0q7c44ks45d79eslwe2q2","DPYC_KEYRING_NSEC":"${{ secrets.PORTER_NSEC }}"}}}}'
+            --allowedTools "Read,Grep,Glob,Bash(git clone:*),Bash(gh issue list:*),Bash(gh issue create:*),Bash(gh label create:*),mcp__graph__cypher_list_capabilities,mcp__graph__cypher_which_service_handles,mcp__graph__cypher_explain_capability"

@@ -1,0 +1,27 @@
+# Thin caller — Sentinel Review (fleet-wide security-architecture audit). Hub-resident: it
+# reads the WHOLE fleet, so it lives only here, not in factory-callers. Runs weekly on a
+# SCHEDULE; workflow_dispatch lets a human run a review on demand and optionally scope it to
+# a subset. All logic is in the reusable (@main).
+name: Agentic Sentinel Review
+
+on:
+  schedule:
+    - cron: "29 8 * * 1"   # weekly, Mondays ~08:29 UTC (clear of Surveyor 07:43, Sentinel 09:11, canary :00/:30, ots :17, conflict-watch :37)
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: Space-separated repos to review. Empty = the full canonical fleet.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  review:
+    uses: lonniev/dpyc-community/.github/workflows/sentinel-review.yml@main
+    secrets: inherit
+    with:
+      model: claude-sonnet-5
+      repos: ${{ inputs.repos }}

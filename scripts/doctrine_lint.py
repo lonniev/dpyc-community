@@ -116,6 +116,9 @@ FACTORY_PROMPT_ANCHORS: dict[str, tuple[str, ...]] = {
     # so it carries MANDATORY OUTCOME too: a silent run that files nothing is
     # indistinguishable from one that never fired, and its digest is the accountable trail.
     "surveyor.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
+    # Sentinel Review is the LLM security-architecture arm — same owner-wide filing token,
+    # same accountability: SECURITY/UNTRUSTED framing plus a MANDATORY OUTCOME digest.
+    "sentinel-review.prompt.md": ("SECURITY", "UNTRUSTED", "MANDATORY OUTCOME"),
 }
 
 

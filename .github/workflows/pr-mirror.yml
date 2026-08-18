@@ -1,0 +1,55 @@
+# DPYC Pull-Request mirror — deterministic, NO agent.
+#
+# Fires (via a thin per-repo caller) on every `pull_request` event, and MERGEs a
+# :PullRequest node into the cypher intention graph keyed by (repo_name, number),
+# tracking its live state. This is what makes a PR visible in the Lab Notebook
+# WHILE IT IS ACTIVE — open, draft, in review — so the analyst can think about
+# upcoming changes, not just merged history.
+#
+# No LLM runs here — the upsert is a plain sats-rail graph write, best-effort: a
+# graph miss (no nsec, cold start, Cypher 402) must never fail a PR's checks; the
+# next event heals the mirror. Signed with the Journeyman nsec, the same identity
+# that writes the FIXES edge via link_pr. No GitHub token is needed — this writes
+# only to the graph, never back to GitHub.
+name: DPYC Pull-Request Mirror (reusable)
+
+on:
+  workflow_call: {}
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      # mirror_pr.py lives in dpyc-community, not the caller repo — fetch it.
+      - name: Fetch the mirror helper
+        uses: actions/checkout@v4
+        with:
+          repository: lonniev/dpyc-community
+          path: _factory
+
+      - name: Mirror the PR state into the graph (deterministic)
+        env:
+          MIRROR_NSEC: ${{ secrets.JOURNEYMAN_NSEC }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_STATE: ${{ github.event.pull_request.state }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+        run: |
+          set +e  # best-effort — a graph miss must never fail the PR's checks
+          [ -n "${MIRROR_NSEC:-}" ] || { echo "no JOURNEYMAN_NSEC; graph left as-is."; exit 0; }
+          python3 -m pip install --quiet --disable-pip-version-check "tollbooth-dpyc[keyring]" \
+            || { echo "pip install failed; graph left as-is."; exit 0; }
+          python3 _factory/factory/actions/pr-sentinel/mirror_pr.py \
+            --repo "$REPO" --number "$PR_NUMBER" --url "$PR_URL" --title "$PR_TITLE" \
+            --state "$PR_STATE" --draft "${PR_DRAFT:-false}" --author "$PR_AUTHOR" \
+            --head-sha "$PR_HEAD_SHA" --base-ref "$PR_BASE_REF" --head-ref "$PR_HEAD_REF" \
+            --merged-at "$PR_MERGED_AT" --created-at "$PR_CREATED_AT"
+          exit 0

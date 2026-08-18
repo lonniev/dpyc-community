@@ -82,6 +82,10 @@ def main() -> int:
         print("mirror_pr: no MIRROR_NSEC — skipping graph mirror (best-effort).", file=sys.stderr)
         return 0
 
+    # The dynamic-tool handler types every optional param strictly as its declared
+    # type (str) and rebinds OMITTED params to their default via apply_param_defaults —
+    # so an absent field (e.g. merged_at on an open PR) must be DROPPED, never sent as
+    # None (which fails validation against `str`). Required fields are always present.
     params = {
         "repo_name": args.repo,
         "number": args.number,
@@ -96,6 +100,7 @@ def main() -> int:
         "merged_at": _opt(args.merged_at),
         "created_at": _opt(args.created_at),
     }
+    params = {k: v for k, v in params.items() if v is not None}
 
     try:
         asyncio.run(_mirror(args.upstream, nsec, params))

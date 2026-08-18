@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-18T09:49:43.528699+00:00",
+  "collected_at": "2026-08-18T10:48:04.355998+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 32,
+    "total_notarizations": 34,
     "confirmed": 0,
-    "coverage_percent": 17
+    "coverage_percent": 25
   },
   "operators": [
     {
@@ -78,15 +78,40 @@
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
       "display_name": "schwab-mcp",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "3",
+          "root_hash": "1dae4578c41f918144276864c911f4444173d7183242ce251746480b5acf8d09",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-29 23:15:12.856295+00",
+          "receipt_count": 2
+        },
+        {
+          "notarization_id": "2",
+          "root_hash": "09a8a4cd24062b7f95d532f6f1bccdc9fba2cfb91014e99742ce093e4e5580e3",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-26 00:32:11.46757+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "37",
+          "root_hash": "34d366c21ce59309e8d2bbf99efccfd6798fb9a4229452e39747ca117c0a18f1",
+          "leaf_count": 4,
+          "status": "no_receipts",
+          "created_at": "2026-08-18 10:39:51.266184+00",
+          "receipt_count": 0
+        },
         {
           "notarization_id": "36",
           "root_hash": "9bcc00d3e355666ce214a34050ce5f8f6ba6255e89fe8c9e0ee81fa1a94a12fd",
@@ -158,17 +183,9 @@
           "status": "submitted",
           "created_at": "2026-08-02 02:07:39.778101+00",
           "receipt_count": 2
-        },
-        {
-          "notarization_id": "27",
-          "root_hash": "77de6868e3c87fde0502bbb6f1003b9ca488b06cb4558b63ed39bebcdee7bd54",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-02 00:20:14.572352+00",
-          "receipt_count": 1
         }
       ],
-      "status": "stale",
+      "status": "no_receipts",
       "error": null
     },
     {

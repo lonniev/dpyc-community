@@ -128,7 +128,10 @@ STEPS:
      repo_url=<`gh repo view --json url -q .url`>  (the real GitHub URLs — never a hardcoded owner)
      (ensures the Issue node exists).
    - `mcp__graph__cypher_link_pr` with repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
-     pr_url=<the PR URL `gh pr create` printed in step 10> — records the fix PR for click-through.
+     pr_number=<the PR number `gh pr create` printed in step 10>,
+     pr_url=<the PR URL `gh pr create` printed in step 10> — links the fix PR to the issue it
+     enacts ((:PullRequest)-[:FIXES]->(:Issue)); a graph reader can then trace the PR to the
+     capability it enforces.
    - `mcp__graph__cypher_assert_rationale` with
      decision_id="${REPO_NAME}#${ISSUE_NUMBER}-<slug>",
      repo_name, issue_number, statement=<the decision behind your fix, one line>,

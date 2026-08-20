@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-08-20T16:52:23.487760+00:00",
+  "collected_at": "2026-08-20T17:47:08.737901+00:00",
   "summary": {
     "operators": 12,
     "total_notarizations": 34,
@@ -105,6 +105,14 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "40",
+          "root_hash": "2da27f851252144d483803405c38c60e0cb43eb25e4a610ac052158855daad56",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-20 17:38:31.985753+00",
+          "receipt_count": 1
+        },
+        {
           "notarization_id": "39",
           "root_hash": "74db353c06aa8b9e0dc4fe332be968561047ec5a10925784145e91909fa57e2b",
           "leaf_count": 4,
@@ -175,14 +183,6 @@
           "status": "submitted",
           "created_at": "2026-08-02 13:05:55.044202+00",
           "receipt_count": 1
-        },
-        {
-          "notarization_id": "30",
-          "root_hash": "5570a231cf40caee41fe0788df1c2974e433f17ff21de1356a57f4502935306d",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-02 08:20:32.567722+00",
-          "receipt_count": 2
         }
       ],
       "status": "submitted",

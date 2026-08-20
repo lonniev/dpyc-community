@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-20T17:47:08.737901+00:00",
+  "collected_at": "2026-08-20T19:00:51.184864+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 34,
+    "total_notarizations": 33,
     "confirmed": 0,
-    "coverage_percent": 25
+    "coverage_percent": 17
   },
   "operators": [
     {
@@ -225,18 +225,9 @@
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
       "display_name": "Roastify MCP",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "4af134b51209a6609f8a96bb14461600e3e80a75a3bafd9854de27a1442bc825",
-          "leaf_count": 1,
-          "status": "submitted",
-          "created_at": "2026-08-14 03:59:09.792789+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "submitted",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",

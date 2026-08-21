@@ -54,6 +54,18 @@
 - All Operators implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.
 - Python maintainer of the **tollbooth-dpyc** wheel — the shared library underlying all Tollbooth-compliant MCP servers.
 
+### Conceiver & Architect — Cypher MCP™ and the DPYC Software Factory `MBSE`
+
+**2026** · DPYC Ecosystem
+
+Conceived an *intention graph* for agentic software development — a Neo4j knowledge graph recording why code exists rather than what it does — and the unattended agent crew that runs on it across an 18-repository fleet.
+
+- **Authored a formal SysML v2 model** of the factory: twelve packages, machine-checked in CI, validating clean at 455 elements and 890 relationships with 14 requirements and four state machines.
+- **The model found defects rather than describing them.** A completeness pass proved no mutual exclusion existed anywhere — two agents could race the same branch — and that a closed pull request stranded its issue unnoticed. Both changed the running workflows.
+- **Neo4j AuraDB** behind a monetized MCP operator selling parameterized named queries, never raw access. Every agent buys its own graph writes with sats.
+- **Architected the GitHub-Actions factory** on one rule: judgement gets an agent, policy gets bash. Eight LLM roles, nine deterministic gates, and every gate that can land code is LLM-free — immune to prompt injection and to a dry API key alike.
+- **Fifteen structural guards.** An agent cannot widen its own powers: the GitHub App holds no `workflows: write`, so the leash is architecture rather than policy.
+
 ### Swift and iOS Developer — Pricing Studio
 
 **2026 – Present** · DPYC Ecosystem · iOS / SwiftUI

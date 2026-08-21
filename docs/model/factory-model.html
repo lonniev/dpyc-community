@@ -557,7 +557,7 @@ a:focus-visible, .toc-part a:focus-visible {
 <h2 id="i-1"><span class="mark">I.1</span><span>Read it</span></h2>
 <p><strong><a href="https://lonniev.github.io/dpyc-community/model/factory-model.html">The article, rendered</a></strong> — model, diagrams and source as one page, published by GitHub Pages straight from <code>main</code>. Nothing to build and no URL to hunt for; it updates when this directory does.</p>
 <p>For a PDF, open that page and print it — it has a print stylesheet, so the rail collapses and diagrams stay whole. GitHub also renders <code>diagrams.md</code> natively, mermaid and all, if you only want the pictures.</p>
-<div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr><tr><td><code>check_states.py</code></td><td>State-machine completeness. Asks which <em>ambient</em> events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap.</td></tr></tbody></table></div>
+<div class="scroll"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dpyc-factory.sysml</code></td><td>The model — SysML v2 textual notation. Twelve packages: vocabulary, items, identity, platform, intention graph, roles, distribution, behavior (state machines), guards, fleet, deployment, assurance.</td></tr><tr><td><code>diagrams.md</code></td><td>Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table.</td></tr><tr><td><code>factory-model.html</code></td><td>The two above, plus the model source, as one print-ready page. <strong>Generated — never hand-edit.</strong></td></tr><tr><td><code>build_page.py</code>, <code>page.css</code></td><td>The generator. <code>python3 build_page.py</code> rewrites <code>factory-model.html</code> from the sources beside it.</td></tr><tr><td><code>check.mjs</code>, <code>package.json</code></td><td>Diagram checks. <code>npm install &amp;&amp; node check.mjs</code> parses and renders every mermaid block; exits non-zero on failure.</td></tr><tr><td><code>check_states.py</code></td><td>State-machine completeness. Asks which <em>ambient</em> events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap.</td></tr><tr><td><code>check_workflows.py</code></td><td>Workflow-graph startability. Every reusable-workflow caller job uses only the keys GitHub permits, so no file silently fails to parse. Added after a stray <code>continue-on-error</code> took <code>deploy-verify</code> down fleet-wide; exits non-zero on any illegal key.</td></tr></tbody></table></div>
 <p>Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the diagrams stay readable in the same place the source they describe lives.</p>
 <h2 id="i-2"><span class="mark">I.2</span><span>What is deliberately <em>not</em> in the model</span></h2>
 <ul><li><strong>The Digest&#x27;s prose output and the Housekeeper&#x27;s tidy heuristics.</strong> Both are inline prompts whose specifics change often; the model captures their trigger, scope, token and tier, which is what governs their blast radius.</li><li><strong>Per-repo CI internals</strong> beyond runner OS and required-check name. Each repo&#x27;s <code>ci.yml</code> is its own concern; the Factory only cares that a green context exists and is required.</li><li><strong>The DPYC network&#x27;s own economics</strong> — Authorities, certification, demurrage. The Factory <em>consumes</em> that network as a patron; it does not define it.</li></ul>
@@ -569,8 +569,8 @@ a:focus-visible, .toc-part a:focus-visible {
 <ol><li><strong>Behavior is data; powers are not.</strong> Role prompts live in <code>factory/*.prompt.md</code> and the crew may evolve them by PR. The workflow skeleton that grants permissions, mints tokens and sets <code>--allowedTools</code> is human-only — and that separation is <em>structural</em>, because the GitHub App carries no <code>workflows: write</code>, so an agent token cannot push such an edit even under a successful injection.</li><li><strong>Judgement gets an agent; policy gets bash.</strong> Every gate that could actually land code — merge, escalation, lint, deploy verification — is LLM-free, which makes it immune both to prompt injection and to an exhausted key at the moment it matters.</li><li><strong>Containment is funding, not policy.</strong> Each agent is a DPYC patron holding its own nsec and buying its own memory-graph writes with sats. The human&#x27;s routine oversight is topping up balances; a drained agent degrades gracefully rather than stalling.</li></ol>
 <h2 id="i-5"><span class="mark">I.5</span><span>Verification</span></h2>
 <p>Everything here is machine-checked, and the checks run in CI — the <code>model</code> job in <code>.github/workflows/ci.yml</code>. That job always reports, deliberately without a <code>paths:</code> filter: a path-filtered workflow posts no status on PRs that miss the filter, and a required context that sometimes never posts leaves merges pending forever, which is the trap <code>scripts/require_ci_checks.py</code> exists to refuse. It skips its own expensive steps when <code>docs/model</code> is untouched, so it stays cheap while remaining safe to require.</p>
-<p>Three gates run there:</p>
-<ol><li><strong><code>check_states.py</code></strong> — state-machine completeness.</li><li><strong>The page is current</strong> — <code>build_page.py</code> is re-run and the result diffed against the committed <code>factory-model.html</code>, so editing a source without rebuilding cannot land.</li><li><strong><code>check.mjs</code></strong> — every mermaid block parses <em>and</em> renders.</li></ol>
+<p>Four gates run there:</p>
+<ol><li><strong><code>check_workflows.py</code></strong> — the workflow graph will actually <em>start</em>: every reusable-workflow caller job uses only the keys GitHub permits, so no file silently fails to parse. Tracked separately from the model diff, because a workflow-only change is exactly what once slipped a <code>docs/model/</code> path filter and broke deploy-verify.</li><li><strong><code>check_states.py</code></strong> — state-machine completeness.</li><li><strong>The page is current</strong> — <code>build_page.py</code> is re-run and the result diffed against the committed <code>factory-model.html</code>, so editing a source without rebuilding cannot land.</li><li><strong><code>check.mjs</code></strong> — every mermaid block parses <em>and</em> renders.</li></ol>
 <p>Run all three locally exactly as CI does:</p>
 <div class="scroll"><pre class="code">python3 docs/model/check_states.py --verbose
 python3 docs/model/build_page.py &amp;&amp; git diff --exit-code -- docs/model/factory-model.html
@@ -580,9 +580,9 @@ cd docs/model &amp;&amp; npm ci &amp;&amp; node check.mjs</pre></div>
 <div class="scroll"><pre class="code">cargo install nomograph-sysml
 sysml validate docs/model/dpyc-factory.sysml
 {&quot;file&quot;:&quot;docs/model/dpyc-factory.sysml&quot;,&quot;valid&quot;:true,&quot;diagnostics&quot;:[]}</pre></div>
-<p>Indexing reports 455 elements and 890 relationships, including all 14 requirements, four state machines with 42 transitions, ten enumerations and twelve packages — so the grammar is understood, not merely tokenized.</p>
+<p>Indexing reports 476 elements and 949 relationships, including all 14 requirements, four state machines with 42 transitions, ten enumerations and twelve packages — so the grammar is understood, not merely tokenized.</p>
 <p><code>sysml check all</code> still reports findings, and as of <strong>v0.2.0 every one of them is a tool limitation rather than a defect in the model</strong>. Each was isolated to a minimal reproducer:</p>
-<div class="scroll"><table><thead><tr><th>Check</th><th>Findings</th><th>Why</th></tr></thead><tbody><tr><td><code>DanglingReferences</code></td><td>199</td><td><code>String</code> / <code>Boolean</code> / <code>Integer</code> / <code>Real</code> resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (<code>= &quot;reader&quot;</code>, <code>= false</code>) counted as unresolved targets.</td></tr><tr><td><code>OrphanRequirements</code>, <code>UnverifiedRequirements</code>, <code>MissingVerification</code></td><td>14 / 14 / 24</td><td>The indexer extracts only <code>Member</code> and <code>TypedBy</code> relationships — <code>Satisfy</code> and <code>Verify</code> are never produced, so these checks cannot pass for any model. An eight-line file with <code>satisfy requirement R by t;</code> and <code>verify requirement R;</code> reports the same findings.</td></tr><tr><td><code>UnconnectedPorts</code></td><td>3</td><td><code>Connect</code> is likewise not extracted, and the check also flags port <em>definitions</em>, which are never themselves connected.</td></tr><tr><td><code>MetamodelConformance</code></td><td>1</td><td>Reports <code>port def GraphToolPort</code> as having no type. A port def <em>is</em> a type; a two-line canonical port def reproduces it.</td></tr></tbody></table></div>
+<div class="scroll"><table><thead><tr><th>Check</th><th>Findings</th><th>Why</th></tr></thead><tbody><tr><td><code>DanglingReferences</code></td><td>205</td><td><code>String</code> / <code>Boolean</code> / <code>Integer</code> / <code>Real</code> resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (<code>= &quot;reader&quot;</code>, <code>= false</code>, <code>= Provenance::&#x27;human-authored&#x27;</code>) counted as unresolved targets.</td></tr><tr><td><code>OrphanRequirements</code>, <code>UnverifiedRequirements</code>, <code>MissingVerification</code></td><td>15 / 15 / 26</td><td>The indexer extracts only <code>Member</code> and <code>TypedBy</code> relationships — <code>Satisfy</code> and <code>Verify</code> are never produced, so these checks cannot pass for any model. An eight-line file with <code>satisfy requirement R by t;</code> and <code>verify requirement R;</code> reports the same findings.</td></tr><tr><td><code>UnconnectedPorts</code></td><td>3</td><td><code>Connect</code> is likewise not extracted, and the check also flags port <em>definitions</em>, which are never themselves connected.</td></tr><tr><td><code>MetamodelConformance</code></td><td>1</td><td>Reports <code>port def GraphToolPort</code> as having no type. A port def <em>is</em> a type; a two-line canonical port def reproduces it.</td></tr></tbody></table></div>
 <p>So treat a clean <code>validate</code> as the meaningful signal today, and the <code>check</code> counts as noise until the indexer grows those relationship kinds.</p>
 <p>With thanks to <a href="https://nomograph.ai/">Nomograph Labs</a> for the tool — a hand-authored model is only a claim until something with a real grammar agrees with it.</p>
 <p><strong>The state machines</strong> are checked for completeness by <code>check_states.py</code>. Its first run found six gaps, and acting on them changed the <em>workflows</em>, not just the model:</p>
@@ -590,7 +590,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <p>The other three were model drift from workflows that already handled the case, and the check now holds the model to them.</p>
 <p><strong>The diagrams</strong> all parse and render under Mermaid&#x27;s own engine — <code>check.mjs</code> in this directory runs <code>mermaid.parse()</code> then <code>mermaid.render()</code> over every fenced block in <code>diagrams.md</code>. Two constructs to avoid in a <strong>sequence</strong> diagram, both of which bit this document: a literal <code>--</code> in message text is lexed as the start of an arrow token, and a <code>;</code> anywhere in a note ends the statement early.</p>
 <h2 id="i-6"><span class="mark">I.6</span><span>Caveats</span></h2>
-<p>Both files are a snapshot of <code>main</code> as read on 2026-07-29. The Factory changes itself by PR, so re-derive rather than trust this model when the answer matters — <code>factory/README.md</code> is the crew&#x27;s own living table, and the workflow headers are the authoritative rationale.</p>
+<p>Both files are a snapshot of <code>main</code> as read on 2026-08-21. The Factory changes itself by PR, so re-derive rather than trust this model when the answer matters — <code>factory/README.md</code> is the crew&#x27;s own living table, and the workflow headers are the authoritative rationale.</p>
 <p>The assurance case in §12 is written for a conformant reader. Because nomograph 0.2.0 does not extract those relationships, its traceability is currently legible to humans and to other SysML v2 tooling, but invisible to the checker.</p></div>
 
   <div class="part-rule"><span>Part II</span><h2>Views</h2></div>
@@ -1305,6 +1305,13 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">        item def Invariant    { attribute name : String; }</span>
 <span class="ln">        item def GraphIssue   { attribute number : Integer; attribute disposition : Disposition;</span>
 <span class="ln">                                attribute resolved_via : ResolvedVia; attribute actionable_text : String; }</span>
+<span class="ln">        /* First-class since the PRs-in-graph work: a real node, never a mirror.</span>
+<span class="ln">         * It FIXES a GraphIssue, and THROUGH that issue it ENFORCES the issue&#x27;s</span>
+<span class="ln">         * Capability — a TRAVERSAL (PR -&gt; FIXES -&gt; Issue -&gt; Capability), never a</span>
+<span class="ln">         * stored edge, so a PR carries intention only through the issue it fixes.</span>
+<span class="ln">         * A capability-less issue leaves its PR tracing to no intention, which is</span>
+<span class="ln">         * why triage must always resolve one (see Roles::Porter, Roles::Journeyman). */</span>
+<span class="ln">        item def GraphPullRequest { attribute number : Integer; attribute merged : Boolean; }</span>
 <span class="ln">        item def Decision     { attribute decision_id : String; attribute statement : String;</span>
 <span class="ln">                                attribute reason : String; attribute provenance : Provenance; }</span>
 <span class="ln">        item def FundingBlock { attribute state : String; }   // active | clear | historical</span>
@@ -1323,6 +1330,24 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            out provenance : Provenance = Provenance::&#x27;llm-inferred-unverified&#x27;;</span>
 <span class="ln">        }</span>
 <span class="ln">        action def SuggestCapabilityWhy :&gt; AssertRationale;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* Capability + PR intention writes, added after the model&#x27;s first snapshot.</span>
+<span class="ln">         * upsert_capability records the node a triage discovers or mints;</span>
+<span class="ln">         * link_issue_to_capability makes the issue refer to it (a MANDATORY triage</span>
+<span class="ln">         * outcome, see Roles); link_pr records PR -FIXES-&gt; Issue so the enforce</span>
+<span class="ln">         * traversal PR -&gt; Issue -&gt; Capability resolves. These are structure and</span>
+<span class="ln">         * edges, not claims — provenance lives on the why below. */</span>
+<span class="ln">        action def UpsertCapability;</span>
+<span class="ln">        action def LinkIssueToCapability;</span>
+<span class="ln">        action def LinkPr;</span>
+<span class="ln">&nbsp;</span>
+<span class="ln">        /* The authoritative why. NOT an agentic verb — gated to the Code Owner</span>
+<span class="ln">         * identity, and the only write that stamps &#x27;human-authored&#x27;. The agents</span>
+<span class="ln">         * propose (SuggestCapabilityWhy); the human legislates here. */</span>
+<span class="ln">        action def AuthorizeCapabilityWhy {</span>
+<span class="ln">            out provenance : Provenance = Provenance::&#x27;human-authored&#x27;;</span>
+<span class="ln">        }</span>
+<span class="ln">&nbsp;</span>
 <span class="ln">        action def MarkFundingState;  action def RetireFundingBlock;</span>
 <span class="ln">    }</span>
 <span class="ln">&nbsp;</span>
@@ -1394,7 +1419,13 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">                 * A MANDATORY OUTCOME clause forbids the failure mode that actually</span>
 <span class="ln">                 * bit us: an agent that deliberates, concludes, narrates the action,</span>
 <span class="ln">                 * and never calls the tool. It must either execute the triage or</span>
-<span class="ln">                 * post a give-up comment — then VERIFY the labels landed. */</span>
+<span class="ln">                 * post a give-up comment — then VERIFY the labels landed.</span>
+<span class="ln">                 *</span>
+<span class="ln">                 * A feature or change issue must END LINKED TO A CAPABILITY. On a</span>
+<span class="ln">                 * graph miss the Porter recovers an overlooked capability from the</span>
+<span class="ln">                 * design docs (patent) and the owning code BEFORE minting a new one,</span>
+<span class="ln">                 * then calls link_issue_to_capability — so the fix PR&#x27;s enforce</span>
+<span class="ln">                 * traversal resolves and no issue is left tracing to empty intention. */</span>
 <span class="ln">            attribute redefines name = &quot;Porter&quot;;</span>
 <span class="ln">            attribute redefines promptFile = &quot;factory/porter.prompt.md&quot;;</span>
 <span class="ln">            attribute redefines firesOn = &quot;issues: opened, reopened, labeled(agent/retriage)&quot;;</span>
@@ -1411,7 +1442,12 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">                 * reuses the SDK before writing new code, proves the fix with a</span>
 <span class="ln">                 * test that fails before and passes after, and opens a PR. It does</span>
 <span class="ln">                 * not merge, rebase or force-push — opening the PR is where the</span>
-<span class="ln">                 * role ends. */</span>
+<span class="ln">                 * role ends.</span>
+<span class="ln">                 *</span>
+<span class="ln">                 * After the PR it writes intention back: link_pr records</span>
+<span class="ln">                 * PR -FIXES-&gt; Issue, and if triage left the issue with no capability</span>
+<span class="ln">                 * it repairs the link under the same retroactive-first rule, so the</span>
+<span class="ln">                 * PR never traces to empty intention. */</span>
 <span class="ln">            attribute redefines name = &quot;Journeyman&quot;;</span>
 <span class="ln">            attribute redefines promptFile = &quot;factory/journeyman.prompt.md&quot;;</span>
 <span class="ln">            attribute redefines firesOn = &quot;issues: labeled(agent/fix)&quot;;</span>

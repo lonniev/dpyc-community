@@ -269,20 +269,28 @@ STEPS:
          lang=<the language, inferred from the file extension>) — links the symbol to its OWNING
          SERVICE (IN_SERVICE), the coupling that leaves `services` empty when skipped. (The
          Journeyman adds the file anchor + capability binding when it fixes it.)
-   - BACKFILL ON MISS — if Tier 1 (step 1a) returned NO capability for this issue's theme yet
-     you resolved the owning service via Tier 2/3 (docs/code), the graph has a gap. Fill it so the
-     NEXT triage of this theme resolves at Tier 1 rather than grepping — this is how legacy code
-     gradually gets covered and fewer questions need code-reading:
-       · `mcp__graph__cypher_upsert_capability` (name, owner_repo=<the owning repo>,
-         keywords=<comma-joined terms a future issue about this theme would use>) — the structure.
-       · `mcp__graph__cypher_suggest_capability_why` (name, inferred_why=<one line: why this
-         capability exists>) — your ADVICE. It records as `llm-inferred-unverified`: trusted and
-         visible, never doctrine; the human legislates the authoritative why.
-       · If you pinpointed the code, `mcp__graph__cypher_bind_capability_to_symbol`
-         (name, symbol_fqn=<the symbol that realizes it>).
-     REUSE an existing capability name from `cypher_list_capabilities` when the ability already
-     exists — improve it, don't duplicate. Backfill ONLY a genuine Tier-1 miss, never on a hit;
-     same NON-fatal posture (at most one try, never let it change your routing).
+   - CAPABILITY IS MANDATORY — a feature or change issue MUST end linked to a capability (a bug
+     links to the capability it regressed). If step 1a resolved one, you linked it above. On a
+     Tier-1 MISS do NOT jump straight to a new node — RECOVER an overlooked one first, then create:
+       · RETROACTIVE DISCOVERY FIRST — the ability may already live in the code and the design docs
+         but was never recorded. Read `mcp__graph__cypher_list_capabilities` and the design
+         documentation (`dpyc-community/docs/patent/`) alongside the owning code you resolved via
+         Tier 2/3. If an existing capability already covers this theme, REUSE it (improve its
+         keywords via `mcp__graph__cypher_upsert_capability`) — never mint a duplicate.
+       · NEW CAPABILITY ONLY IF GENUINELY NEW — if that review finds nothing, this is a materially
+         new ability: `mcp__graph__cypher_upsert_capability` (name, owner_repo=<the owning repo>,
+         keywords=<comma-joined terms a future issue about this theme would use>) +
+         `mcp__graph__cypher_suggest_capability_why` (name, inferred_why=<one line: why this
+         capability exists>) — your ADVICE, recorded `llm-inferred-unverified`: trusted and visible,
+         never doctrine; the human legislates the authoritative why. If you pinpointed the code,
+         `mcp__graph__cypher_bind_capability_to_symbol` (name, symbol_fqn=<the symbol that realizes it>).
+       · ALWAYS LINK THIS ISSUE — whichever capability you recovered or created,
+         `mcp__graph__cypher_link_issue_to_capability` (repo_name, issue_number, capability_name) so
+         THIS issue refers to it and its fix PR's ENFORCES traversal resolves. An issue that ends
+         with no capability is an INCOMPLETE triage.
+     Retroactive discovery runs ONLY on a genuine Tier-1 miss, never on a hit. The graph writes keep
+     the NON-fatal posture (at most one try each; a cypher outage or drained balance never changes
+     your routing) — but surface a failed write, never report success over it.
 
 Be decisive. Prefer closing junk over leaving it open. When you are unsure
 whether something is a local vs upstream fix, choose LOCAL FIX (agent/fix) and

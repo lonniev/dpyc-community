@@ -187,10 +187,19 @@ STEPS:
          don't duplicate it.)
      BACKFILL LEGACY COVERAGE too: if — while working this fix or during your upstream check —
      you found that EXISTING code already realizes a theme the graph had NO capability for (a
-     Tier-1 miss you had to resolve by reading code), record THAT with the same three calls,
-     binding to the existing symbol. This is how legacy code gets covered: every graph miss you
-     resolve becomes a capability the next triage can find, so fewer questions need code-reading
-     over time. Same provenance rule — `suggest_capability_why` is advice, never doctrine.
+     Tier-1 miss you had to resolve by reading code and the design docs `dpyc-community/docs/patent/`),
+     record THAT with the same three calls, binding to the existing symbol. This is how legacy code
+     gets covered: every graph miss you resolve becomes a capability the next triage can find, so
+     fewer questions need code-reading over time. Same provenance rule — `suggest_capability_why`
+     is advice, never doctrine.
+   - THE ISSUE MUST REFER TO A CAPABILITY — before you finish, the issue you fixed MUST be linked to
+     one, so your PR's ENFORCES traversal (PR→FIXES→Issue→capability) resolves. Porter usually links
+     it at triage; if `context_pack` showed NO capability on the issue, YOU repair the gap now with
+     the same retroactive-first rule — recover an overlooked capability from the design docs
+     (`dpyc-community/docs/patent/`) + the code you just changed, or create a genuinely new one —
+     then `mcp__graph__cypher_link_issue_to_capability` (repo_name="${REPO_NAME}",
+     issue_number=${ISSUE_NUMBER}, capability_name=<the capability>). An unlinked issue leaves the
+     PR tracing to no intention.
    (Only for the LOCAL-FIX path; skip graph recording entirely on the UPSTREAM path.)
 
 Escalation comment format (only for the UPSTREAM case in step 4):

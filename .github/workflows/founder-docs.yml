@@ -1,9 +1,11 @@
 name: Generate Founder Resume
 
-# The markdown is the source of truth; the HTML and PDF are generated. When the
-# markdown (or its build inputs) changes on main, regenerate both and open a PR
-# with the fresh artifacts — same regenerate-then-PR pattern as patent-pdfs.yml,
-# never a direct push to main.
+# The markdown is the single source of truth. When it (or its build inputs)
+# changes on main, re-render both artifacts inside a container — so no runner
+# nor workstation needs a pandoc/TeX toolchain — and commit them straight back
+# to main as the factory App, which is a bypass actor on the branch ruleset.
+# The commit touches only the generated files (never the .md), so the path
+# filter below does not re-trigger this workflow: no loop.
 
 on:
   push:
@@ -11,43 +13,38 @@ on:
     paths:
       - "docs/founder/LonnieVanZandt_2026.md"
       - "docs/founder/template.html"
-      - "docs/founder/build.sh"
+      - "factory/actions/render-founder-resume/action.yml"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  build-resume:
+  render:
     runs-on: ubuntu-latest
     steps:
+      - name: Mint the factory App token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v6
+        with:
+          token: ${{ steps.app.outputs.token }}
+          fetch-depth: 0
 
-      - name: Install pandoc and xelatex
+      - name: Render html and pdf
+        uses: ./factory/actions/render-founder-resume
+
+      - name: Commit regenerated artifacts to main
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-latex-extra fonts-lmodern
-
-      - name: Regenerate HTML and PDF from the markdown source
-        run: bash docs/founder/build.sh
-
-      - name: Open PR with regenerated resume artifacts
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "dpyc-agentic-desk[bot]"
+          git config user.email "304711879+dpyc-agentic-desk[bot]@users.noreply.github.com"
           git add docs/founder/LonnieVanZandt_2026.html docs/founder/LonnieVanZandt_2026.pdf
           if git diff --cached --quiet; then
-            echo "No artifact changes to commit."
-          else
-            BRANCH="ci/founder-resume-$(date +%Y%m%d-%H%M%S)"
-            git checkout -b "$BRANCH"
-            git commit -m "ci: regenerate founder resume html/pdf from markdown"
-            git push origin "$BRANCH"
-            gh pr create \
-              --title "ci: regenerate founder resume" \
-              --body "Auto-generated from docs/founder/LonnieVanZandt_2026.md changes on main." \
-              --base main \
-              --head "$BRANCH"
+            echo "Artifacts already current — nothing to commit."
+            exit 0
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git commit -m "ci: render founder resume html/pdf from markdown [skip ci]"
+          git push origin HEAD:main

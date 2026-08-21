@@ -1,0 +1,39 @@
+name: Render founder resume
+description: >-
+  Render docs/founder/LonnieVanZandt_2026.{html,pdf} from the markdown source
+  with pandoc and xelatex. The toolchain ships inside the pandoc/latex
+  container, so no runner or workstation ever needs pandoc or TeX installed —
+  the markdown is the single source of truth and this is the only place it is
+  rendered.
+
+runs:
+  using: composite
+  steps:
+    - name: Render html and pdf in the pandoc/latex container
+      shell: bash
+      run: |
+        set -euo pipefail
+        img="pandoc/latex:latest"
+        pandoc_in_container() {
+          docker run --rm -v "$GITHUB_WORKSPACE:/data" -w /data "$img" "$@"
+        }
+
+        # HTML — standalone, using the committed shell + CSS in template.html.
+        pandoc_in_container docs/founder/LonnieVanZandt_2026.md \
+          --standalone \
+          --template docs/founder/template.html \
+          --output docs/founder/LonnieVanZandt_2026.html
+
+        # PDF — pandoc -> xelatex.
+        pandoc_in_container docs/founder/LonnieVanZandt_2026.md \
+          --pdf-engine=xelatex \
+          -V geometry:margin=1in \
+          -V geometry:letterpaper \
+          -V fontsize=11pt \
+          -V colorlinks=true \
+          -V urlcolor=blue \
+          -V linkcolor=blue \
+          --output docs/founder/LonnieVanZandt_2026.pdf
+
+        # The container writes as root; hand the files back to the runner user.
+        sudo chown -R "$(id -u):$(id -g)" docs/founder

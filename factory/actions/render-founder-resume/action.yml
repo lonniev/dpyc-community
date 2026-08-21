@@ -19,9 +19,13 @@ runs:
         }
 
         # HTML — standalone, using the committed shell + CSS in template.html.
+        # Title fills the template's $title$; passed here (not baked into the
+        # template) so the template stays generic. Quotes group the spaces into a
+        # single argument through the bash run block.
         pandoc_in_container docs/founder/LonnieVanZandt_2026.md \
           --standalone \
           --template docs/founder/template.html \
+          --metadata title="Lonnie VanZandt — CV April 2026" \
           --output docs/founder/LonnieVanZandt_2026.html
 
         # PDF — pandoc -> xelatex.

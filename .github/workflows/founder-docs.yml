@@ -8,6 +8,7 @@ name: Generate Founder Resume
 # filter below does not re-trigger this workflow: no loop.
 
 on:
+  workflow_dispatch:        # manual re-render, e.g. after changing the render flags
   push:
     branches: [main]
     paths:
@@ -47,4 +48,9 @@ jobs:
             exit 0
           fi
           git commit -m "ci: render founder resume html/pdf from markdown [skip ci]"
+          # Rebase onto the current tip so a manual dispatch — or a run whose base
+          # moved during the job — still lands as a fast-forward rather than being
+          # rejected as non-fast-forward.
+          git fetch origin main -q
+          git rebase origin/main
           git push origin HEAD:main

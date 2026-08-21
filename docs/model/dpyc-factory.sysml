@@ -664,6 +664,7 @@ package DPYCSoftwareFactory {
                  * /.github/ AFTER the *.md carve-out, because CODEOWNERS is
                  * last-match-wins and the prompts are .md files). */
             attribute name : String = "dpyc-community";
+            attribute redefines ciContext = "test, validate";  // version-independent, NOT `test (3.12)`
             part reusableWorkflows : ReusableWorkflow[0..*];
             part canonicalCallers : ThinCaller[0..*];
             part prompts : PromptFile[0..*];

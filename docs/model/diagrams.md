@@ -82,9 +82,10 @@ flowchart TB
 ```
 
 **Stack facts worth keeping in view.** Python 3.12 is canonical fleet-wide, with the SDK
-alone on a 3.12/3.13 matrix; the canonical CI context is `test (3.12)`, and required
-checks are set per repo from that repo's *actual* posted contexts — a guessed name jams
-merges forever. `ANTHROPIC_API_KEY` is a name that outlived its provider: it carries the
+alone on a 3.12/3.13 matrix. A required-check context avoids a version suffix — dpyc-community
+posts `test`, not `test (3.12)` — because a name pinned to a matrix cell orphans the moment the
+matrix moves; required checks are set per repo from that repo's *actual* posted contexts, since a
+guessed name jams merges forever. `ANTHROPIC_API_KEY` is a name that outlived its provider: it carries the
 OpenRouter key, whose Anthropic-compatible endpoint reads the same `x-api-key` header, so
 the cutover changed one secret value instead of ~96 call sites.
 

@@ -662,7 +662,7 @@ sysml validate docs/model/dpyc-factory.sysml
     classDef ext   fill:#e8eef7,stroke:#5b7fa6,color:#1f3a5f
     classDef data  fill:#e3edf9,stroke:#3f6fa8,stroke-width:1.5px,color:#12324f
     classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00</pre></div></figure>
-<p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix; the canonical CI context is <code>test (3.12)</code>, and required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts — a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
+<p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix. A required-check context avoids a version suffix — dpyc-community posts <code>test</code>, not <code>test (3.12)</code> — because a name pinned to a matrix cell orphans the moment the matrix moves; required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts, since a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
 <hr />
 <h2 id="ii-2"><span class="mark">II.2</span><span>The crew, and who is allowed to fire it</span></h2>
 <p>Judgement gets an agent; policy gets bash. Every gate that could land code is on the deterministic side of this line, which is what makes the pipeline immune to both prompt injection <em>and</em> a dry key at exactly the moments that matter.</p>
@@ -1640,6 +1640,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">                 * /.github/ AFTER the *.md carve-out, because CODEOWNERS is</span>
 <span class="ln">                 * last-match-wins and the prompts are .md files). */</span>
 <span class="ln">            attribute name : String = &quot;dpyc-community&quot;;</span>
+<span class="ln">            attribute redefines ciContext = &quot;test, validate&quot;;  // version-independent, NOT `test (3.12)`</span>
 <span class="ln">            part reusableWorkflows : ReusableWorkflow[0..*];</span>
 <span class="ln">            part canonicalCallers : ThinCaller[0..*];</span>
 <span class="ln">            part prompts : PromptFile[0..*];</span>

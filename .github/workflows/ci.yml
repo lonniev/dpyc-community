@@ -1,8 +1,9 @@
 # Canonical DPYC commit-phase CI. dpyc-community is config + Python scripts (no package),
-# so it installs the tools directly rather than `pip install -e .[dev]`. Job name `test` +
-# matrix ["3.12"] yields the fleet-canonical status context `test (3.12)`, which branch
-# protection requires (see scripts/require-ci-checks.sh). Lints the scripts + tests and runs
-# the doctrine_lint suite — including the "don't turn yourself off" invariant tests.
+# so it installs the tools directly rather than `pip install -e .[dev]`. The `test` job posts
+# a version-independent status context `test` — NOT `test (3.12)`: a required-check name pinned
+# to a matrix cell orphans the moment the matrix moves, jamming merges (see require_ci_checks.py).
+# Lints the scripts + tests and runs the doctrine_lint suite — including the "don't turn yourself
+# off" invariant tests.
 name: CI
 
 on:

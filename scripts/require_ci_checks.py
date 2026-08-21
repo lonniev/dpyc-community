@@ -35,9 +35,12 @@ import sys
 OWNER = "lonniev"
 BRANCH = "main"
 
-# Canonical required contexts per repo (post-normalization). Python consumers all post the single
-# canonical context `test (3.12)`; the SDK keeps its 3.12+3.13 matrix; Wasm/Swift/docs/site repos
-# each keep their one natural gate. Keep this list in lockstep with the fleet's ci.yml conventions.
+# Canonical required contexts per repo. A required-check context must NOT carry a version suffix:
+# a name like `test (3.12)` is pinned to a matrix cell and orphans the moment the matrix moves,
+# jamming merges. dpyc-community posts a version-independent `test` and is ruleset-managed (see the
+# exclusion below), so it is not in this map; the remaining Python consumers still post
+# `test (3.12)` pending the same de-matrix (a matrix of one). The SDK is the one genuine
+# multi-runtime case (3.12 + 3.13). Keep this list in lockstep with each repo's actual ci.yml.
 CONTEXTS: dict[str, list[str]] = {
     # Shared SDK — must work on both runtimes.
     "tollbooth-dpyc": ["test (3.12)", "test (3.13)"],
@@ -57,7 +60,6 @@ CONTEXTS: dict[str, list[str]] = {
     "tollbooth-authority": ["test (3.12)"],
     "tollbooth-authority-newengland": ["test (3.12)"],
     "tollbooth-authority-northamerica": ["test (3.12)"],
-    "dpyc-community": ["test (3.12)"],
     # Wasm/Spin — genuinely multi-component; require all intentional always-run jobs.
     "tollbooth-wasmcp": ["Python adapter", "Rust crypto component", "Bridge Worker", "Secret scan"],
     "tollbooth-fermyon": ["Python operator", "Secret scan"],
@@ -67,7 +69,10 @@ CONTEXTS: dict[str, list[str]] = {
     "tollbooth-pricing-studio": ["build"],
     "tollbooth-dpyc-site": ["Cloudflare Pages"],
     # Excluded on purpose: network-states-of-the-internet (a fork, not ours — cannot gate);
-    # pricing-studio (local-only, no GitHub remote).
+    # pricing-studio (local-only, no GitHub remote); dpyc-community (ruleset-managed, not classic
+    # protection — it grants the factory App a bypass to auto-commit rendered founder docs, which a
+    # classic-protection required check cannot do; its required contexts `test` + `validate` live in
+    # the ruleset instead).
 }
 
 
@@ -100,7 +105,7 @@ def observed_contexts(repo: str, want: set[str] | None = None) -> set[str]:
     Not just on the tip. Bot commits — `[skip ci]` status updates, generated-file
     refreshes — routinely sit at the head of main and carry no check-runs, so asking only
     about HEAD answers "has CI ever run here" with a confident no. That produced a
-    ⛔ REQUIRED BUT NOT POSTING alarm for `test (3.12)` on dpyc-community, where it posts
+    ⛔ REQUIRED BUT NOT POSTING alarm for `test` on dpyc-community, where it posts
     on every real commit and had last run four commits back. Worse than the false alarm:
     the same reading makes the tool REFUSE to require a healthy context, on the grounds
     that it has never been seen.

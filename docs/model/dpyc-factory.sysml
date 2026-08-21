@@ -1182,7 +1182,7 @@ package DPYCSoftwareFactory {
             attribute name : String;
             attribute language : String;
             attribute runner : String = "ubuntu-latest";
-            attribute ciContext : String = "test (3.12)";
+            attribute ciContext : String = "test";
             part callers : ThinCaller[0..*];
         }
 
@@ -1197,8 +1197,7 @@ package DPYCSoftwareFactory {
 
         part community  : CommunityRepo;
 
-        part sdk        : FactoryRepo { attribute redefines name = "tollbooth-dpyc";
-                                        attribute redefines ciContext = "test (3.12), test (3.13)"; }
+        part sdk        : FactoryRepo { attribute redefines name = "tollbooth-dpyc"; }
         part sample     : FactoryRepo { attribute redefines name = "tollbooth-sample"; }
         part schwab     : FactoryRepo { attribute redefines name = "schwab-mcp"; }
         part cypher     : FactoryRepo { attribute redefines name = "cypher-mcp"; }

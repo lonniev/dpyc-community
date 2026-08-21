@@ -37,29 +37,29 @@ BRANCH = "main"
 
 # Canonical required contexts per repo. A required-check context must NOT carry a version suffix:
 # a name like `test (3.12)` is pinned to a matrix cell and orphans the moment the matrix moves,
-# jamming merges. dpyc-community posts a version-independent `test` and is ruleset-managed (see the
-# exclusion below), so it is not in this map; the remaining Python consumers still post
-# `test (3.12)` pending the same de-matrix (a matrix of one). The SDK is the one genuine
-# multi-runtime case (3.12 + 3.13). Keep this list in lockstep with each repo's actual ci.yml.
+# jamming merges. Every Python consumer now posts a version-independent `test`; the SDK still tests
+# 3.12 + 3.13 but gates on a single `test` aggregate rather than per-version contexts. dpyc-community
+# is ruleset-managed (see the exclusion below) and not in this map. Keep this list in lockstep with
+# each repo's actual ci.yml.
 CONTEXTS: dict[str, list[str]] = {
     # Shared SDK — must work on both runtimes.
-    "tollbooth-dpyc": ["test (3.12)", "test (3.13)"],
+    "tollbooth-dpyc": ["test"],
     # Python operators / authorities / utilities — canonical single context.
-    "tollbooth-sample": ["test (3.12)"],
-    "schwab-mcp": ["test (3.12)"],
+    "tollbooth-sample": ["test"],
+    "schwab-mcp": ["test"],
     # `frontend` builds the site and asserts the stylesheet is non-trivial — the gate
     # that was missing when a tailwindcss major auto-merged and broke the deploy for a week.
-    "excalibur-mcp": ["test (3.12)", "frontend"],
-    "cypher-mcp": ["test (3.12)"],
-    "optionality-mcp": ["test (3.12)"],
-    "taxsort-mcp": ["test (3.12)"],
-    "thebrain-mcp": ["test (3.12)"],
-    "dpyc-oracle": ["test (3.12)"],
-    "tollbooth-oauth2-collector": ["test (3.12)"],
-    "tollbooth-shortlinks": ["test (3.12)"],
-    "tollbooth-authority": ["test (3.12)"],
-    "tollbooth-authority-newengland": ["test (3.12)"],
-    "tollbooth-authority-northamerica": ["test (3.12)"],
+    "excalibur-mcp": ["test", "frontend"],
+    "cypher-mcp": ["test"],
+    "optionality-mcp": ["test"],
+    "taxsort-mcp": ["test"],
+    "thebrain-mcp": ["test"],
+    "dpyc-oracle": ["test"],
+    "tollbooth-oauth2-collector": ["test"],
+    "tollbooth-shortlinks": ["test"],
+    "tollbooth-authority": ["test"],
+    "tollbooth-authority-newengland": ["test"],
+    "tollbooth-authority-northamerica": ["test"],
     # Wasm/Spin — genuinely multi-component; require all intentional always-run jobs.
     "tollbooth-wasmcp": ["Python adapter", "Rust crypto component", "Bridge Worker", "Secret scan"],
     "tollbooth-fermyon": ["Python operator", "Secret scan"],

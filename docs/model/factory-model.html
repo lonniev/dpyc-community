@@ -662,7 +662,7 @@ sysml validate docs/model/dpyc-factory.sysml
     classDef ext   fill:#e8eef7,stroke:#5b7fa6,color:#1f3a5f
     classDef data  fill:#e3edf9,stroke:#3f6fa8,stroke-width:1.5px,color:#12324f
     classDef money fill:#fdeedd,stroke:#d98014,stroke-width:1.5px,color:#6b3f00</pre></div></figure>
-<p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix. A required-check context avoids a version suffix — dpyc-community posts <code>test</code>, not <code>test (3.12)</code> — because a name pinned to a matrix cell orphans the moment the matrix moves; required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts, since a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
+<p><strong>Stack facts worth keeping in view.</strong> Python 3.12 is canonical fleet-wide, with the SDK alone on a 3.12/3.13 matrix, which it gates behind a single <code>test</code> aggregate. A required-check context avoids a version suffix — every repo posts <code>test</code>, not <code>test (3.12)</code> — because a name pinned to a matrix cell orphans the moment the matrix moves; required checks are set per repo from that repo&#x27;s <em>actual</em> posted contexts, since a guessed name jams merges forever. <code>ANTHROPIC_API_KEY</code> is a name that outlived its provider: it carries the OpenRouter key, whose Anthropic-compatible endpoint reads the same <code>x-api-key</code> header, so the cutover changed one secret value instead of ~96 call sites.</p>
 <hr />
 <h2 id="ii-2"><span class="mark">II.2</span><span>The crew, and who is allowed to fire it</span></h2>
 <p>Judgement gets an agent; policy gets bash. Every gate that could land code is on the deterministic side of this line, which is what makes the pipeline immune to both prompt injection <em>and</em> a dry key at exactly the moments that matter.</p>
@@ -2158,7 +2158,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            attribute name : String;</span>
 <span class="ln">            attribute language : String;</span>
 <span class="ln">            attribute runner : String = &quot;ubuntu-latest&quot;;</span>
-<span class="ln">            attribute ciContext : String = &quot;test (3.12)&quot;;</span>
+<span class="ln">            attribute ciContext : String = &quot;test&quot;;</span>
 <span class="ln">            part callers : ThinCaller[0..*];</span>
 <span class="ln">        }</span>
 <span class="ln">&nbsp;</span>
@@ -2173,8 +2173,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">&nbsp;</span>
 <span class="ln">        part community  : CommunityRepo;</span>
 <span class="ln">&nbsp;</span>
-<span class="ln">        part sdk        : FactoryRepo { attribute redefines name = &quot;tollbooth-dpyc&quot;;</span>
-<span class="ln">                                        attribute redefines ciContext = &quot;test (3.12), test (3.13)&quot;; }</span>
+<span class="ln">        part sdk        : FactoryRepo { attribute redefines name = &quot;tollbooth-dpyc&quot;; }</span>
 <span class="ln">        part sample     : FactoryRepo { attribute redefines name = &quot;tollbooth-sample&quot;; }</span>
 <span class="ln">        part schwab     : FactoryRepo { attribute redefines name = &quot;schwab-mcp&quot;; }</span>
 <span class="ln">        part cypher     : FactoryRepo { attribute redefines name = &quot;cypher-mcp&quot;; }</span>

@@ -329,6 +329,13 @@ package DPYCSoftwareFactory {
         item def Invariant    { attribute name : String; }
         item def GraphIssue   { attribute number : Integer; attribute disposition : Disposition;
                                 attribute resolved_via : ResolvedVia; attribute actionable_text : String; }
+        /* First-class since the PRs-in-graph work: a real node, never a mirror.
+         * It FIXES a GraphIssue, and THROUGH that issue it ENFORCES the issue's
+         * Capability — a TRAVERSAL (PR -> FIXES -> Issue -> Capability), never a
+         * stored edge, so a PR carries intention only through the issue it fixes.
+         * A capability-less issue leaves its PR tracing to no intention, which is
+         * why triage must always resolve one (see Roles::Porter, Roles::Journeyman). */
+        item def GraphPullRequest { attribute number : Integer; attribute merged : Boolean; }
         item def Decision     { attribute decision_id : String; attribute statement : String;
                                 attribute reason : String; attribute provenance : Provenance; }
         item def FundingBlock { attribute state : String; }   // active | clear | historical
@@ -347,6 +354,24 @@ package DPYCSoftwareFactory {
             out provenance : Provenance = Provenance::'llm-inferred-unverified';
         }
         action def SuggestCapabilityWhy :> AssertRationale;
+
+        /* Capability + PR intention writes, added after the model's first snapshot.
+         * upsert_capability records the node a triage discovers or mints;
+         * link_issue_to_capability makes the issue refer to it (a MANDATORY triage
+         * outcome, see Roles); link_pr records PR -FIXES-> Issue so the enforce
+         * traversal PR -> Issue -> Capability resolves. These are structure and
+         * edges, not claims — provenance lives on the why below. */
+        action def UpsertCapability;
+        action def LinkIssueToCapability;
+        action def LinkPr;
+
+        /* The authoritative why. NOT an agentic verb — gated to the Code Owner
+         * identity, and the only write that stamps 'human-authored'. The agents
+         * propose (SuggestCapabilityWhy); the human legislates here. */
+        action def AuthorizeCapabilityWhy {
+            out provenance : Provenance = Provenance::'human-authored';
+        }
+
         action def MarkFundingState;  action def RetireFundingBlock;
     }
 
@@ -418,7 +443,13 @@ package DPYCSoftwareFactory {
                  * A MANDATORY OUTCOME clause forbids the failure mode that actually
                  * bit us: an agent that deliberates, concludes, narrates the action,
                  * and never calls the tool. It must either execute the triage or
-                 * post a give-up comment — then VERIFY the labels landed. */
+                 * post a give-up comment — then VERIFY the labels landed.
+                 *
+                 * A feature or change issue must END LINKED TO A CAPABILITY. On a
+                 * graph miss the Porter recovers an overlooked capability from the
+                 * design docs (patent) and the owning code BEFORE minting a new one,
+                 * then calls link_issue_to_capability — so the fix PR's enforce
+                 * traversal resolves and no issue is left tracing to empty intention. */
             attribute redefines name = "Porter";
             attribute redefines promptFile = "factory/porter.prompt.md";
             attribute redefines firesOn = "issues: opened, reopened, labeled(agent/retriage)";
@@ -435,7 +466,12 @@ package DPYCSoftwareFactory {
                  * reuses the SDK before writing new code, proves the fix with a
                  * test that fails before and passes after, and opens a PR. It does
                  * not merge, rebase or force-push — opening the PR is where the
-                 * role ends. */
+                 * role ends.
+                 *
+                 * After the PR it writes intention back: link_pr records
+                 * PR -FIXES-> Issue, and if triage left the issue with no capability
+                 * it repairs the link under the same retroactive-first rule, so the
+                 * PR never traces to empty intention. */
             attribute redefines name = "Journeyman";
             attribute redefines promptFile = "factory/journeyman.prompt.md";
             attribute redefines firesOn = "issues: labeled(agent/fix)";

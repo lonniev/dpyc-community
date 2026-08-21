@@ -23,6 +23,7 @@ mermaid and all, if you only want the pictures.
 | `build_page.py`, `page.css` | The generator. `python3 build_page.py` rewrites `factory-model.html` from the sources beside it. |
 | `check.mjs`, `package.json` | Diagram checks. `npm install && node check.mjs` parses and renders every mermaid block; exits non-zero on failure. |
 | `check_states.py` | State-machine completeness. Asks which *ambient* events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap. |
+| `check_workflows.py` | Workflow-graph startability. Every reusable-workflow caller job uses only the keys GitHub permits, so no file silently fails to parse. Added after a stray `continue-on-error` took `deploy-verify` down fleet-wide; exits non-zero on any illegal key. |
 
 Mermaid was chosen over PlantUML because GitHub renders it inline with no toolchain — the
 diagrams stay readable in the same place the source they describe lives.
@@ -95,12 +96,16 @@ required context that sometimes never posts leaves merges pending forever, which
 trap `scripts/require_ci_checks.py` exists to refuse. It skips its own expensive steps
 when `docs/model` is untouched, so it stays cheap while remaining safe to require.
 
-Three gates run there:
+Four gates run there:
 
-1. **`check_states.py`** — state-machine completeness.
-2. **The page is current** — `build_page.py` is re-run and the result diffed against the
+1. **`check_workflows.py`** — the workflow graph will actually *start*: every
+   reusable-workflow caller job uses only the keys GitHub permits, so no file silently
+   fails to parse. Tracked separately from the model diff, because a workflow-only change
+   is exactly what once slipped a `docs/model/` path filter and broke deploy-verify.
+2. **`check_states.py`** — state-machine completeness.
+3. **The page is current** — `build_page.py` is re-run and the result diffed against the
    committed `factory-model.html`, so editing a source without rebuilding cannot land.
-3. **`check.mjs`** — every mermaid block parses *and* renders.
+4. **`check.mjs`** — every mermaid block parses *and* renders.
 
 Run all three locally exactly as CI does:
 
@@ -123,7 +128,7 @@ sysml validate docs/model/dpyc-factory.sysml
 {"file":"docs/model/dpyc-factory.sysml","valid":true,"diagnostics":[]}
 ```
 
-Indexing reports 455 elements and 890 relationships, including all 14 requirements, four
+Indexing reports 476 elements and 949 relationships, including all 14 requirements, four
 state machines with 42 transitions, ten enumerations and twelve packages — so the grammar
 is understood, not merely tokenized.
 
@@ -132,8 +137,8 @@ limitation rather than a defect in the model**. Each was isolated to a minimal r
 
 | Check | Findings | Why |
 |---|---|---|
-| `DanglingReferences` | 199 | `String` / `Boolean` / `Integer` / `Real` resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (`= "reader"`, `= false`) counted as unresolved targets. |
-| `OrphanRequirements`, `UnverifiedRequirements`, `MissingVerification` | 14 / 14 / 24 | The indexer extracts only `Member` and `TypedBy` relationships — `Satisfy` and `Verify` are never produced, so these checks cannot pass for any model. An eight-line file with `satisfy requirement R by t;` and `verify requirement R;` reports the same findings. |
+| `DanglingReferences` | 205 | `String` / `Boolean` / `Integer` / `Real` resolve to the SysML v2 standard library, which is not in the index; the remainder are literal value bindings (`= "reader"`, `= false`, `= Provenance::'human-authored'`) counted as unresolved targets. |
+| `OrphanRequirements`, `UnverifiedRequirements`, `MissingVerification` | 15 / 15 / 26 | The indexer extracts only `Member` and `TypedBy` relationships — `Satisfy` and `Verify` are never produced, so these checks cannot pass for any model. An eight-line file with `satisfy requirement R by t;` and `verify requirement R;` reports the same findings. |
 | `UnconnectedPorts` | 3 | `Connect` is likewise not extracted, and the check also flags port *definitions*, which are never themselves connected. |
 | `MetamodelConformance` | 1 | Reports `port def GraphToolPort` as having no type. A port def *is* a type; a two-line canonical port def reproduces it. |
 
@@ -170,7 +175,7 @@ and a `;` anywhere in a note ends the statement early.
 
 ## Caveats
 
-Both files are a snapshot of `main` as read on 2026-07-29. The Factory changes itself by
+Both files are a snapshot of `main` as read on 2026-08-21. The Factory changes itself by
 PR, so re-derive rather than trust this model when the answer matters — `factory/README.md`
 is the crew's own living table, and the workflow headers are the authoritative rationale.
 

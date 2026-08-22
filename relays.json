@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/relays.schema.json",
-  "version": "1.0.0",
-  "updated_at": "2026-07-08T12:00:00Z",
+  "version": "1.1.0",
+  "updated_at": "2026-08-22T11:30:00Z",
   "relays": [
-    { "url": "wss://relay.primal.net", "primary": true, "notes": "Well-funded caching relay; high uptime." },
-    { "url": "wss://relay.damus.io", "notes": "Damus relay; one of the most widely-used, reliable." },
-    { "url": "wss://nos.lol", "notes": "Popular free open-write relay." },
-    { "url": "wss://relay.nostr.band", "notes": "nostr.band indexer relay; reliable reads and writes." }
+    { "url": "wss://nos.lol", "primary": true, "notes": "Popular free open-write relay. Measured 6/6 reachable 2026-08-22." },
+    { "url": "wss://relay.damus.io", "notes": "Damus relay; one of the most widely-used. Measured 3/6 reachable 2026-08-22." },
+    { "url": "wss://relay.primal.net", "notes": "Well-funded caching relay (strfry). Measured 0/6 reachable 2026-08-22 — HTTP 502 on connect. Kept in the set pending recovery; the Oracle ranks it live." },
+    { "url": "wss://relay.nostr.band", "notes": "nostr.band indexer relay. Measured 0/6 reachable 2026-08-22. Kept in the set pending recovery; the Oracle ranks it live." }
   ]
 }

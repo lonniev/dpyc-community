@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-22T15:35:36.782016+00:00",
+  "collected_at": "2026-08-22T16:42:35.790016+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 32,
+    "total_notarizations": 35,
     "confirmed": 0,
-    "coverage_percent": 17
+    "coverage_percent": 25
   },
   "operators": [
     {
@@ -61,9 +61,18 @@
       "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
       "display_name": "Tollbooth-Authority-NorthAmerica",
       "role": "authority",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "1",
+          "root_hash": "fd1165f1b62a2542297bc4b761a6167798f61ee6975cce37ffa1ca07dc170d29",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-07-26 00:36:57.942074+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -193,6 +202,14 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "2",
+          "root_hash": "e4b188aae9e71afd05dbe5ff2534888222379b9555a2d8efaf7bc8011e43b8dd",
+          "leaf_count": 8,
+          "status": "submitted",
+          "created_at": "2026-08-22 15:50:05.278072+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "1",
           "root_hash": "1066b2c7c4ec02ccd8c1a540ffaea5c6e99b9bdaf079c62b37381bd84ab78d35",
           "leaf_count": 7,
@@ -201,7 +218,7 @@
           "receipt_count": 4
         }
       ],
-      "status": "stale",
+      "status": "submitted",
       "error": null
     },
     {
@@ -216,9 +233,18 @@
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
       "display_name": "Roastify MCP",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "1",
+          "root_hash": "4af134b51209a6609f8a96bb14461600e3e80a75a3bafd9854de27a1442bc825",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-08-14 03:59:09.792789+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",

@@ -53,8 +53,20 @@ differently:
 | **Bootstrap config** (kind-30078, NIP-33) | Publish/poll across the whole set. |
 | **Profile** (kind-0 read/publish) | Fan out across the whole set. |
 
-Array order is preference order. The entry flagged `primary: true` (or, absent
-that flag, the first entry) is the courier's first rendezvous try.
+Array order is **fallback** preference order. The entry flagged `primary: true`
+(or, absent that flag, the first entry) is the courier's first rendezvous try
+when nothing better is known.
+
+Live ordering is measured, not declared. The DPYC Oracle probes every relay in
+this set and serves `get_relays()` with the reachable ones first, so a relay
+that is down is demoted within minutes without a PR. A relay's position here
+therefore expresses judgement about the *set*; the Oracle expresses the truth
+about *right now*. The declared order still governs two cases: a cold Oracle
+that cannot reach any relay, and clients that read this file directly.
+
+Curation — which relays belong in the set at all — remains a human decision made
+here. A relay that is merely down is demoted automatically and stays in the
+file; remove it only when it stops meeting the criteria above.
 
 ## Editing the set
 

@@ -59,6 +59,7 @@ package DPYCSoftwareFactory {
             'agent/working';           // liveness beacon, stamped/cleared by the skeleton
             'agent/revising';          // liveness beacon for PR Revision; canary discriminator
             'agent/retriage';          // replay marker -> Porter (issues) or QA (PRs)
+            'agent/no-triage';         // filed for the record; Service Desk skips it
             'blocked/upstream';        // -> Escalation, forward path
             'rejected/upstream';       // -> Escalation, reverse (anti-ping-pong) path
             'blocked/arbitration';     // routing standoff frozen for a human
@@ -452,7 +453,7 @@ package DPYCSoftwareFactory {
                  * traversal resolves and no issue is left tracing to empty intention. */
             attribute redefines name = "Porter";
             attribute redefines promptFile = "factory/porter.prompt.md";
-            attribute redefines firesOn = "issues: opened, reopened, labeled(agent/retriage)";
+            attribute redefines firesOn = "issues: opened, reopened, labeled(agent/retriage); skipped when labeled agent/no-triage";
             attribute redefines canWriteCode = false;
             attribute redefines modelTier = "reader";
             attribute maxTurns : Integer = 20;

@@ -6,6 +6,11 @@
 #
 # The taxonomy is the shared contract the Service Desk / Engineering / QA workflows rely
 # on. Run this once per repo when onboarding it to the pipeline.
+#
+# Re-run it on an ALREADY-onboarded repo whenever a label is added here: a workflow
+# guard that keys on a label is inert in any repo where the label does not exist yet,
+# and nothing reports that absence — the guard simply never matches. `agent/no-triage`
+# is the current example.
 set -euo pipefail
 
 REPO="${1:?usage: apply_labels.sh <owner/repo>}"
@@ -36,6 +41,7 @@ labels=(
   "agent/working|1d76db|An agent is actively working this issue right now"
   "agent/revising|1d76db|Journeyman is revising this PR; persists if the run did not finish"
   "agent/refinement|c5def5|Held open: shares a root-cause symbol with an in-flight fix; not a second Journeyman dispatch"
+  "agent/no-triage|0e8a16|Filed for the record; already resolved — the Service Desk skips it"
   "blocked/upstream|e99695|Fix belongs in the SDK or a sibling repo"
   "rejected/upstream|e99695|Target repo declined an escalation; routes the reason back to the origin"
   "blocked/arbitration|b60205|Routing standoff — two repos disagree on ownership; a human must decide"

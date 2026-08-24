@@ -244,13 +244,24 @@ STEPS:
    - Always call `mcp__graph__cypher_record_triage` with:
        repo_name="${REPO_NAME}", issue_number=${ISSUE_NUMBER},
        title=<the issue title>, classification=<the type/* you chose, e.g. "bug">,
-       disposition=<one of: "agent/fix" | "refinement" | "rejected" | "blocked/upstream" | "needs-info">
+       disposition=<one of: "agent/fix" | "refinement" | "rejected" | "blocked/upstream" |
+                    "needs-info" | "already-shipped">
          — record the disposition that ACTUALLY LANDED on GitHub, per your verification
          above, never the one you decided on. A graph that says `agent/fix` while the
          issue carries no such label tells every later reader the work is with
          Engineering when nothing is coming. Use "refinement" when step 4c took the
          IN-FLIGHT SYMBOL CHECK hit path (`agent/refinement` present, no `agent/fix`),
        issue_url=<the `url` from step 1>, repo_url=<the repo URL from `gh repo view --json url`>.
+   - "already-shipped" is the one disposition YOU will rarely write, because the issues
+     that carry it never reach you: an issue filed FOR THE RECORD after its fix has
+     merged is labelled `agent/no-triage` and the Service Desk workflow skips before
+     the model starts. It exists so those issues are not stranded with a null
+     disposition, which reads in the graph exactly like a triage that never finished.
+     Whoever files such an issue records the triage themselves, under an allowlisted
+     identity. Do NOT use it for an issue that merely LOOKS already fixed — that is a
+     "rejected" with a comment naming the PR that fixed it. "already-shipped" means the
+     issue was written to document work that had already landed, and a `:PullRequest`
+     FIXES edge to that work exists or is being written alongside it.
    - Always call `mcp__graph__cypher_record_scope` with repo_name="${REPO_NAME}",
        issue_number=${ISSUE_NUMBER}, actionable_text=<your step-1a spec>,
        resolved_via=<"graph" | "scoped-grep" | "wide-grep">. Be honest about which tier located

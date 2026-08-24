@@ -6,6 +6,11 @@
 #
 # The taxonomy is the shared contract the Service Desk / Engineering / QA workflows rely
 # on. Run this once per repo when onboarding it to the pipeline.
+#
+# Re-run it on an ALREADY-onboarded repo whenever a label is added here: a workflow
+# guard that keys on a label is inert in any repo where the label does not exist yet,
+# and nothing reports that absence — the guard simply never matches. `agent/no-triage`
+# is the current example.
 set -euo pipefail
 
 REPO="${1:?usage: apply_labels.sh <owner/repo>}"

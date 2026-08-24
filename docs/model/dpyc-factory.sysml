@@ -77,7 +77,12 @@ package DPYCSoftwareFactory {
         enum def FundingLabel { 'awaiting-funds'; 'factory/outage'; }
 
         /* What the Porter records as its single routing action. */
-        enum def Disposition { 'agent/fix'; 'rejected'; 'blocked/upstream'; 'needs-info'; }
+        /* 'already-shipped' records an issue filed FOR THE RECORD after its fix merged —
+         * the agent/no-triage path, which the Service Desk skips before the model starts.
+         * Without it such an issue carries a null disposition, indistinguishable in the
+         * graph from a triage that never finished. */
+        enum def Disposition { 'agent/fix'; 'refinement'; 'rejected'; 'blocked/upstream';
+                               'needs-info'; 'already-shipped'; }
 
         /* The token-savings metric: how the code was located. `wide-grep` is the
          * expensive path the intention graph exists to eliminate. */

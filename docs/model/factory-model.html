@@ -1053,7 +1053,12 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">        enum def FundingLabel { &#x27;awaiting-funds&#x27;; &#x27;factory/outage&#x27;; }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        /* What the Porter records as its single routing action. */</span>
-<span class="ln">        enum def Disposition { &#x27;agent/fix&#x27;; &#x27;rejected&#x27;; &#x27;blocked/upstream&#x27;; &#x27;needs-info&#x27;; }</span>
+<span class="ln">        /* &#x27;already-shipped&#x27; records an issue filed FOR THE RECORD after its fix merged —</span>
+<span class="ln">         * the agent/no-triage path, which the Service Desk skips before the model starts.</span>
+<span class="ln">         * Without it such an issue carries a null disposition, indistinguishable in the</span>
+<span class="ln">         * graph from a triage that never finished. */</span>
+<span class="ln">        enum def Disposition { &#x27;agent/fix&#x27;; &#x27;refinement&#x27;; &#x27;rejected&#x27;; &#x27;blocked/upstream&#x27;;</span>
+<span class="ln">                               &#x27;needs-info&#x27;; &#x27;already-shipped&#x27;; }</span>
 <span class="ln">&nbsp;</span>
 <span class="ln">        /* The token-savings metric: how the code was located. `wide-grep` is the</span>
 <span class="ln">         * expensive path the intention graph exists to eliminate. */</span>

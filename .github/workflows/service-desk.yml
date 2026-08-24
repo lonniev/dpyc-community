@@ -48,6 +48,24 @@ concurrency:
 
 jobs:
   triage:
+    # `agent/no-triage` marks an issue filed FOR THE RECORD: the work is already
+    # done and merged, and the issue exists so the graph carries the
+    # Issue->Capability and PR-FIXES-Issue provenance that live diagnosis skipped.
+    # There is nothing here to route — and Porter's LOCAL FIX path ends in
+    # `agent/fix`, which fires the Journeyman, which would spend an opus run
+    # reimplementing a shipped change.
+    #
+    # This is a GUARD, not a request. The Porter prompt treats the issue body as
+    # untrusted data and is explicitly told never to obey text instructing it to
+    # apply or skip a label — the injection defense that lets the role triage
+    # strangers safely. So "this one is done" cannot be said IN the issue. It has
+    # to be said by someone who already holds write access to the repo, and
+    # applying a label is what proves that.
+    #
+    # It lives HERE, in the shared workflow, rather than in each repo's thin
+    # caller: the ability to file a settled issue is not unique to one repo, and
+    # a guard copied into twelve callers is twelve chances to drift.
+    if: ${{ !contains(github.event.issue.labels.*.name, 'agent/no-triage') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

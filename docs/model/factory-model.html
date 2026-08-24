@@ -1035,6 +1035,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">            &#x27;agent/working&#x27;;           // liveness beacon, stamped/cleared by the skeleton</span>
 <span class="ln">            &#x27;agent/revising&#x27;;          // liveness beacon for PR Revision; canary discriminator</span>
 <span class="ln">            &#x27;agent/retriage&#x27;;          // replay marker -&gt; Porter (issues) or QA (PRs)</span>
+<span class="ln">            &#x27;agent/no-triage&#x27;;         // filed for the record; Service Desk skips it</span>
 <span class="ln">            &#x27;blocked/upstream&#x27;;        // -&gt; Escalation, forward path</span>
 <span class="ln">            &#x27;rejected/upstream&#x27;;       // -&gt; Escalation, reverse (anti-ping-pong) path</span>
 <span class="ln">            &#x27;blocked/arbitration&#x27;;     // routing standoff frozen for a human</span>
@@ -1428,7 +1429,7 @@ sysml validate docs/model/dpyc-factory.sysml
 <span class="ln">                 * traversal resolves and no issue is left tracing to empty intention. */</span>
 <span class="ln">            attribute redefines name = &quot;Porter&quot;;</span>
 <span class="ln">            attribute redefines promptFile = &quot;factory/porter.prompt.md&quot;;</span>
-<span class="ln">            attribute redefines firesOn = &quot;issues: opened, reopened, labeled(agent/retriage)&quot;;</span>
+<span class="ln">            attribute redefines firesOn = &quot;issues: opened, reopened, labeled(agent/retriage); skipped when labeled agent/no-triage&quot;;</span>
 <span class="ln">            attribute redefines canWriteCode = false;</span>
 <span class="ln">            attribute redefines modelTier = &quot;reader&quot;;</span>
 <span class="ln">            attribute maxTurns : Integer = 20;</span>

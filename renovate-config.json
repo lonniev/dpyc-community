@@ -43,10 +43,9 @@
       "groupName": "github actions"
     },
     {
-      "description": "Ignore Python 3.14 — coincurve/cffi not compatible yet.",
-      "matchPackageNames": ["python"],
-      "allowedVersions": "<3.14",
-      "enabled": true
+      "description": "The fleet's Python version is an architectural decision, not a tracked dependency — every repo is deliberately single-3.12, and moving off it is one fleet migration, not six drive-by CI bumps. Renovate must not propose it at all. MATCHED BY DEP NAME ON PURPOSE: the github-actions manager reports this as depName 'python' but packageName 'actions/python-versions', so the previous rule's matchPackageNames:['python'] never matched anything. That rule shipped 2026-04-16 and looked like it was holding the line; it was inert the whole time, and on 2026-08-24 Renovate opened 3.14 bumps in SIX repos in one scheduled run. Four of them failed CI on coincurve 21.0.0, which has no 3.14 wheel and whose source build dies in cffi's LICENSE check.",
+      "matchDepNames": ["python"],
+      "enabled": false
     },
     {
       "description": "Collapse all non-SDK Python dependency bumps into one PR.",

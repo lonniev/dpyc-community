@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-08-24T23:36:55.063018+00:00",
+  "collected_at": "2026-08-25T01:53:59.818520+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 35,
+    "total_notarizations": 28,
     "confirmed": 0,
     "coverage_percent": 25
   },
@@ -11,17 +11,8 @@
       "npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
       "display_name": "Tollbooth Authority New England",
       "role": "authority",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "7b677fcd2e9b9be9a897ae952503eec95b152c4028f1e317555fe77ca286da37",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:36:57.940924+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
+      "notarizations": [],
+      "status": "never",
       "error": null
     },
     {
@@ -44,14 +35,6 @@
           "status": "submitted",
           "created_at": "2026-08-10 00:52:28.547332+00",
           "receipt_count": 4
-        },
-        {
-          "notarization_id": "2",
-          "root_hash": "221c71fc3609d029542605fd8bbd6cf62c63af7060d7dc3bc3a0148007db4877",
-          "leaf_count": 17,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:36:56.905661+00",
-          "receipt_count": 4
         }
       ],
       "status": "stale",
@@ -61,17 +44,8 @@
       "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
       "display_name": "Tollbooth-Authority-NorthAmerica",
       "role": "authority",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "fd1165f1b62a2542297bc4b761a6167798f61ee6975cce37ffa1ca07dc170d29",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:36:57.942074+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
+      "notarizations": [],
+      "status": "never",
       "error": null
     },
     {
@@ -86,14 +60,6 @@
           "status": "submitted",
           "created_at": "2026-07-29 23:15:12.856295+00",
           "receipt_count": 2
-        },
-        {
-          "notarization_id": "2",
-          "root_hash": "09a8a4cd24062b7f95d532f6f1bccdc9fba2cfb91014e99742ce093e4e5580e3",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:32:11.46757+00",
-          "receipt_count": 4
         }
       ],
       "status": "stale",
@@ -208,14 +174,6 @@
           "status": "submitted",
           "created_at": "2026-08-22 15:50:05.278072+00",
           "receipt_count": 4
-        },
-        {
-          "notarization_id": "1",
-          "root_hash": "1066b2c7c4ec02ccd8c1a540ffaea5c6e99b9bdaf079c62b37381bd84ab78d35",
-          "leaf_count": 7,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:26:29.467837+00",
-          "receipt_count": 4
         }
       ],
       "status": "submitted",
@@ -250,17 +208,8 @@
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "b6b171dd89bb0f25657e4d5163ed11cce282c55822bfccc9ea95d1c082956c7b",
-          "leaf_count": 2,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:37:06.019708+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
+      "notarizations": [],
+      "status": "never",
       "error": null
     },
     {
@@ -380,14 +329,6 @@
           "status": "submitted",
           "created_at": "2026-07-28 16:33:08.785418+00",
           "receipt_count": 2
-        },
-        {
-          "notarization_id": "3",
-          "root_hash": "96da62ef758db21085345ef4968317b70c96c5f230f06f08c1e12ac597bc7d76",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-07-26 00:27:36.560499+00",
-          "receipt_count": 4
         }
       ],
       "status": "stale",

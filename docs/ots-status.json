@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-08-25T08:00:40.681273+00:00",
+  "collected_at": "2026-08-25T09:02:12.090733+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 17,
+    "total_notarizations": 18,
     "confirmed": 0,
     "coverage_percent": 17
   },
@@ -191,17 +191,26 @@
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
       "display_name": "Roastify MCP",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "1",
+          "root_hash": "4af134b51209a6609f8a96bb14461600e3e80a75a3bafd9854de27a1442bc825",
+          "leaf_count": 1,
+          "status": "submitted",
+          "created_at": "2026-08-14 03:59:09.792789+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",

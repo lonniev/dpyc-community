@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-27T20:32:47.524247+00:00",
+  "collected_at": "2026-08-28T05:26:49.955818+00:00",
   "summary": {
     "operators": 12,
-    "total_notarizations": 17,
+    "total_notarizations": 12,
     "confirmed": 0,
-    "coverage_percent": 17
+    "coverage_percent": 8
   },
   "operators": [
     {
@@ -52,107 +52,17 @@
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
       "display_name": "schwab-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "3",
-          "root_hash": "1dae4578c41f918144276864c911f4444173d7183242ce251746480b5acf8d09",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-07-29 23:15:12.856295+00",
-          "receipt_count": 2
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "43",
-          "root_hash": "32a57f79cdd07f850aa0f4301b4374ecc1a2dbd32b458ad21113fcf97e030b06",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-24 00:45:42.118593+00",
-          "receipt_count": 0
-        },
-        {
-          "notarization_id": "42",
-          "root_hash": "2478b8b214abf0334a1e5d7ac00aa60771cda1eacc2321eac30f9a6a9a591034",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-23 06:43:23.642962+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "41",
-          "root_hash": "1232aaca579c76e0526a0ec0f43aaefdb729c8858239eb4aff4a1ea075e7b307",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-23 02:40:26.201638+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "40",
-          "root_hash": "2da27f851252144d483803405c38c60e0cb43eb25e4a610ac052158855daad56",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-20 17:38:31.985753+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "39",
-          "root_hash": "74db353c06aa8b9e0dc4fe332be968561047ec5a10925784145e91909fa57e2b",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-20 01:58:20.65596+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "38",
-          "root_hash": "35588cc7339a20007b31a49a453b1e681cb7b7ab9a305bde5e4e91fc86f5570b",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-19 03:35:09.081887+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "37",
-          "root_hash": "34d366c21ce59309e8d2bbf99efccfd6798fb9a4229452e39747ca117c0a18f1",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-18 10:39:51.266184+00",
-          "receipt_count": 0
-        },
-        {
-          "notarization_id": "36",
-          "root_hash": "9bcc00d3e355666ce214a34050ce5f8f6ba6255e89fe8c9e0ee81fa1a94a12fd",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-11 08:19:05.749335+00",
-          "receipt_count": 0
-        },
-        {
-          "notarization_id": "35",
-          "root_hash": "f693d9f4afef87b1295252c385b6d6e5480387dcaffd77ff5618a0889981eeb3",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-10 06:42:10.853063+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "34",
-          "root_hash": "60f9ca1c378145569eb0d863fb4999ab087b0676aa54849d5542a0da7109d67c",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-07 23:13:02.627645+00",
-          "receipt_count": 1
-        }
-      ],
-      "status": "no_receipts",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
@@ -166,43 +76,25 @@
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
       "display_name": "optionality-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "2",
-          "root_hash": "e4b188aae9e71afd05dbe5ff2534888222379b9555a2d8efaf7bc8011e43b8dd",
-          "leaf_count": 8,
-          "status": "submitted",
-          "created_at": "2026-08-22 15:50:05.278072+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "submitted",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
       "display_name": "Roastify MCP",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "1",
-          "root_hash": "4af134b51209a6609f8a96bb14461600e3e80a75a3bafd9854de27a1442bc825",
-          "leaf_count": 1,
-          "status": "submitted",
-          "created_at": "2026-08-14 03:59:09.792789+00",
-          "receipt_count": 4
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1vt9hpckkqvtkuxffrh7kun8vsvsl8rwjr0lfc9utgpdr3u7c5tcqv33g0y",
@@ -216,34 +108,98 @@
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
       "display_name": "cypher-mcp",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "23",
+          "root_hash": "a5ce5697fae9c6d5dfca4216c1c4cf3e7b29015ec0116c8084cb4f70d5c063ad",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-24 10:43:10.936916+00",
+          "receipt_count": 2
+        },
+        {
+          "notarization_id": "22",
+          "root_hash": "ecb4bd0e5f09e4ae7f62233db430d0b7565df2a91bcfbf7b1e1a9c5296ce695b",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-22 20:23:00.651245+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "21",
+          "root_hash": "8d3e0c333ef494ab6514b7c5bf0eb41c3dc1cd62fca8f4198d9adc1b20e18545",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-22 14:18:21.400339+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "20",
+          "root_hash": "f9a93517d92c371fa7670480965cca648a6986f034724934aa9642c1c8b8a72d",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-18 23:08:23.467997+00",
+          "receipt_count": 2
+        },
+        {
+          "notarization_id": "19",
+          "root_hash": "98ce5dca8af9fe3cebd6dc79a849094ec179661e71a00f16cd0326d33167256c",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-13 02:22:10.436511+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "18",
+          "root_hash": "d7310b447f2ffb8b53dcbdda908bc7463216afbb5dc0b8e79b6f99d57fe190f7",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-10 22:19:36.210447+00",
+          "receipt_count": 3
+        },
+        {
+          "notarization_id": "17",
+          "root_hash": "0facc271da194f49ec8918e4709b141564bb7ce5d15e648e3233e98520bedbed",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-09 23:31:22.993532+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "16",
+          "root_hash": "aec1fc43e1190b4d4fc065d88b26494e937fcf991156ef76933291a402f8da07",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-09 22:27:40.761286+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "15",
+          "root_hash": "3d9b93de50ec2da5b995bd83edde6acdb0cc7e6f9a0421d3998f1fe91581e094",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-09 20:16:00.412111+00",
+          "receipt_count": 3
+        },
+        {
+          "notarization_id": "14",
+          "root_hash": "c4d4c45624d9907f9d22ad10002809e1ec5c4f1af056b66ca9484d4768d45a22",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-08-09 14:21:21.268528+00",
+          "receipt_count": 2
+        }
+      ],
+      "status": "submitted",
+      "error": null
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
       "display_name": "thebrain-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "6",
-          "root_hash": "8d928092caac4bbb477f1bb660c995edddd99302aae10a66da369cee0884f228",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-08-11 10:16:54.698513+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "5",
-          "root_hash": "19060937757735307f42117fcce3c11d3055aa50331bfd2e384ee3769ba5ff97",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-08-11 03:15:17.880721+00",
-          "receipt_count": 3
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     }
   ]
 }

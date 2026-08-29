@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-28T18:45:19.205554+00:00",
+  "collected_at": "2026-08-29T02:13:50.262320+00:00",
   "summary": {
     "operators": 12,
     "total_notarizations": 26,
     "confirmed": 0,
-    "coverage_percent": 25
+    "coverage_percent": 17
   },
   "operators": [
     {
@@ -53,8 +53,8 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
@@ -167,7 +167,7 @@
           "receipt_count": 4
         }
       ],
-      "status": "submitted",
+      "status": "stale",
       "error": null
     },
     {
@@ -175,8 +175,8 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",

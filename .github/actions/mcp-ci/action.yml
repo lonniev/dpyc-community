@@ -1,0 +1,121 @@
+name: DPYC MCP CI
+description: >
+  The build-and-verify contract every DPYC MCP shares — install the way Horizon
+  installs, lint, prove the entrypoint, run the suite.
+
+# WHY A COMPOSITE ACTION AND NOT A REUSABLE WORKFLOW.
+#
+# A reusable workflow's job renders as `caller / shared`, so a repo whose branch
+# protection requires the context `test` would suddenly require `test / test` and
+# every PR would block forever. A composite action runs as STEPS INSIDE the
+# caller's existing job, so the job name — and therefore the required status
+# context — is unchanged. Same DRY, no protection surgery.
+#
+# WHAT THIS OWNS: the parts that are identical everywhere. Measured across the
+# twelve Horizon repos before extracting — install, lint and the entrypoint guard
+# were common to 11-12 of them with only whitespace-and-comment drift, which is
+# exactly the drift hand-propagation keeps reintroducing. Only the test command
+# genuinely varies, so that is the one input.
+#
+# WHAT THIS DOES NOT OWN: checkout (the caller does it, so the action can read the
+# repo), and any job a repo genuinely needs on its own — a frontend build, a
+# Cloudflare worker, a Modal deploy-graph check.
+
+inputs:
+  python-version:
+    description: Python the runner sets up. Horizon builds 3.12.
+    required: false
+    default: "3.12"
+  test-command:
+    description: >
+      How this repo runs its suite. Must go through `uv run` so it uses the
+      locked environment rather than the runner's ambient python.
+    required: false
+    default: "uv run pytest -v"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - uses: astral-sh/setup-uv@v10.0.0
+
+    # A consumer pinned to a just-published SDK resolves nothing until PyPI's
+    # simple index catches up. Self-skipping: a repo with no `==` pin (the Oracle)
+    # finds nothing to wait for and exits 0.
+    - name: Wait for tollbooth-dpyc on PyPI
+      shell: bash
+      run: |
+        set -euo pipefail
+        REQUIRED=$(grep -oE 'tollbooth-dpyc(\[[a-z,]+\])?==[0-9.]+' pyproject.toml \
+                   | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || true)
+        if [ -z "$REQUIRED" ]; then
+          echo "No pinned tollbooth-dpyc version found; nothing to wait for."
+          exit 0
+        fi
+        echo "Waiting for tollbooth-dpyc==$REQUIRED on the PyPI simple index..."
+        ESCAPED=${REQUIRED//./\\.}
+        for i in $(seq 1 30); do
+          # Distribution filenames carry the version; match the dash-delimited
+          # form so 0.88.0 cannot be satisfied by 0.88.01.
+          if curl -sf "https://pypi.org/simple/tollbooth-dpyc/" \
+               | grep -qE "tollbooth[_-]dpyc-$ESCAPED[-.]"; then
+            echo "Found tollbooth-dpyc==$REQUIRED on the simple index (attempt $i)"
+            exit 0
+          fi
+          echo "Attempt $i/30 — not yet resolvable, waiting 10s..."
+          sleep 10
+        done
+        echo "::error::tollbooth-dpyc==$REQUIRED never reached the PyPI simple index after 5 minutes."
+        echo "The install below resolves from that index. Check that the release"
+        echo "workflow's PyPI publish succeeded before re-running."
+        exit 1
+
+    # `uv sync --locked` is how Horizon installs: fastmcp's UVEnvironment.prepare()
+    # shells out to `uv sync`, and build_command() prefixes `uv run`. Installing
+    # with pip validated a resolution the deploy never used. `--locked` also fails
+    # on a stale lock, so drift is a pre-merge error, not a deploy-time surprise.
+    - name: Install dependencies (the lockfile Horizon deploys)
+      shell: bash
+      run: uv sync --locked --extra dev
+
+    - name: Lint
+      shell: bash
+      run: uv run ruff check .
+
+    # The check Horizon performs at build time. This used to read json['server'] by
+    # hand — a key not in fastmcp's schema at all — so it mirrored a format the
+    # platform had stopped accepting, stayed green through three days of failed
+    # builds, and could not fail for the real reason. Resolving through fastmcp's
+    # own MCPServerConfig validates the file as a side effect.
+    - name: Entrypoint inspects (the check Horizon performs at build time)
+      shell: bash
+      run: |
+        [ -f fastmcp.json ] || { echo "no fastmcp.json — not a FastMCP deployment; skipping"; exit 0; }
+        TARGET=$(uv run python -c "
+        import json
+        from fastmcp.utilities.mcp_server_config import MCPServerConfig
+        c = MCPServerConfig.model_validate(json.load(open('fastmcp.json')))
+        print(f'{c.source.path}:{c.source.entrypoint or \"mcp\"}')
+        ")
+        # The environment block is what makes the builder install this project.
+        # Without it UVEnvironment.project is None, nothing installs, and the build
+        # dies on a preflight import blaming your dependency list.
+        uv run python -c "
+        import json, sys
+        from fastmcp.utilities.mcp_server_config import MCPServerConfig
+        c = MCPServerConfig.model_validate(json.load(open('fastmcp.json')))
+        e = c.environment
+        if not (e.project or e.dependencies or e.requirements):
+            sys.exit('fastmcp.json declares no environment source '
+                     '(project/dependencies/requirements) — the builder would install nothing.')
+        print('environment installs:', e.project or e.requirements or e.dependencies)
+        "
+        echo "inspecting $TARGET"
+        uv run fastmcp inspect -f fastmcp -o /tmp/server-info.json "$TARGET"
+
+    - name: Test
+      shell: bash
+      run: ${{ inputs.test-command }}

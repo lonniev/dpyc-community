@@ -42,9 +42,16 @@ runs:
 
     - uses: astral-sh/setup-uv@v10.0.0
 
-    # A consumer pinned to a just-published SDK resolves nothing until PyPI's
-    # simple index catches up. Self-skipping: a repo with no `==` pin (the Oracle)
-    # finds nothing to wait for and exits 0.
+    # Poll the SIMPLE index, because that is what pip and uv resolve from.
+    #
+    # Three shapes of this step have been wrong, each differently. It first polled
+    # the simple index but exited SUCCESS on exhaustion, so a real lag surfaced as
+    # a confusing install failure. Fixing that moved it to the JSON API and made it
+    # fail loudly — but the JSON API publishes seconds ahead of the simple index,
+    # so on 0.88.0 the step passed on attempt 1 and the install failed anyway.
+    # A gate is only a gate if it waits on the thing the next step actually needs.
+    #
+    # Self-skipping: a repo with no `==` pin (the Oracle) finds nothing to wait for.
     - name: Wait for tollbooth-dpyc on PyPI
       shell: bash
       run: |

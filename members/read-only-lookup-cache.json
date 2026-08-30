@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-08-11T10:29:15Z",
+  "updated_at": "2026-08-30T20:38:09Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -66,6 +66,22 @@
       ],
       "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
       "notes": "Regional Authority for North America. Peer to Lonnie-Authority under the DPYC Prime Authority."
+    },
+    {
+      "npub": "npub14rkuqcl50cm7x507jhp3ryk7lghyucxwrjlrgaj6mlznhqh776hqws5gre",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-08-30",
+      "display_name": "GoodEarth MCP",
+      "services": [
+        {
+          "name": "GoodEarth MCP",
+          "url": "https://goodearth-mcp.fastmcp.app/mcp",
+          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+        }
+      ],
+      "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+      "notes": "Registered via Authority-mediated operator registration protocol"
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",

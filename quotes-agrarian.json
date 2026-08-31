@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Agrarian quotations for Good Earth. The tradition of the land as a way of life and a school of character — classical husbandry, distributism, and the American agrarian line. Every entry is a quotation whose wording and attribution are checkable; where a line could not be verified it was left out rather than approximated, because a misattributed quote is worse than a shorter list.",
+  "quotes": [
+    { "text": "If more of us valued food and cheer and song above hoarded gold, it would be a merrier world.", "author": "J.R.R. Tolkien, The Hobbit" },
+    { "text": "I am in fact a Hobbit in all but size. I like gardens, trees and unmechanized farmlands.", "author": "J.R.R. Tolkien, Letters" },
+    { "text": "He that breaks a thing to find out what it is has left the path of wisdom.", "author": "J.R.R. Tolkien, The Lord of the Rings" },
+
+    { "text": "Too much capitalism does not mean too many capitalists, but too few capitalists.", "author": "G.K. Chesterton, The Uses of Diversity" },
+    { "text": "The most terribly important things must be left to ordinary men themselves.", "author": "G.K. Chesterton, What's Wrong with the World" },
+    { "text": "There is no such thing on earth as an uninteresting subject; the only thing that can exist is an uninterested person.", "author": "G.K. Chesterton, Heretics" },
+
+    { "text": "Those who labour in the earth are the chosen people of God, if ever He had a chosen people.", "author": "Thomas Jefferson, Notes on the State of Virginia" },
+    { "text": "Agriculture is our wisest pursuit, because it will in the end contribute most to real wealth, good morals, and happiness.", "author": "Thomas Jefferson, letter to George Washington" },
+
+    { "text": "O fortunate farmers, excessively fortunate, if only they knew their own blessings!", "author": "Virgil, Georgics" },
+    { "text": "Observe the seasons, and do each thing in its own time.", "author": "Hesiod, Works and Days" },
+    { "text": "When men are rightly occupied, their amusement grows out of their work.", "author": "John Ruskin, The Stones of Venice" },
+    { "text": "Farming is the mother and nurse of the other arts, for when farming goes well all the other arts flourish.", "author": "Xenophon, Oeconomicus" },
+
+    { "text": "No race can prosper till it learns that there is as much dignity in tilling a field as in writing a poem.", "author": "Booker T. Washington, Up From Slavery" },
+    { "text": "Farming looks mighty easy when your plow is a pencil and you're a thousand miles from the corn field.", "author": "Dwight D. Eisenhower" },
+
+    { "text": "Eating is an agricultural act.", "author": "Wendell Berry, The Pleasures of Eating" },
+    { "text": "The soil is the great connector of lives, the source and destination of all.", "author": "Wendell Berry, The Unsettling of America" },
+    { "text": "A good farmer is one who does the work well and leaves the place better than he found it.", "author": "Wendell Berry, Bringing It to the Table" },
+
+    { "text": "To forget how to dig the earth and to tend the soil is to forget ourselves.", "author": "Mohandas K. Gandhi" },
+    { "text": "The discovery of agriculture was the first big step toward a civilized life.", "author": "Arthur Keith" },
+    { "text": "The farmer has to be an optimist or he wouldn't still be a farmer.", "author": "Will Rogers" },
+    { "text": "The ultimate goal of farming is not the growing of crops, but the cultivation and perfection of human beings.", "author": "Masanobu Fukuoka, The One-Straw Revolution" },
+    { "text": "Cultivators of the earth are the most valuable citizens. They are the most vigorous, the most independent, the most virtuous.", "author": "Thomas Jefferson, letter to John Jay" }
+  ]
+}

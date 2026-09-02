@@ -4,7 +4,7 @@
   "extends": [
     "config:recommended"
   ],
-  "dependencyDashboard": false,
+  "dependencyDashboard": true,
   "platformAutomerge": false,
   "labels": ["dependencies"],
   "osvVulnerabilityAlerts": true,
@@ -18,9 +18,10 @@
   "minimumReleaseAge": "3 days",
   "packageRules": [
     {
-      "description": "SDK pin — keep tollbooth-dpyc pinned to the exact == version on every update type. (rangeStrategy lives in its OWN rule: Renovate rejects combining it with matchUpdateTypes.)",
+      "description": "SDK pin — keep tollbooth-dpyc pinned to the exact == version on every update type. (rangeStrategy lives in its OWN rule: Renovate rejects combining it with matchUpdateTypes.) SCHEDULE EXEMPTION: the SDK is first-party and released deliberately, so it does not wait for the weekly window. minimumReleaseAge:0 below already said 'do not wait for it to settle' — but the global schedule still gated PR creation to Mondays 00:00-06:59, and the schedule won, so the exemption bought nothing. v0.89.1 (the courier rendezvous fix) was cut on a Wednesday and would have sat published-but-undelivered for five days. Everything else keeps the Monday batch.",
       "matchPackageNames": ["tollbooth-dpyc"],
-      "rangeStrategy": "pin"
+      "rangeStrategy": "pin",
+      "schedule": ["at any time"]
     },
     {
       "description": "SDK patch/minor — the ONE thing that self-merges (via a per-repo Renovate branch-protection bypass), on green CI; not delayed by minimumReleaseAge because we trust our own wheel immediately.",

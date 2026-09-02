@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/relays.schema.json",
   "version": "1.3.0",
-  "updated_at": "2026-09-01T23:10:00Z",
+  "updated_at": "2026-09-02T23:30:00Z",
   "relays": [
     {
       "url": "wss://relay.primal.net",

@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-08-30T23:32:16.417607+00:00",
+  "collected_at": "2026-09-02T00:17:08.069550+00:00",
   "summary": {
     "operators": 13,
     "total_notarizations": 26,
     "confirmed": 0,
-    "coverage_percent": 15
+    "coverage_percent": 0
   },
   "operators": [
     {
@@ -53,8 +53,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -150,7 +150,7 @@
           "receipt_count": 1
         }
       ],
-      "status": "no_receipts",
+      "status": "stale",
       "error": null
     },
     {
@@ -183,8 +183,8 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
@@ -297,7 +297,7 @@
           "receipt_count": 2
         }
       ],
-      "status": "submitted",
+      "status": "stale",
       "error": null
     },
     {

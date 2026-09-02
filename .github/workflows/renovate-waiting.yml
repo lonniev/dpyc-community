@@ -1,0 +1,103 @@
+# Renovate waiting board — Role: tell the owner a dependency PR is green and
+# waiting, the moment it becomes true.
+#
+# Called by a thin per-repo caller on `check_suite: completed`, because that is
+# the event that fires when a PR actually goes green. A cron cannot beat it and
+# GitHub delays scheduled jobs under load, worst on the hour — so polling buys
+# less freshness than its frequency suggests.
+#
+# NO LLM, deliberately. `digest.yml` is the fleet's reporter and it reasons with
+# a model; that is right for reconciling escalation chains and wrong here. "Is
+# this PR by Renovate, green, and blocked on review" is three API reads and a
+# comparison. Paying a model per green CI across a dozen repos would spend the
+# budget the Porter already routes AWAY from dependency work (CLAUDE.md §7).
+#
+# Write scope is issues only, account-wide, so this can maintain one board in
+# dpyc-community from whichever repo raised the event. It never merges and never
+# approves — the code-owner gate stays exactly where it is. This only makes a
+# backlog announce itself instead of being noticed by accident.
+name: DPYC Renovate Waiting Board (reusable)
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint issues-only account-wide token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DPYC_BOT_APP_ID }}
+          private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+          permission-pull-requests: read
+
+      - name: Rebuild the board from what is actually open
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+          BOARD_REPO: ${{ github.repository_owner }}/dpyc-community
+          TITLE: "🌿 Renovate — green and waiting"
+        run: |
+          set -euo pipefail
+
+          # Rebuilt from scratch every time rather than appended to. An append
+          # would keep listing PRs that merged an hour ago, and a board that is
+          # wrong is worse than no board.
+          repos=$(gh repo list "$OWNER" --limit 100 --no-archived --json name --jq '.[].name')
+
+          rows=""; count=0
+          for r in $repos; do
+            prs=$(gh pr list --repo "$OWNER/$r" --state open --limit 30 \
+                    --json number,title,author,mergeStateStatus,url \
+                    --jq '.[] | select(.author.login=="app/renovate") | [.number,.title,.mergeStateStatus,.url] | @tsv' 2>/dev/null || true)
+            [ -z "$prs" ] && continue
+            while IFS=$'\t' read -r num title state url; do
+              [ -z "${num:-}" ] && continue
+              # Only surface what a human could actually act on now: green, and
+              # blocked solely on review. A failing PR is the Journeyman's
+              # problem, not a thing to nag the owner about.
+              fails=$(gh pr checks "$num" --repo "$OWNER/$r" 2>/dev/null | awk -F'\t' '$2=="fail"' | wc -l | tr -d ' ')
+              [ "${fails:-0}" != "0" ] && continue
+              [ "$state" != "BLOCKED" ] && continue
+              sec=""; case "$title" in *"[security]"*) sec=" 🔒" ;; esac
+              rows="${rows}| [\`${r}#${num}\`](${url}) | ${title}${sec} |"$'\n'
+              count=$((count+1))
+            done <<< "$prs"
+          done
+
+          {
+            echo "_Rebuilt $(date -u '+%Y-%m-%d %H:%M') UTC — triggered by \`${GITHUB_REPOSITORY}\`._"
+            echo
+            if [ "$count" -eq 0 ]; then
+              echo "Nothing waiting. Every open Renovate PR is either failing, already merged, or not yet green."
+            else
+              echo "**${count}** Renovate PR(s) green and waiting on a code-owner review. 🔒 marks a security advisory."
+              echo
+              echo "| PR | Change |"
+              echo "|---|---|"
+              printf '%s' "$rows"
+              echo
+              echo "These are blocked on review by design — a GitHub App cannot be a code owner, so nothing here can approve them for you."
+            fi
+          } > /tmp/board.md
+
+          n=$(gh issue list --repo "$BOARD_REPO" --search "\"$TITLE\" in:title" --state all --json number,title \
+                --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          if [ -n "$n" ]; then
+            gh issue edit "$n" --repo "$BOARD_REPO" --body-file /tmp/board.md
+            [ "$count" -eq 0 ] && gh issue close "$n" --repo "$BOARD_REPO" || gh issue reopen "$n" --repo "$BOARD_REPO" 2>/dev/null || true
+            echo "Updated $BOARD_REPO#$n ($count waiting)."
+          elif [ "$count" -gt 0 ]; then
+            gh issue create --repo "$BOARD_REPO" --title "$TITLE" --body-file /tmp/board.md
+            echo "Created the board ($count waiting)."
+          else
+            echo "Nothing waiting and no board to update."
+          fi

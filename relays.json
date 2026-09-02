@@ -43,7 +43,12 @@
     {
       "url": "wss://nos.lol",
       "notes": "DEMOTED 2026-09-01, was primary. Accepts writes and CANNOT serve DMs back to anyone: it demands NIP-42 AUTH for kind-4 and kind-1059 filters, then rejects every AUTH with 'relay needs serviceUrl to be configured before AUTH can work'. Neither the Secure Courier's drain nor the recipient's own client can read a DM out of it. As primary it silently broke operator credential delivery \u2014 see tollbooth-dpyc#249. Kept for non-DM traffic; must not be first. Also returned HTTP 502 for hours on 2026-09-02 while an operator was trying to bootstrap. Kept last so the list never shrinks to nothing, never relied upon."
+    },
+    {
+      "url": "wss://relay.nostr.band",
+      "notes": "RANKED LAST, never removed. Unreachable on every measurement since 2026-08-22 and timed out again 2026-09-02. Kept in the set because removal is not demotion: an operator polls what this list contains, so dropping a relay orphans any bootstrap config still sitting on it and guarantees nobody will ever look there again. A dead relay costs one timeout; a deleted one costs a credential."
     }
   ],
-  "caveat": "Reachability is measured FROM SOMEWHERE. Cloudflare-fronted relays serve residential IPs and refuse datacenter ones: on 2026-09-02 relay.0xchat.com returned 403 and relay.damus.io 503 to an operator on Horizon while both answered a laptop normally. A relay that measures well here may still be unreachable from where the operators actually run, so this list is ranked on evidence and sized for redundancy \u2014 never trimmed to the winners."
+  "caveat": "Reachability is measured FROM SOMEWHERE. Cloudflare-fronted relays serve residential IPs and refuse datacenter ones: on 2026-09-02 relay.0xchat.com returned 403 and relay.damus.io 503 to an operator on Horizon while both answered a laptop normally. A relay that measures well here may still be unreachable from where the operators actually run, so this list is ranked on evidence and sized for redundancy \u2014 never trimmed to the winners.",
+  "order_policy": "Demote, never delete. Ranking is measured and may change freely; membership only grows. A relay leaves this list when the federation agrees nothing of ours can still be on it, not when it measures badly."
 }

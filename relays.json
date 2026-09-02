@@ -1,12 +1,49 @@
 {
   "$schema": "./schemas/relays.schema.json",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "updated_at": "2026-09-01T23:10:00Z",
   "relays": [
-    { "url": "wss://relay.primal.net", "primary": true, "notes": "Serves kind-4 and kind-1059 back on demand, unauthenticated. Measured 2026-09-01: accepted writes and returned stored DMs on every attempt. Promoted to primary because the courier's rendezvous must be READABLE, not merely writable." },
-    { "url": "wss://relay.0xchat.com", "notes": "0xchat's own relay. Measured 2026-09-01: accepts and serves back both kind-4 and kind-1059. Added after it was the only relay that reliably round-tripped a test DM during the 2026-09-01 courier investigation." },
-    { "url": "wss://relay.damus.io", "notes": "Intermittent. Measured 2026-09-01: served DM reads on 1 of 3 attempts, connection timeouts on the other 2; earlier the same day it refused one publish and accepted an identical event seconds later. Usable but never to be relied on alone." },
-    { "url": "wss://nos.lol", "notes": "DEMOTED 2026-09-01, was primary. Accepts writes and CANNOT serve DMs back to anyone: it demands NIP-42 AUTH for kind-4 and kind-1059 filters, then rejects every AUTH with 'relay needs serviceUrl to be configured before AUTH can work'. Neither the Secure Courier's drain nor the recipient's own client can read a DM out of it. As primary it silently broke operator credential delivery — see tollbooth-dpyc#249. Kept for non-DM traffic; must not be first." },
-    { "url": "wss://relay.nostr.band", "notes": "nostr.band indexer relay. Measured 0/6 reachable 2026-08-22 and still unreachable 2026-09-01 — connection timeout on every attempt, ten days running. Kept last pending recovery; the Oracle ranks it live." }
-  ]
+    {
+      "url": "wss://relay.primal.net",
+      "primary": true,
+      "notes": "Serves kind-4 and kind-1059 back on demand, unauthenticated. Measured 2026-09-01: accepted writes and returned stored DMs on every attempt. Promoted to primary because the courier's rendezvous must be READABLE, not merely writable."
+    },
+    {
+      "url": "wss://relay.0xchat.com",
+      "notes": "0xchat's own relay. Measured 2026-09-01: accepts and serves back both kind-4 and kind-1059. Added after it was the only relay that reliably round-tripped a test DM during the 2026-09-01 courier investigation."
+    },
+    {
+      "url": "wss://relay.damus.io",
+      "notes": "Intermittent. Measured 2026-09-01: served DM reads on 1 of 3 attempts, connection timeouts on the other 2; earlier the same day it refused one publish and accepted an identical event seconds later. Usable but never to be relied on alone."
+    },
+    {
+      "url": "wss://relay.snort.social",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://nostr-pub.wellorder.net",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://offchain.pub",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://nostr.mom",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://relay.mostr.pub",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://nostr.oxtr.dev",
+      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+    },
+    {
+      "url": "wss://nos.lol",
+      "notes": "DEMOTED 2026-09-01, was primary. Accepts writes and CANNOT serve DMs back to anyone: it demands NIP-42 AUTH for kind-4 and kind-1059 filters, then rejects every AUTH with 'relay needs serviceUrl to be configured before AUTH can work'. Neither the Secure Courier's drain nor the recipient's own client can read a DM out of it. As primary it silently broke operator credential delivery \u2014 see tollbooth-dpyc#249. Kept for non-DM traffic; must not be first. Also returned HTTP 502 for hours on 2026-09-02 while an operator was trying to bootstrap. Kept last so the list never shrinks to nothing, never relied upon."
+    }
+  ],
+  "caveat": "Reachability is measured FROM SOMEWHERE. Cloudflare-fronted relays serve residential IPs and refuse datacenter ones: on 2026-09-02 relay.0xchat.com returned 403 and relay.damus.io 503 to an operator on Horizon while both answered a laptop normally. A relay that measures well here may still be unreachable from where the operators actually run, so this list is ranked on evidence and sized for redundancy \u2014 never trimmed to the winners."
 }

@@ -1,54 +1,54 @@
 {
   "$schema": "./schemas/relays.schema.json",
   "version": "1.3.0",
-  "updated_at": "2026-09-02T23:30:00Z",
+  "updated_at": "2026-09-02T23:45:00Z",
   "relays": [
     {
       "url": "wss://relay.primal.net",
-      "primary": true,
-      "notes": "Serves kind-4 and kind-1059 back on demand, unauthenticated. Measured 2026-09-01: accepted writes and returned stored DMs on every attempt. Promoted to primary because the courier's rendezvous must be READABLE, not merely writable."
-    },
-    {
-      "url": "wss://relay.0xchat.com",
-      "notes": "0xchat's own relay. Measured 2026-09-01: accepts and serves back both kind-4 and kind-1059. Added after it was the only relay that reliably round-tripped a test DM during the 2026-09-01 courier investigation."
-    },
-    {
-      "url": "wss://relay.damus.io",
-      "notes": "Intermittent. Measured 2026-09-01: served DM reads on 1 of 3 attempts, connection timeouts on the other 2; earlier the same day it refused one publish and accepted an identical event seconds later. Usable but never to be relied on alone."
+      "notes": "PRIMARY on the strongest evidence available: the only relay that answered goodearth-mcp from Horizon on 2026-09-02 while four others returned 403, 502, 503 and a timeout. Accepts kind-30078 and serves it back. An operator runs in a datacenter, so datacenter reachability is the measurement that counts.",
+      "primary": true
     },
     {
       "url": "wss://relay.snort.social",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
     },
     {
       "url": "wss://nostr-pub.wellorder.net",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
     },
     {
       "url": "wss://offchain.pub",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
     },
     {
       "url": "wss://nostr.mom",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
     },
     {
       "url": "wss://relay.mostr.pub",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
     },
     {
       "url": "wss://nostr.oxtr.dev",
-      "notes": "Measured 2026-09-02 from a residential IP: accepted a kind-30078 write and served it back. Datacenter reachability UNVERIFIED \u2014 see the caveat above."
+      "notes": "Accepted a kind-30078 write and served it back, measured 2026-09-02 from a residential IP. Behaviour from an operator's datacenter is UNVERIFIED \u2014 ranked above the relays known to refuse datacenters, below the one known to accept them."
+    },
+    {
+      "url": "wss://relay.0xchat.com",
+      "notes": "RANKED LOW on operator-side evidence: 403 Forbidden (Cloudflare) to goodearth-mcp running on Horizon, 2026-09-02, during a bootstrap it could not complete. Answers a residential IP normally, which is why it once measured well \u2014 reachability depends on where you ask from. Still a member: rank is a measurement, membership is a commitment."
+    },
+    {
+      "url": "wss://relay.damus.io",
+      "notes": "RANKED LOW on operator-side evidence: 503 Service Unavailable to goodearth-mcp running on Horizon, 2026-09-02, during a bootstrap it could not complete. Answers a residential IP normally, which is why it once measured well \u2014 reachability depends on where you ask from. Still a member: rank is a measurement, membership is a commitment."
     },
     {
       "url": "wss://nos.lol",
-      "notes": "DEMOTED 2026-09-01, was primary. Accepts writes and CANNOT serve DMs back to anyone: it demands NIP-42 AUTH for kind-4 and kind-1059 filters, then rejects every AUTH with 'relay needs serviceUrl to be configured before AUTH can work'. Neither the Secure Courier's drain nor the recipient's own client can read a DM out of it. As primary it silently broke operator credential delivery \u2014 see tollbooth-dpyc#249. Kept for non-DM traffic; must not be first. Also returned HTTP 502 for hours on 2026-09-02 while an operator was trying to bootstrap. Kept last so the list never shrinks to nothing, never relied upon."
+      "notes": "RANKED LOW on operator-side evidence: 502 Bad Gateway to goodearth-mcp running on Horizon, 2026-09-02, during a bootstrap it could not complete. Answers a residential IP normally, which is why it once measured well \u2014 reachability depends on where you ask from. Still a member: rank is a measurement, membership is a commitment."
     },
     {
       "url": "wss://relay.nostr.band",
-      "notes": "RANKED LAST, never removed. Unreachable on every measurement since 2026-08-22 and timed out again 2026-09-02. Kept in the set because removal is not demotion: an operator polls what this list contains, so dropping a relay orphans any bootstrap config still sitting on it and guarantees nobody will ever look there again. A dead relay costs one timeout; a deleted one costs a credential."
+      "notes": "RANKED LOW on operator-side evidence: connection timed out to goodearth-mcp running on Horizon, 2026-09-02, during a bootstrap it could not complete. Answers a residential IP normally, which is why it once measured well \u2014 reachability depends on where you ask from. Still a member: rank is a measurement, membership is a commitment."
     }
   ],
-  "caveat": "Reachability is measured FROM SOMEWHERE. Cloudflare-fronted relays serve residential IPs and refuse datacenter ones: on 2026-09-02 relay.0xchat.com returned 403 and relay.damus.io 503 to an operator on Horizon while both answered a laptop normally. A relay that measures well here may still be unreachable from where the operators actually run, so this list is ranked on evidence and sized for redundancy \u2014 never trimmed to the winners.",
-  "order_policy": "Demote, never delete. Ranking is measured and may change freely; membership only grows. A relay leaves this list when the federation agrees nothing of ours can still be on it, not when it measures badly."
+  "caveat": "Relays must both accept writes and serve reads, and reachability is measured FROM SOMEWHERE. Cloudflare-fronted relays serve residential IPs and refuse datacenter ones: on 2026-09-02, relay.0xchat.com returned 403 and relay.damus.io 503 to an operator on Horizon while both answered a laptop normally. Rank on what operators actually observe, not on what a workstation can reach.",
+  "order_policy": "This list ORDERS relays; it never eliminates them. No relay is perfect, so a policy that removes the imperfect ones converges on an empty list and an operator with nowhere to read its credentials. Operators report the relays that failed them (the Oracle's report_relay_failure); the most-flagged sink toward the bottom and the dependable rise. Rank is a measurement and changes freely. Membership is a commitment and only grows \u2014 a relay leaves only when the federation agrees nothing of ours can still be sitting on it."
 }

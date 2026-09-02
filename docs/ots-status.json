@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-02T14:32:01.816626+00:00",
+  "collected_at": "2026-09-02T18:45:41.983633+00:00",
   "summary": {
     "operators": 13,
-    "total_notarizations": 24,
+    "total_notarizations": 23,
     "confirmed": 0,
     "coverage_percent": 0
   },
@@ -61,8 +61,8 @@
       "display_name": "schwab-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
@@ -165,17 +165,26 @@
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
       "display_name": "optionality-mcp",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "2",
+          "root_hash": "e4b188aae9e71afd05dbe5ff2534888222379b9555a2d8efaf7bc8011e43b8dd",
+          "leaf_count": 8,
+          "status": "submitted",
+          "created_at": "2026-08-22 15:50:05.278072+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
@@ -190,8 +199,8 @@
       "display_name": "Tollbooth Sample",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
@@ -286,26 +295,9 @@
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
       "display_name": "thebrain-mcp",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "6",
-          "root_hash": "8d928092caac4bbb477f1bb660c995edddd99302aae10a66da369cee0884f228",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-08-11 10:16:54.698513+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "5",
-          "root_hash": "19060937757735307f42117fcce3c11d3055aa50331bfd2e384ee3769ba5ff97",
-          "leaf_count": 3,
-          "status": "submitted",
-          "created_at": "2026-08-11 03:15:17.880721+00",
-          "receipt_count": 3
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     }
   ]
 }

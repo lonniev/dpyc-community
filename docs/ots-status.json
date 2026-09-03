@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-03T18:42:28.167987+00:00",
+  "collected_at": "2026-09-03T21:45:00.523658+00:00",
   "summary": {
     "operators": 13,
     "total_notarizations": 12,
@@ -78,7 +78,7 @@
       "role": "operator",
       "notarizations": [],
       "status": "unreachable",
-      "error": "[Errno -2] Name or service not known"
+      "error": "[Errno -5] No address associated with hostname"
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-03T21:45:00.523658+00:00",
+  "collected_at": "2026-09-04T00:08:40.417788+00:00",
   "summary": {
     "operators": 13,
-    "total_notarizations": 12,
+    "total_notarizations": 22,
     "confirmed": 0,
     "coverage_percent": 0
   },
@@ -53,8 +53,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -68,9 +68,90 @@
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "43",
+          "root_hash": "32a57f79cdd07f850aa0f4301b4374ecc1a2dbd32b458ad21113fcf97e030b06",
+          "leaf_count": 4,
+          "status": "no_receipts",
+          "created_at": "2026-08-24 00:45:42.118593+00",
+          "receipt_count": 0
+        },
+        {
+          "notarization_id": "42",
+          "root_hash": "2478b8b214abf0334a1e5d7ac00aa60771cda1eacc2321eac30f9a6a9a591034",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-23 06:43:23.642962+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "41",
+          "root_hash": "1232aaca579c76e0526a0ec0f43aaefdb729c8858239eb4aff4a1ea075e7b307",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-23 02:40:26.201638+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "40",
+          "root_hash": "2da27f851252144d483803405c38c60e0cb43eb25e4a610ac052158855daad56",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-20 17:38:31.985753+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "39",
+          "root_hash": "74db353c06aa8b9e0dc4fe332be968561047ec5a10925784145e91909fa57e2b",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-20 01:58:20.65596+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "38",
+          "root_hash": "35588cc7339a20007b31a49a453b1e681cb7b7ab9a305bde5e4e91fc86f5570b",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-19 03:35:09.081887+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "37",
+          "root_hash": "34d366c21ce59309e8d2bbf99efccfd6798fb9a4229452e39747ca117c0a18f1",
+          "leaf_count": 4,
+          "status": "no_receipts",
+          "created_at": "2026-08-18 10:39:51.266184+00",
+          "receipt_count": 0
+        },
+        {
+          "notarization_id": "36",
+          "root_hash": "9bcc00d3e355666ce214a34050ce5f8f6ba6255e89fe8c9e0ee81fa1a94a12fd",
+          "leaf_count": 4,
+          "status": "no_receipts",
+          "created_at": "2026-08-11 08:19:05.749335+00",
+          "receipt_count": 0
+        },
+        {
+          "notarization_id": "35",
+          "root_hash": "f693d9f4afef87b1295252c385b6d6e5480387dcaffd77ff5618a0889981eeb3",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-10 06:42:10.853063+00",
+          "receipt_count": 1
+        },
+        {
+          "notarization_id": "34",
+          "root_hash": "60f9ca1c378145569eb0d863fb4999ab087b0676aa54849d5542a0da7109d67c",
+          "leaf_count": 4,
+          "status": "submitted",
+          "created_at": "2026-08-07 23:13:02.627645+00",
+          "receipt_count": 1
+        }
+      ],
+      "status": "stale",
+      "error": null
     },
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
@@ -78,7 +159,7 @@
       "role": "operator",
       "notarizations": [],
       "status": "unreachable",
-      "error": "[Errno -5] No address associated with hostname"
+      "error": "[Errno -2] Name or service not known"
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

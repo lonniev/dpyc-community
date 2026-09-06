@@ -1,0 +1,16 @@
+{
+  "npub": "npub1yp8zlyv88cmxazp5zl307s97dv6vszgrcgncpq8ulc4x7n33w33q2ke5jz",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-09-06",
+  "display_name": "BeesKnees MCP",
+  "services": [
+    {
+      "name": "BeesKnees MCP",
+      "url": "https://beesknees-mcp.fastmcp.app/mcp",
+      "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+    }
+  ],
+  "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
+  "notes": "Registered via Authority-mediated operator registration protocol"
+}

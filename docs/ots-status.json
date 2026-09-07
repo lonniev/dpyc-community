@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-09-07T10:22:20.685953+00:00",
+  "collected_at": "2026-09-07T16:29:50.381295+00:00",
   "summary": {
     "operators": 14,
-    "total_notarizations": 12,
+    "total_notarizations": 13,
     "confirmed": 0,
-    "coverage_percent": 0
+    "coverage_percent": 14
   },
   "operators": [
     {
@@ -118,6 +118,14 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "24",
+          "root_hash": "00cb739a9be179741da7190fa9ac10cf085a79784ec485d1435f6e99eedd7351",
+          "leaf_count": 5,
+          "status": "submitted",
+          "created_at": "2026-09-07 12:40:25.946396+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "23",
           "root_hash": "a5ce5697fae9c6d5dfca4216c1c4cf3e7b29015ec0116c8084cb4f70d5c063ad",
           "leaf_count": 5,
@@ -188,17 +196,9 @@
           "status": "submitted",
           "created_at": "2026-08-09 20:16:00.412111+00",
           "receipt_count": 3
-        },
-        {
-          "notarization_id": "14",
-          "root_hash": "c4d4c45624d9907f9d22ad10002809e1ec5c4f1af056b66ca9484d4768d45a22",
-          "leaf_count": 5,
-          "status": "submitted",
-          "created_at": "2026-08-09 14:21:21.268528+00",
-          "receipt_count": 2
         }
       ],
-      "status": "stale",
+      "status": "submitted",
       "error": null
     },
     {
@@ -213,9 +213,18 @@
       "npub": "npub1yp8zlyv88cmxazp5zl307s97dv6vszgrcgncpq8ulc4x7n33w33q2ke5jz",
       "display_name": "BeesKnees MCP",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "1",
+          "root_hash": "77d3f334a97523f00d40952a0f80a65e74dcc5f816bff15ceb835e52d9ed7798",
+          "leaf_count": 36,
+          "status": "submitted",
+          "created_at": "2026-09-07 15:41:36.761715+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "submitted",
+      "error": null
     }
   ]
 }

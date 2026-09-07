@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-06T23:57:06.633238+00:00",
+  "collected_at": "2026-09-07T04:45:14.046671+00:00",
   "summary": {
     "operators": 14,
     "total_notarizations": 12,
@@ -53,8 +53,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",

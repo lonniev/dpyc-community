@@ -107,14 +107,30 @@ jobs:
             [ -z "$text" ] && return
             sha="$(printf '%s' "$text" | jq -r '.build_info.fastmcp_cloud_git_commit_sha // ""' 2>/dev/null)"
             ver="$(printf '%s' "$text" | jq -r '.version // ""' 2>/dev/null)"
-            printf '%s %s' "$sha" "$ver"
+            # Delimited, because the FIRST field is routinely empty: a service
+            # whose Horizon project injects no FASTMCP_CLOUD_GIT_COMMIT_SHA
+            # reports a version and no sha. Space-separated, `read` skips the
+            # leading blank and slides the VERSION into the sha variable — see
+            # the split below.
+            printf '%s|%s' "$sha" "$ver"
           }
 
           deadline=$(( $(date +%s) + POLL_MINUTES*60 ))
           deployed_sha=""; version=""; status_tool=""
           while :; do
             [ -z "$status_tool" ] && status_tool="$(discover_tool)"
-            read -r deployed_sha version <<< "$(probe "$status_tool")"
+            # Parameter expansion, NOT `read`. With `read -r a b` and a
+            # space-separated pair, an empty sha produced " 0.1.2": the leading
+            # blank is skipped as IFS whitespace, so `a` became the version and
+            # `b` became empty. That inverted the "healthy but reports no sha"
+            # guard below — it tested `-n version -a -z sha` and got the exact
+            # opposite — so every such service fell through to "Deploy did not
+            # land: serving 0.1.2, expected <sha>" and had an agent/fix issue
+            # opened on every single merge.
+            probed="$(probe "$status_tool")"
+            deployed_sha="${probed%%|*}"
+            version="${probed#*|}"
+            [ "$probed" = "$version" ] && version=""   # probe returned nothing at all
             echo "  probe -> sha='${deployed_sha:0:12}' version='${version}'"
             if [ "$deployable" = "0" ] && [ -n "$version" ]; then
               break  # non-deployable change + service healthy = done

@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-09-08T04:40:08.436324+00:00",
+  "collected_at": "2026-09-08T09:44:19.923184+00:00",
   "summary": {
     "operators": 14,
-    "total_notarizations": 9,
+    "total_notarizations": 14,
     "confirmed": 0,
-    "coverage_percent": 7
+    "coverage_percent": 14
   },
   "operators": [
     {
@@ -189,9 +189,50 @@
       "npub": "npub1yp8zlyv88cmxazp5zl307s97dv6vszgrcgncpq8ulc4x7n33w33q2ke5jz",
       "display_name": "BeesKnees MCP",
       "role": "operator",
-      "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "notarizations": [
+        {
+          "notarization_id": "5",
+          "root_hash": "ed9e76d7d8c072c1b2cc59eb626e74812fe453aacff35d72351f6e6384c3a0d5",
+          "leaf_count": 216,
+          "status": "submitted",
+          "created_at": "2026-09-08 07:52:05.100379+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "4",
+          "root_hash": "3bc66f03eff5d697cac9bc151d059b285f0126b7503662f8da84f3bd4429f4ad",
+          "leaf_count": 193,
+          "status": "submitted",
+          "created_at": "2026-09-08 05:40:12.188392+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "3",
+          "root_hash": "9d253b9ed74d32d3a4ec615af29c764d843d5b5b892b7d81230a8532fe863a20",
+          "leaf_count": 179,
+          "status": "submitted",
+          "created_at": "2026-09-08 04:20:38.754086+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "2",
+          "root_hash": "24a4926135f0a308b252167b6932080b20870fca15328b1cb6fc5da09746bfdb",
+          "leaf_count": 36,
+          "status": "submitted",
+          "created_at": "2026-09-07 17:54:45.097079+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1",
+          "root_hash": "77d3f334a97523f00d40952a0f80a65e74dcc5f816bff15ceb835e52d9ed7798",
+          "leaf_count": 36,
+          "status": "submitted",
+          "created_at": "2026-09-07 15:41:36.761715+00",
+          "receipt_count": 4
+        }
+      ],
+      "status": "submitted",
+      "error": null
     }
   ]
 }

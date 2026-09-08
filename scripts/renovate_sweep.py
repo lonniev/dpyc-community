@@ -57,7 +57,12 @@ BUMP = re.compile(r"`[^`0-9]*(\d+)\.(\d+)[^`]*`\s*(?:→|->)\s*`[^`0-9]*(\d+)\.(
 
 
 def gh(*args: str) -> str:
-    out = subprocess.run(["gh", *args], capture_output=True, text=True)
+    # `check=False` on purpose, and stated rather than defaulted: a `gh` call
+    # that fails is an ordinary answer here — an unreachable repo, a PR that
+    # vanished, a merge the server refused — and every caller reads the empty
+    # string as "no". Raising would abandon the rest of the estate over one
+    # repo, which is the opposite of what a sweep is for.
+    out = subprocess.run(["gh", *args], capture_output=True, text=True, check=False)
     if out.returncode != 0:
         return ""
     return out.stdout
@@ -71,7 +76,7 @@ def estate(root: Path) -> list[str]:
             continue
         url = subprocess.run(
             ["git", "-C", str(d), "remote", "get-url", "origin"],
-            capture_output=True, text=True,
+            capture_output=True, text=True, check=False,
         ).stdout
         if f"{OWNER}/" in url:
             found.append(d.name)

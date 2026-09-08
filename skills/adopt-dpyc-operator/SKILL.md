@@ -156,6 +156,33 @@ gh run list --repo <owner>/<repo> --limit 5   # agentic runs green, not red
 gh run rerun <deploy-verify-run-id> --repo <owner>/<repo> --failed
 ```
 
+**Then check the service reports its own commit sha**, because `deploy-verify` is
+worthless without it and the failure is silent:
+
+```bash
+curl -s -X POST https://<host>/mcp \
+  -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"<slug>_service_status","arguments":{}}}' \
+  | sed -n 's/^data: //p' | jq '.result.structuredContent.build_info'
+```
+
+Expect three keys:
+
+```json
+{ "fastmcp_cloud_url": "…", "fastmcp_cloud_git_commit_sha": "…", "fastmcp_cloud_git_repo": "…" }
+```
+
+Only `fastmcp_cloud_url` means Horizon is injecting env for the project but not the git
+pair — the deployment is not associated with the GitHub repo the way a repo-linked one
+is. Nothing in the repo causes this: `fastmcp.json`, the SDK version and `deployment.env`
+are identical across services that do and do not report it. Fix it in the Horizon
+project's source settings, not here.
+
+The consequence if you skip this: `deploy-verify` cannot confirm any deploy for that
+service, ever. It will report "healthy, cannot confirm the exact live commit" on every
+merge — which is honest and harmless, but you lose the check the whole workflow exists
+for, and a genuinely stale wheel will look exactly like a healthy one.
+
 The real proof is the next PR: opened by the factory App, checks woken by a human-credential
 commit, approved by you, landed by auto-merge. If any of those four steps needs a hand, the
 adoption is incomplete — see `factory/README.md` for the PR procedure itself.
@@ -175,6 +202,13 @@ adoption is incomplete — see `factory/README.md` for the PR procedure itself.
   locally; only a deploy, checking out what git actually has, finds the app has no lib, and
   it reports that as a wall of unrelated-looking type errors rather than as an absence. Any
   operator that grows a frontend needs `!src/lib/` in `frontend/.gitignore`.
+- **A service that never reports a commit sha.** `build_info` carries only
+  `fastmcp_cloud_url` and `deploy-verify` can never confirm a deploy. It is a Horizon
+  project setting, not anything in the repo — beesknees-mcp was the only one of six
+  services in this state, with a byte-identical `fastmcp.json` to the five that worked.
+  Until lonniev/dpyc-community#221 this ALSO produced a false "Deploy did not land"
+  issue on every merge, because the probe's `"<sha> <version>"` string became `" 0.1.2"`
+  and `read` slid the version into the sha variable.
 - **Provisioning the secrets and stopping there.** The App still has no access to the repo,
   so every agentic workflow dies at its first step with a 404 that names an *apps* endpoint
   rather than a secret. See step 6 — and do not re-set the secrets in response; that 404 is

@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-09T18:39:22.873947+00:00",
+  "collected_at": "2026-09-09T21:44:16.678157+00:00",
   "summary": {
     "operators": 14,
     "total_notarizations": 24,
@@ -36,8 +36,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -231,6 +231,22 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "23",
+          "root_hash": "a08f4f1fd6ae90f9f4cb99e06ee1a3edb5f64ba7f1f7861c0dea17ee8a42953e",
+          "leaf_count": 1051,
+          "status": "submitted",
+          "created_at": "2026-09-09 21:34:17.397767+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "22",
+          "root_hash": "6a6e667fa0ccfc96509da2362b97c35fc49f1785ed4eadd259588b77bb3835d8",
+          "leaf_count": 1030,
+          "status": "submitted",
+          "created_at": "2026-09-09 20:32:23.284949+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "21",
           "root_hash": "492ba06879d5e3a0d00b702e8f4a6c10d17ed806267e6392ea5ae385c02d8f21",
           "leaf_count": 990,
@@ -292,22 +308,6 @@
           "leaf_count": 740,
           "status": "submitted",
           "created_at": "2026-09-09 07:38:34.188418+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "12",
-          "root_hash": "6acc9b410ff86874514ebb47280aa4aae7c2081844b1fb29e256a182477fb914",
-          "leaf_count": 720,
-          "status": "submitted",
-          "created_at": "2026-09-09 06:36:34.534944+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "11",
-          "root_hash": "a88bfbc0b625573146bbaaf5d7b9ba51c0fb2d6bff0b7d06dc31fc858a5ff83a",
-          "leaf_count": 695,
-          "status": "submitted",
-          "created_at": "2026-09-09 05:22:28.22104+00",
           "receipt_count": 4
         }
       ],

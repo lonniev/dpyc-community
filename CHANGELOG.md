@@ -3,8 +3,6 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
-
 ## [1.4.0] — 2026-08-26
 
 ### Added — one identity for a code symbol, fleet-wide
@@ -259,4 +257,3 @@ trigger.
 - Rotate Prime Authority npub after lost private key
 - Found the DPYC Social Contract — membership registry, governance, and CI
 - Initial commit
-

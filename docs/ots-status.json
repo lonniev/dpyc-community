@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-09T00:17:49.152760+00:00",
+  "collected_at": "2026-09-09T04:51:36.554899+00:00",
   "summary": {
     "operators": 14,
-    "total_notarizations": 15,
+    "total_notarizations": 16,
     "confirmed": 0,
     "coverage_percent": 14
   },
@@ -165,6 +165,14 @@
       "display_name": "BeesKnees MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "10",
+          "root_hash": "f3b19f8edaf6cd16e111240227f7dda1c4320eb3726002d9d20407795357b9bc",
+          "leaf_count": 675,
+          "status": "submitted",
+          "created_at": "2026-09-09 04:21:49.699523+00",
+          "receipt_count": 4
+        },
         {
           "notarization_id": "9",
           "root_hash": "6bcf0861ba8b20324c757bcd2409f0e384025b584cd6712df789f1642e507042",

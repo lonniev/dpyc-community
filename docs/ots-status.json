@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-09T21:44:16.678157+00:00",
+  "collected_at": "2026-09-10T00:17:20.283335+00:00",
   "summary": {
     "operators": 14,
-    "total_notarizations": 24,
+    "total_notarizations": 23,
     "confirmed": 0,
     "coverage_percent": 14
   },
@@ -106,14 +106,6 @@
           "leaf_count": 4,
           "status": "no_receipts",
           "created_at": "2026-08-18 10:39:51.266184+00",
-          "receipt_count": 0
-        },
-        {
-          "notarization_id": "36",
-          "root_hash": "9bcc00d3e355666ce214a34050ce5f8f6ba6255e89fe8c9e0ee81fa1a94a12fd",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-11 08:19:05.749335+00",
           "receipt_count": 0
         }
       ],

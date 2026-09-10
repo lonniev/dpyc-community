@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-10T00:17:20.283335+00:00",
+  "collected_at": "2026-09-10T04:53:04.165532+00:00",
   "summary": {
     "operators": 14,
-    "total_notarizations": 23,
+    "total_notarizations": 16,
     "confirmed": 0,
     "coverage_percent": 14
   },
@@ -36,8 +36,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -51,66 +51,9 @@
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "43",
-          "root_hash": "32a57f79cdd07f850aa0f4301b4374ecc1a2dbd32b458ad21113fcf97e030b06",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-24 00:45:42.118593+00",
-          "receipt_count": 0
-        },
-        {
-          "notarization_id": "42",
-          "root_hash": "2478b8b214abf0334a1e5d7ac00aa60771cda1eacc2321eac30f9a6a9a591034",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-23 06:43:23.642962+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "41",
-          "root_hash": "1232aaca579c76e0526a0ec0f43aaefdb729c8858239eb4aff4a1ea075e7b307",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-23 02:40:26.201638+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "40",
-          "root_hash": "2da27f851252144d483803405c38c60e0cb43eb25e4a610ac052158855daad56",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-20 17:38:31.985753+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "39",
-          "root_hash": "74db353c06aa8b9e0dc4fe332be968561047ec5a10925784145e91909fa57e2b",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-20 01:58:20.65596+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "38",
-          "root_hash": "35588cc7339a20007b31a49a453b1e681cb7b7ab9a305bde5e4e91fc86f5570b",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-08-19 03:35:09.081887+00",
-          "receipt_count": 1
-        },
-        {
-          "notarization_id": "37",
-          "root_hash": "34d366c21ce59309e8d2bbf99efccfd6798fb9a4229452e39747ca117c0a18f1",
-          "leaf_count": 4,
-          "status": "no_receipts",
-          "created_at": "2026-08-18 10:39:51.266184+00",
-          "receipt_count": 0
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
@@ -223,6 +166,22 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "25",
+          "root_hash": "58e56e3c63e37afe63f098da68d68d492a77242ddbc397a10edcd0d63b66c2ea",
+          "leaf_count": 1262,
+          "status": "submitted",
+          "created_at": "2026-09-10 04:21:48.92603+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "24",
+          "root_hash": "3820c01743914cc83852bdea8541ef1774e5ed0b67b6e14e437c5ddf7736e310",
+          "leaf_count": 1108,
+          "status": "submitted",
+          "created_at": "2026-09-10 00:25:17.318798+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "23",
           "root_hash": "a08f4f1fd6ae90f9f4cb99e06ee1a3edb5f64ba7f1f7861c0dea17ee8a42953e",
           "leaf_count": 1051,
@@ -284,22 +243,6 @@
           "leaf_count": 819,
           "status": "submitted",
           "created_at": "2026-09-09 11:34:17.230413+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "15",
-          "root_hash": "deee06f4295cc0cb1f7aa445e1d839919b1670bbd04a7ffa206f6c6db4401be4",
-          "leaf_count": 771,
-          "status": "submitted",
-          "created_at": "2026-09-09 09:11:43.254997+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "13",
-          "root_hash": "b5bda56fb4de9350e3e117d786e44b37da57de4a16741a951dd11afaef1d179c",
-          "leaf_count": 740,
-          "status": "submitted",
-          "created_at": "2026-09-09 07:38:34.188418+00",
           "receipt_count": 4
         }
       ],

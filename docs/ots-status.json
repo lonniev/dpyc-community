@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-13T19:29:24.638249+00:00",
+  "collected_at": "2026-09-13T22:26:40.511593+00:00",
   "summary": {
     "operators": 14,
     "total_notarizations": 23,
@@ -36,8 +36,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -223,6 +223,22 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "93",
+          "root_hash": "b0ab3b9e555284d1a4f99e2b9ac81a7ce6c18404698c78f0eeb2baff385be638",
+          "leaf_count": 3157,
+          "status": "submitted",
+          "created_at": "2026-09-13 21:37:52.50792+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "92",
+          "root_hash": "5cdb9cc69ce5dbc9854fa37865b7b427ff55f2dedc587757448cf8a69e48ba19",
+          "leaf_count": 3122,
+          "status": "submitted",
+          "created_at": "2026-09-13 19:50:43.663533+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "91",
           "root_hash": "e3872e843131fa661965927d4fdcc93e7b6dd7e0e5502cd9a975a6415995bd2f",
           "leaf_count": 3100,
@@ -285,22 +301,6 @@
           "status": "submitted",
           "created_at": "2026-09-13 08:48:55.760903+00",
           "receipt_count": 3
-        },
-        {
-          "notarization_id": "83",
-          "root_hash": "5fc136a2160de58759173d5dc7ab9a06f756c99f79ce5d2fe53fdb14413be6b8",
-          "leaf_count": 2872,
-          "status": "submitted",
-          "created_at": "2026-09-13 07:25:02.330165+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "82",
-          "root_hash": "d0e96e37f02691347e3da8964c2eef52c712ebfcb2cb30caefdeb8730be62384",
-          "leaf_count": 2851,
-          "status": "submitted",
-          "created_at": "2026-09-13 06:23:33.855651+00",
-          "receipt_count": 4
         }
       ],
       "status": "submitted",

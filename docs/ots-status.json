@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-13T22:26:40.511593+00:00",
+  "collected_at": "2026-09-14T01:06:45.440074+00:00",
   "summary": {
     "operators": 14,
     "total_notarizations": 23,
@@ -36,8 +36,8 @@
       "display_name": "GoodEarth MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
@@ -133,8 +133,8 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
@@ -223,6 +223,14 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "94",
+          "root_hash": "d835bfcd3ca68a7e7e5acdbc76e0f6827cd996dbfcec0107b716d6e75ead14bc",
+          "leaf_count": 3210,
+          "status": "submitted",
+          "created_at": "2026-09-14 00:17:09.76315+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "93",
           "root_hash": "b0ab3b9e555284d1a4f99e2b9ac81a7ce6c18404698c78f0eeb2baff385be638",
           "leaf_count": 3157,
@@ -292,14 +300,6 @@
           "leaf_count": 2929,
           "status": "submitted",
           "created_at": "2026-09-13 10:17:41.444458+00",
-          "receipt_count": 3
-        },
-        {
-          "notarization_id": "84",
-          "root_hash": "f24265d7fe9bf0cced84c652b1e4d54fd08cee25f64ef1f547595e256578d166",
-          "leaf_count": 2900,
-          "status": "submitted",
-          "created_at": "2026-09-13 08:48:55.760903+00",
           "receipt_count": 3
         }
       ],

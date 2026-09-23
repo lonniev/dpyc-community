@@ -1,0 +1,75 @@
+# DPYC front-end deploy (reusable) — build `frontend/` and publish it to Cloudflare Pages.
+#
+# Called by a thin per-repo `deploy-frontend.yml` on a push to main that touches
+# `frontend/**`. Every operator front end in the fleet carried the same forty lines with
+# only the Pages project name changed, so the steps live here once:
+#
+#   jobs:
+#     deploy:
+#       uses: lonniev/dpyc-community/.github/workflows/deploy-frontend.yml@main
+#       with:
+#         pages-project: chartremotely-app
+#       secrets: inherit
+#
+# The build is the same command CI runs (`npm run build`, which runs the site's tests
+# first), with VITE_MCP_URL=/mcp so the page talks to its own `functions/mcp.js` proxy.
+# A repo variable CLOUDFLARE_PAGES_PROJECT, when set, wins over the input — the same
+# escape hatch the copies had, for a project renamed in the Cloudflare dashboard.
+name: DPYC front-end deploy (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      pages-project:
+        description: Cloudflare Pages project name, e.g. chartremotely-app
+        required: true
+        type: string
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_MCP_URL: /mcp
+
+      # A new site's first deploy makes its own Pages project. Idempotent: creating
+      # a project that already exists fails, and that failure is the no-op we want.
+      - name: Ensure Pages project exists
+        working-directory: frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || inputs.pages-project }}
+        run: npx --yes wrangler@4 pages project create "$PROJECT" --production-branch main || true
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || inputs.pages-project }}
+          workingDirectory: frontend

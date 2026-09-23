@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-09-06T12:11:24Z",
+  "updated_at": "2026-09-23T02:34:16Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -130,6 +130,22 @@
       ],
       "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
       "notes": "Registered via Authority-mediated operator registration protocol. Spin/WASI implementation (tollbooth-wasmcp host); same operator source as tollbooth-sample. URL is the Tailscale funnel during development; intended production endpoint is https://fermyon.tollbooth-dpyc.com/mcp once the Akamai deploy is live."
+    },
+    {
+      "npub": "npub1jgy3m3wg0xu2vkfvff0stt9vae789qfd9k03wzqhl5aakasmy2dqw7w48f",
+      "role": "operator",
+      "status": "active",
+      "member_since": "2026-09-23",
+      "display_name": "ChartRemotely MCP",
+      "services": [
+        {
+          "name": "ChartRemotely MCP",
+          "url": "https://chartremotely-mcp.fastmcp.app/mcp",
+          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+        }
+      ],
+      "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
+      "notes": "Registered via Authority-mediated operator registration protocol"
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",

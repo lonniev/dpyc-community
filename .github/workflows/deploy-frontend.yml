@@ -6,6 +6,9 @@
 #
 #   jobs:
 #     deploy:
+#       permissions:            # required: a called workflow gets only what its caller
+#         contents: read        # grants, and a repo whose default token is read-only
+#         deployments: write    # fails at startup without these two lines
 #       uses: lonniev/dpyc-community/.github/workflows/deploy-frontend.yml@main
 #       with:
 #         pages-project: chartremotely-app

@@ -1,8 +1,8 @@
 {
-  "collected_at": "2026-09-24T19:12:19.251435+00:00",
+  "collected_at": "2026-09-24T22:26:45.203537+00:00",
   "summary": {
     "operators": 15,
-    "total_notarizations": 16,
+    "total_notarizations": 15,
     "confirmed": 0,
     "coverage_percent": 7
   },
@@ -68,18 +68,9 @@
       "npub": "npub19gqrkwsssnz5dl6mj54memy65g4lq7qu7efu532nma3p8c6yzugse3f7a2",
       "display_name": "Excalibur MCP",
       "role": "operator",
-      "notarizations": [
-        {
-          "notarization_id": "44",
-          "root_hash": "037cca0bf516b6fd258cf21bc1f3f734cd6ad70c5c72557abb0b07d41d8466d9",
-          "leaf_count": 4,
-          "status": "submitted",
-          "created_at": "2026-09-14 05:37:02.908594+00",
-          "receipt_count": 1
-        }
-      ],
-      "status": "stale",
-      "error": null
+      "notarizations": [],
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
@@ -94,16 +85,16 @@
       "display_name": "ChartRemotely MCP",
       "role": "operator",
       "notarizations": [],
-      "status": "never",
-      "error": null
+      "status": "unreachable",
+      "error": ""
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
       "display_name": "optionality-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
@@ -167,14 +158,38 @@
       "display_name": "thebrain-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1yp8zlyv88cmxazp5zl307s97dv6vszgrcgncpq8ulc4x7n33w33q2ke5jz",
       "display_name": "BeesKnees MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "271",
+          "root_hash": "aded885dfd5b3b182391009a2ebd38216fc74de0dee2923f5176d46e695fcca3",
+          "leaf_count": 8534,
+          "status": "submitted",
+          "created_at": "2026-09-24 22:26:29.074483+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "270",
+          "root_hash": "27f5643700a7f50449827f032db9fccd854df3bcf60764770a79a84d6f21650f",
+          "leaf_count": 8514,
+          "status": "submitted",
+          "created_at": "2026-09-24 21:24:31.581821+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "269",
+          "root_hash": "658428798beaf48bf31e7ffb9837a61ed2565a4c737bf9f643219fc77febc5db",
+          "leaf_count": 8470,
+          "status": "submitted",
+          "created_at": "2026-09-24 19:13:58.953396+00",
+          "receipt_count": 4
+        },
         {
           "notarization_id": "267",
           "root_hash": "b5ff157895d6592acb8705488ff1029c837baa9be9868556310abb41c9b04c84",
@@ -229,30 +244,6 @@
           "leaf_count": 8260,
           "status": "submitted",
           "created_at": "2026-09-24 08:43:37.499149+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "260",
-          "root_hash": "3900492abf09b677db87011682ac2b52878d4cca36a3957a440200c8a40356e5",
-          "leaf_count": 8238,
-          "status": "submitted",
-          "created_at": "2026-09-24 07:41:38.40738+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "259",
-          "root_hash": "68d3725df3f273fe2aa39de3b9b3049c52919313eea22e8a8e1c30566590b4f2",
-          "leaf_count": 8206,
-          "status": "submitted",
-          "created_at": "2026-09-24 06:03:08.688089+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "258",
-          "root_hash": "2ae8dc60ba297bbb1472c4b2c6a32193ec57dbda8a39841ba945dd893edaa13b",
-          "leaf_count": 8168,
-          "status": "submitted",
-          "created_at": "2026-09-24 04:11:53.332075+00",
           "receipt_count": 4
         }
       ],

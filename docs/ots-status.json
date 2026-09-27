@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-09-27T18:25:13.975000+00:00",
+  "collected_at": "2026-09-27T22:12:32.243614+00:00",
   "summary": {
     "operators": 15,
     "total_notarizations": 20,
@@ -135,8 +135,8 @@
       "display_name": "taxsort-mcp",
       "role": "operator",
       "notarizations": [],
-      "status": "unreachable",
-      "error": ""
+      "status": "never",
+      "error": null
     },
     {
       "npub": "npub1ue5pfah2c3z65h2kpkzxheajfh3y53l6rq9zhnth8v80uq5tressz0hpey",
@@ -210,6 +210,22 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "314",
+          "root_hash": "a5d0eb3717a5a5d60db443a278e115acf7bf54ba0e6fde83e81d9428168ada76",
+          "leaf_count": 10009,
+          "status": "submitted",
+          "created_at": "2026-09-27 21:29:28.672393+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "313",
+          "root_hash": "080870cdf55240b4c419b4fe8dbeca4b49c047cd8b04aa1403749f3459baa573",
+          "leaf_count": 9966,
+          "status": "submitted",
+          "created_at": "2026-09-27 19:19:50.479933+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "312",
           "root_hash": "dda6982c090b54669d9aafb9552b9e037b7f700899a7d42a2b1bc509eb375537",
           "leaf_count": 9876,
@@ -271,22 +287,6 @@
           "leaf_count": 9663,
           "status": "submitted",
           "created_at": "2026-09-27 06:22:06.583492+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "304",
-          "root_hash": "f5a0a2e64e20514d9e17a423e346e31aa4b8e41d5def2e6be41b09d3425a4382",
-          "leaf_count": 9639,
-          "status": "submitted",
-          "created_at": "2026-09-27 05:12:04.822087+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "303",
-          "root_hash": "20e651b221bc506e6e5c72e5b305def91d6ad34a556e8c0a3ddc311a213dc2c2",
-          "leaf_count": 9618,
-          "status": "submitted",
-          "created_at": "2026-09-27 04:08:27.924077+00",
           "receipt_count": 4
         }
       ],

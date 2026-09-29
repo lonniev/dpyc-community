@@ -113,6 +113,9 @@ The same element carries the same numeral in every figure where it appears.
 | 628 | OAuth2 authorization flow (patron alternative) | 5 |
 | 630 | Operator credential template | 4, 5 |
 | 632 | Patron credential template | 5 |
+| 634 | npub-ownership challenge DM (agentic caller; Rev. 2) | 5 |
+| 636 | Proof grant (Operator-signed kind 30080 over verified patron signature; Rev. 2) | 5 |
+| 638 | Proxy delegation (keyed agent actor binding; Rev. 2) | 5 |
 
 ## Governance (700-series)
 

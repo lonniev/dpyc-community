@@ -106,8 +106,8 @@ one in production:
    for up to thirty days; the patron's signed reply is not retained. The nonce
    is drawn from a 51,840-value phrase space and was designed and documented as
    a non-secret matching token. **This is an implementation defect, not a
-   design element**, and is being corrected (tollbooth-dpyc issue filed
-   2026-09-29 by the field-report path). It must not be carried into the
+   design element**, and is being corrected (field report lonniev/goodearth-mcp#199, filed 2026-09-29,
+   target lonniev/tollbooth-dpyc). It must not be carried into the
    non-provisional as an embodiment.
 
 **Corrected design (to be carried forward as the primary embodiment):**

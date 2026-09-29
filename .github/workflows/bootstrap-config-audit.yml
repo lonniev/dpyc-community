@@ -1,0 +1,29 @@
+name: Bootstrap Config Audit
+
+# Every Authority republishes any operator bootstrap config held by fewer than
+# three relays or sent more than six days ago, in the foreground. A red run
+# means an Authority could not be audited or an operator is still thin.
+on:
+  schedule:
+    - cron: '23 6 * * 1'  # Mondays 06:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install fastmcp
+
+      - name: Audit every Authority
+        run: python scripts/audit-bootstrap-configs.py

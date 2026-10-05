@@ -42,7 +42,7 @@ jobs:
       # both the recovery sweep and writing the hub tracking issue.
       - name: Mint fleet-scoped App token
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
@@ -54,7 +54,7 @@ jobs:
       # Needed by the healthy branch to reach factory/actions/funding-sentinel/stamp_cypher.py,
       # which clears each FundingBlock in the graph in lockstep with its awaiting-funds label.
       - name: Check out the factory (for the graph-clear helper)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Probe the shared key
         id: probe

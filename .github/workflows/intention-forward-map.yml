@@ -85,13 +85,13 @@ jobs:
       #
       # Native runs (schedule / dispatch) keep taking the current sha, so a branch can
       # still be tested; an external caller pins main, which is the logic on record.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: lonniev/dpyc-community
           ref: >-
             ${{ github.repository == 'lonniev/dpyc-community' && github.sha || 'main' }}
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

@@ -49,7 +49,7 @@ jobs:
     steps:
       - name: Mint the read-only clone token (owner-wide)
         id: read_token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Mint the issues-only filing token (owner-wide)
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}

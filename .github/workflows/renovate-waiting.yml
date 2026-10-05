@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Mint issues-only account-wide token
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}

@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Mint token (issues + PRs, this repo)
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
@@ -43,7 +43,7 @@ jobs:
 
       # stamp_cypher.py lives in dpyc-community, not the caller repo — fetch it.
       - name: Fetch the retire helper
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: lonniev/dpyc-community
           path: _factory

@@ -12,6 +12,7 @@ the text.
 """
 
 import html
+import json
 import re
 import sys
 from pathlib import Path
@@ -19,6 +20,17 @@ from pathlib import Path
 # Sources sit beside this script, so the build runs from any working directory.
 SRC = Path(__file__).resolve().parent
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else SRC / "factory-model.html"
+
+
+def locked_mermaid_version() -> str:
+    """The mermaid the lockfile resolves, so the page imports what check.mjs
+    rendered. A floating ``mermaid@11`` let the CDN hand readers a build CI had
+    never seen; the pin and the check now move together, by Renovate."""
+    lock = json.loads((SRC / "package-lock.json").read_text())
+    return lock["packages"]["node_modules/mermaid"]["version"]
+
+
+MERMAID_VERSION = locked_mermaid_version()
 
 
 # --- inline markdown -------------------------------------------------------
@@ -350,7 +362,7 @@ HTML = f"""<title>DPYC Software Factory — architecture model</title>
       if (!pending.length) return;
       try {{
         const {{ default: mermaid }} =
-          await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+          await import('https://cdn.jsdelivr.net/npm/mermaid@{MERMAID_VERSION}/dist/mermaid.esm.min.mjs');
         mermaid.initialize({{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }});
         await mermaid.run({{ querySelector: 'pre.mermaid' }});
       }} catch (e) {{

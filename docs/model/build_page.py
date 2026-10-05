@@ -12,8 +12,8 @@ the text.
 """
 
 import html
-import re
 import json
+import re
 import sys
 from pathlib import Path
 

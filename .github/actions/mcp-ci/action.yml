@@ -40,7 +40,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
-    - uses: astral-sh/setup-uv@v10.0.0
+    - uses: astral-sh/setup-uv@v10.2.0
 
     # Poll the SIMPLE index, because that is what pip and uv resolve from.
     #

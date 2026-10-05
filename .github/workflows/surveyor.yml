@@ -58,13 +58,13 @@ jobs:
   survey:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Investigation token — every repo the App is installed on, but contents:READ ONLY.
       # If leaked it can only read code (never write anything), and App tokens expire in ~1h.
       - name: Mint the read-only clone token (owner-wide)
         id: read_token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}
@@ -88,7 +88,7 @@ jobs:
       # open issues in any fleet repo and touch nothing else. This is the agent's GH_TOKEN.
       - name: Mint the issues-only filing token (owner-wide)
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}

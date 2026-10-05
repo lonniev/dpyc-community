@@ -54,7 +54,7 @@ jobs:
     outputs:
       runner: ${{ steps.stack.outputs.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Detect toolchain and pick the runner OS
         id: stack
         run: |
@@ -78,20 +78,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-label agent/working || true
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       # Guarantee `python` + pip exist on BOTH ubuntu and macOS runners — the keyring
       # install and the graph MCP's `command: python` below both invoke bare `python`,
       # which macOS runners do not provide by default.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
       - name: Mint scoped App token
         id: token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DPYC_BOT_APP_ID }}
           private-key: ${{ secrets.DPYC_BOT_PRIVATE_KEY }}

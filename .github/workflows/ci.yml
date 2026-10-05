@@ -16,10 +16,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -44,7 +44,7 @@ jobs:
   model:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -80,7 +80,7 @@ jobs:
             echo "no workflow files touched — skipping the workflow-graph check."
           fi
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: steps.touched.outputs.any == 'true' || steps.touched.outputs.flows == 'true'
         with:
           python-version: '3.12'
@@ -114,10 +114,10 @@ jobs:
           fi
           echo "Generated page matches its sources."
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.touched.outputs.any == 'true'
         with:
-          node-version: '22'
+          node-version: '24'
           cache: npm
           cache-dependency-path: docs/model/package-lock.json
 

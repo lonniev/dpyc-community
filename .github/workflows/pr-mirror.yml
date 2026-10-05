@@ -22,7 +22,7 @@ jobs:
     steps:
       # mirror_pr.py lives in dpyc-community, not the caller repo — fetch it.
       - name: Fetch the mirror helper
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: lonniev/dpyc-community
           path: _factory

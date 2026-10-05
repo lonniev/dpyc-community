@@ -2,12 +2,13 @@
   "name": "dpyc-factory-model-checks",
   "private": true,
   "type": "module",
-  "description": "Diagram checks for docs/model — parses and renders every mermaid block in diagrams.md.",
+  "description": "Diagram checks for docs/model \u2014 parses and renders every mermaid block in diagrams.md in a real Chromium, with the locked mermaid.",
   "scripts": {
-    "check": "node check.mjs"
+    "check": "node check.mjs",
+    "browser": "playwright install chromium"
   },
   "devDependencies": {
-    "jsdom": "^24.0.0",
-    "mermaid": "^11.0.0"
+    "mermaid": "^11.17.2",
+    "playwright": "^1.56.0"
   }
 }

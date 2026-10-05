@@ -121,11 +121,15 @@ jobs:
           cache: npm
           cache-dependency-path: docs/model/package-lock.json
 
-      # Parses AND renders every mermaid block. Parsing alone is not enough — the two bugs
-      # this caught were both grammar-level, but a diagram can also die in layout.
+      # Parses AND renders every mermaid block, in a real Chromium with the locked mermaid.
+      # Parsing alone is not enough — the two bugs this caught were both grammar-level, but a
+      # diagram can also die in layout. jsdom used to stand in for the browser and lied once
+      # mermaid 11.17 landed (failed six diagrams Chrome drew fine); the browser is the only
+      # honest renderer, and the published page imports the same pinned build.
       - name: Diagrams parse and render
         if: steps.touched.outputs.any == 'true'
         working-directory: docs/model
         run: |
           npm ci
+          npx playwright install --with-deps chromium
           node check.mjs

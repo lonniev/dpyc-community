@@ -21,7 +21,7 @@ mermaid and all, if you only want the pictures.
 | [`diagrams.md`](./diagrams.md) | Six Mermaid renderings — tech stack, crew, issue lifecycle, PR lifecycle, funding rails, escalation sequence — plus the guard map as a table. |
 | [`factory-model.html`](./factory-model.html) | The two above, plus the model source, as one print-ready page. **Generated — never hand-edit.** |
 | `build_page.py`, `page.css` | The generator. `python3 build_page.py` rewrites `factory-model.html` from the sources beside it. |
-| `check.mjs`, `package.json` | Diagram checks. `npm install && node check.mjs` parses and renders every mermaid block; exits non-zero on failure. |
+| `check.mjs`, `package.json` | Diagram checks. `npm install && npx playwright install chromium && node check.mjs` parses and renders every mermaid block in a real Chromium with the locked mermaid; exits non-zero on failure. |
 | `check_states.py` | State-machine completeness. Asks which *ambient* events — those GitHub, the canary or a human can deliver at any moment — have no transition in a given state. Exits non-zero on any unexplained gap. |
 | `check_workflows.py` | Workflow-graph startability. Every reusable-workflow caller job uses only the keys GitHub permits, so no file silently fails to parse. Added after a stray `continue-on-error` took `deploy-verify` down fleet-wide; exits non-zero on any illegal key. |
 
@@ -167,9 +167,12 @@ found six gaps, and acting on them changed the *workflows*, not just the model:
 The other three were model drift from workflows that already handled the case, and the
 check now holds the model to them.
 
-**The diagrams** all parse and render under Mermaid's own engine —
+**The diagrams** all parse and render under Mermaid's own engine, in a real Chromium —
 `check.mjs` in this directory runs `mermaid.parse()` then `mermaid.render()` over every
-fenced block in `diagrams.md`. Two constructs to avoid in a **sequence** diagram, both of which
+fenced block in `diagrams.md` with the mermaid the lockfile pins, and `build_page.py` pins the
+page's CDN import to that same version, so readers get the build CI rendered. (A jsdom
+stand-in used to do the rendering; it failed six diagrams Chrome drew fine the day mermaid
+11.17 landed, which is how it stopped being trusted.) Two constructs to avoid in a **sequence** diagram, both of which
 bit this document: a literal `--` in message text is lexed as the start of an arrow token,
 and a `;` anywhere in a note ends the statement early.
 

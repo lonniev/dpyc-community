@@ -38,9 +38,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 #: repo that invented a heading still wrote something real under it.
 KINDS = ("added", "changed", "deprecated", "removed", "fixed", "security", "notes")
 
-POINTER = ("Unreleased changes live in `changelog.d/`, one file per change — see the "
-           "README there for why, and `scripts/changelog.py` for what folds them in at "
-           "release time.")
+POINTER = ("Changes not yet released live in `changelog.d/`, one file per change — see "
+           "the README there for why, and `scripts/changelog.py` for what folds them in "
+           "at release time.")
 
 
 def split_unreleased(text: str) -> tuple[str, dict[str, str]]:

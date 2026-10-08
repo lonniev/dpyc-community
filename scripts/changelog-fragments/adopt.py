@@ -71,8 +71,8 @@ def split_unreleased(text: str) -> tuple[str, dict[str, str]]:
         # A repo that never used `###` headings wrote its entries as bare bullets
         # straight under `## [Unreleased]`; those are changes, not notes about
         # the release. Only prose that is not a list is `notes`.
-        bulleted = all(l.startswith(("- ", "* ")) or l.startswith("  ") or not l.strip()
-                       for l in preamble.splitlines())
+        bulleted = all(line.startswith(("- ", "* ", "  ")) or not line.strip()
+                       for line in preamble.splitlines())
         groups.setdefault("changed" if bulleted else "notes", []).append(preamble)
     for heading, chunk in zip(parts[1::2], parts[2::2], strict=True):
         kind = heading.strip().lower().split()[0].strip(":")

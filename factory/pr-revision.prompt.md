@@ -64,7 +64,10 @@ STEPS:
    but re-applying a label it already carries emits no event and would leave the PR
    silently passed-but-unmerged. So remove the previous verdict FIRST:
      gh pr edit ${PR_NUMBER} --remove-label qa/pass --remove-label qa/flag
-   Then commit and push to the SAME branch this PR is already on:
+   If the revision changes what a reader would notice, say so in the PR's changelog
+   fragment under changelog.d/ (add one if the PR has none). NEVER edit CHANGELOG.md —
+   the Changelog check fails the PR. Then commit and push to the SAME branch this PR is
+   already on:
      git add -A && git commit -m "<what you changed, and that it answers the review>"
      git push
    Never force-push, never rebase, never merge, and never submit a review of your

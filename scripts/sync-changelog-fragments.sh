@@ -21,9 +21,12 @@
 # OWNER=..., or pass explicit repos as args.
 #
 # Each repo is done in a throwaway clone; your working checkouts are never touched. A repo
-# with no tests/ is reported "not applicable" and skipped — the guard that stops a release
-# shipping with its fragments unfolded is a pytest, and would be inert there. A repo with no
-# pyproject.toml still adopts; that one guard skips itself and says why. No pyproject.toml is fine; that one guard skips.
+# with no tests/ still adopts (adopt.py says which guard it goes without); a repo with no
+# pyproject.toml is fine too.
+#
+# The PR is opened AS THE FACTORY APP (factory/README.md → "Opening a PR you did not
+# author"), so the owner can approve it; the branch is pushed with your credential, and one
+# more empty commit wakes CI, because an App-token event dispatches no workflows.
 #
 # Set MERGE=admin to also squash-merge each PR. Default leaves them open: this rewrites
 # CHANGELOG.md, and a changelog is somebody's account of what they did to the money.
@@ -86,11 +89,7 @@ for r in "${repos[@]}"; do
     "https://x-access-token:$(gh auth token)@github.com/$full.git"
 
   out="$(python3 "$ADOPT" "$work")" || {
-    case "$?" in
-      3) echo "-- $full: skip (not applicable — no tests/)";;
-      *) echo "-- $full: skip (adopt.py failed)";;
-    esac
-    skipped=$((skipped+1)); continue
+    echo "-- $full: skip (adopt.py failed)"; skipped=$((skipped+1)); continue
   }
   echo "-- $out"
 
@@ -114,27 +113,42 @@ leaving it in place would leave the conflict anchor in place.
 
 Canonical source: dpyc-community/scripts/changelog-fragments/.
 
-Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
   git -C "$work" push -q origin --delete "$BRANCH" >/dev/null 2>&1 || true
   if ! err=$(git -C "$work" push -u origin "$BRANCH" 2>&1); then
     echo "   skip (push failed: $(printf '%s' "$err" | tail -1))"; skipped=$((skipped+1)); continue
   fi
 
-  url="$(gh pr create --repo "$full" --base "$default" --head "$BRANCH" \
-    --title "chore: one changelog file per change" \
-    --body "\`CHANGELOG.md\` was the most conflict-prone file in this repo for a structural reason: every PR appended to the same \`### Added\` / \`### Fixed\` anchors of the same \`## [Unreleased]\` section, so two PRs that shared no source file still collided there.
+  body="Written by Claude (Fable 5.1) in the owner's Claude Code session, by \`dpyc-community/scripts/sync-changelog-fragments.sh\`.
+
+\`CHANGELOG.md\` was the most conflict-prone file in this repo for a structural reason: every PR appended to the same \`### Added\` / \`### Fixed\` anchors of the same \`## [Unreleased]\` section, so two PRs that shared no source file still collided there — and a conflicted PR dispatches no workflows, so each one cost a paid Journeyman turn to resolve.
 
 - \`changelog.d/\` — one file per change, named \`<kind>-<slug>.md\`. Two PRs never touch the same file.
 - \`scripts/changelog.py fold X.Y.Z\` — gathers them into one Keep a Changelog section at release time, in filename order, so merge order never reaches the output.
-- \`tests/test_changelog.py\` — holds the order-independence as a property, and refuses a release whose fragments were never folded.
+- \`.github/workflows/changelog.yml\` — CI fails a PR that adds a line to \`CHANGELOG.md\`; a release PR is exempt.
+- \`tests/test_changelog.py\` (where there is a \`tests/\`) — refuses a release whose fragments were never folded.
 
 **Check the CHANGELOG.md diff.** The existing \`[Unreleased]\` section is migrated into fragments rather than dropped; leaving it would leave the conflict anchor.
 
 Canonical source: \`dpyc-community/scripts/changelog-fragments/\`. Fix it there.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)" 2>/dev/null || \
-    gh pr view "$full" --json url --jq .url 2>/dev/null || echo "(PR exists)")"
+🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+  gh workflow run "Open a PR as the factory App" --repo "$OWNER/dpyc-community" \
+    -f repo="${full##*/}" -f head="$BRANCH" -f title="chore: one changelog file per change" -f body="$body" >/dev/null
+  url=""
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    url="$(gh pr list --repo "$full" --head "$BRANCH" --json url --jq '.[0].url' 2>/dev/null)"
+    [ -n "$url" ] && break
+    sleep 10
+  done
+  if [ -z "$url" ]; then
+    echo "   skip (the App did not open the PR — check the workflow run in $OWNER/dpyc-community)"; skipped=$((skipped+1)); continue
+  fi
+  # An App-token event dispatches no workflows: one human-credential commit wakes CI.
+  git -C "$work" -c user.name="DPYC Factory" -c user.email="noreply@anthropic.com" \
+    commit -q --allow-empty -m "ci: wake checks"
+  git -C "$work" push -q origin "$BRANCH"
   echo "   PR $url"
   PRS+=("$full $url")
   synced=$((synced+1))

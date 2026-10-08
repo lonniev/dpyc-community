@@ -1,0 +1,46 @@
+# DPYC Changelog Guard (reusable) — a PR adds a fragment; only a release writes CHANGELOG.md.
+#
+# The fragment convention (scripts/changelog-fragments/) removed the shared anchor that made
+# any two open PRs conflict: a change is one file under changelog.d/, and the fold writes
+# CHANGELOG.md at release. Nothing enforced that. A PR that still adds its bullet to
+# CHANGELOG.md puts the anchor straight back, and the next conflict dispatches no workflows
+# (conflict-watch.yml) and costs a paid Journeyman turn to resolve (goodearth #219, #224;
+# tollbooth-dpyc #167).
+#
+# So: a PR may not ADD a line to CHANGELOG.md. Deleting is fine — adoption removes the
+# old [Unreleased] block — and a release PR (title begins "release") is where the fold's
+# output lands, so it passes. Deterministic, no LLM: "did this PR add lines to that file"
+# is a fact GitHub already holds.
+name: DPYC Changelog Guard
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: CHANGELOG.md is written by the release, not by a PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -eo pipefail
+          case "$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]')" in
+            release*) echo "A release: CHANGELOG.md is its to write."; exit 0 ;;
+          esac
+          patch=$(gh api "repos/$REPO/pulls/$PR/files" --paginate \
+            --jq '.[] | select(.filename == "CHANGELOG.md") | .patch // ""')
+          added=$(printf '%s\n' "$patch" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -vE '^\+\s*$' || true)
+          if [ -n "$added" ]; then
+            printf '%s\n' "$added" | head -5
+            echo "::error file=CHANGELOG.md::This PR adds lines to CHANGELOG.md. Write changelog.d/<added|changed|fixed|removed>-<slug>.md instead; scripts/changelog.py folds it in at release. See changelog.d/README.md."
+            exit 1
+          fi
+          echo "CHANGELOG.md gained no lines."

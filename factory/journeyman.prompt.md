@@ -114,6 +114,10 @@ STEPS:
    open a PR whose body starts with "Closes #${ISSUE_NUMBER}" and summarizes the
    root cause, the fix, the before/after test result, the step-5 reuse finding when
    you wrote new code anyway, AND any human-in-the-loop verification notes from step 8.
+   A change a reader would notice gets a changelog fragment, committed with it:
+   changelog.d/<added|changed|fixed|removed>-issue-${ISSUE_NUMBER}.md, holding its bullet(s)
+   for the person it reaches and nothing else. NEVER edit CHANGELOG.md — the Changelog
+   check fails the PR.
    Use: gh pr create --fill --head agent/fix-${ISSUE_NUMBER}
    KEEP the PR URL it prints — you record it via cypher_link_pr in step 11 so a graph reader can
    click through to the fix.

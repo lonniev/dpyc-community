@@ -44,6 +44,7 @@ Take, verbatim unless noted:
 | `.github/workflows/agentic-*.yml` (all of them) | no — thin callers into `dpyc-community` |
 | `.github/workflows/doctrine-lint.yml` | no |
 | `.github/workflows/release.yml` | no |
+| `.github/workflows/changelog.yml`, `scripts/changelog.py`, `changelog.d/README.md` | no — changelog fragments; `scripts/sync-changelog-fragments.sh <repo>` installs them |
 | `.github/workflows/publish-mcp-registry.yml` | no |
 | `server.json` | **yes** — name, description, repository URL, remote URL |
 | `constraints/example_*.json` | no |

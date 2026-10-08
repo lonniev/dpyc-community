@@ -117,12 +117,17 @@ def test_an_EMPTY_unreleased_section_is_removed_too(tmp_path) -> None:
     assert "- Shipped." in after
 
 
-def test_a_repo_with_no_test_suite_is_refused_rather_than_half_adopted(tmp_path) -> None:
-    """A repo with no pytest carries the release guard inert — it would look
-    installed and hold nothing. Say so; do not write files."""
+def test_a_repo_with_no_test_suite_adopts_without_the_pytest(tmp_path) -> None:
+    """The fragments and the fold are what stop the conflicts; the pytest only
+    refuses an unfolded release. A Swift or JS repo has no pytest to carry it,
+    and must not be left on the shared anchor for that reason. Adopt, skip the
+    one file, and say so."""
     (tmp_path / "pyproject.toml").write_text('[project]\nversion = "0.1.0"\n')
-    assert adopt.adopt(tmp_path) == 3
-    assert not (tmp_path / "changelog.d").exists()
+    (tmp_path / "CHANGELOG.md").write_text(SAMPLE)
+    assert adopt.adopt(tmp_path) == 0
+    assert (tmp_path / "changelog.d" / "fixed-0001-unreleased.md").is_file()
+    assert (tmp_path / ".github" / "workflows" / "changelog.yml").is_file()
+    assert not (tmp_path / "tests").exists()
 
 
 def test_a_repo_versioned_only_by_git_tag_still_adopts(tmp_path) -> None:
@@ -153,6 +158,7 @@ def test_a_real_adoption_writes_the_three_files(tmp_path) -> None:
     assert (tmp_path / "scripts" / "changelog.py").is_file()
     assert (tmp_path / "changelog.d" / "README.md").is_file()
     assert (tmp_path / "tests" / "test_changelog.py").is_file()
+    assert (tmp_path / ".github" / "workflows" / "changelog.yml").is_file()
     fragments = sorted(p.name for p in (tmp_path / "changelog.d").glob("*.md"))
     assert fragments == ["README.md", "added-0001-unreleased.md", "fixed-0001-unreleased.md"]
     assert "Unreleased" not in (tmp_path / "CHANGELOG.md").read_text()

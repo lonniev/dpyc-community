@@ -63,6 +63,23 @@ authority it does not have.
 Filing an **issue** needs none of this — any harness holding a Scout credential can call
 the SDK's `report_issue` and the Porter takes it from there.
 
+### A changelog entry is a fragment, never a line in CHANGELOG.md
+
+Every PR used to add its bullet at the top of the Unreleased block, so any two PRs open
+at once conflicted there and nowhere else — and a conflicted PR dispatches no workflows
+(`conflict-watch.yml`), so the next thing that happened was a paid Journeyman turn spent
+deciding what two changelog bullets should say. The shared line is gone: a change adds
+one file, `changelog.d/<kind>-<slug>.md` (`added`, `changed`, `fixed`, `removed`,
+`security`, `deprecated`), holding its bullets and nothing else. `scripts/changelog.py
+fold X.Y.Z` writes the `## [X.Y.Z] — <date>` section at release and deletes the fragments;
+`/release` runs it. The canonical set is `scripts/changelog-fragments/` here, and
+`scripts/sync-changelog-fragments.sh` installs it into a repo and migrates its old
+Unreleased block into fragments — fix it there, never in a copy.
+
+`changelog-guard.yml` is the enforcement, deterministic and LLM-free: a PR that adds a
+line to `CHANGELOG.md` fails unless its title begins "release". Every adopted repo carries
+the thin caller, `.github/workflows/changelog.yml`.
+
 ### Bringing a new repo into all of this
 
 The pieces above only reach a repo that carries the thin callers, the five secrets, a

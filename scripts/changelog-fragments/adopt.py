@@ -16,7 +16,12 @@ the count so the diff can be checked against it.
 
     usage: adopt.py <repo-root>
 
-Exit codes: 0 adopted, 3 not applicable (no pyproject.toml / no tests/), 2 usage.
+A repo with no `tests/` still adopts — the fragments and the fold are what stop
+the conflicts; only the pytest that refuses an unfolded release is skipped, and
+the run says so. The `Changelog` workflow caller is installed too: CI fails a PR
+that adds a line to CHANGELOG.md, which is the only enforcement there is.
+
+Exit codes: 0 adopted, 2 usage.
 """
 
 from __future__ import annotations
@@ -32,6 +37,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 #: `###` heading outside this set is kept as `notes` rather than discarded — a
 #: repo that invented a heading still wrote something real under it.
 KINDS = ("added", "changed", "deprecated", "removed", "fixed", "security", "notes")
+
+POINTER = ("Changes not yet released live in `changelog.d/`, one file per change — see "
+           "the README there for why, and `scripts/changelog.py` for what folds them in "
+           "at release time.")
 
 
 def split_unreleased(text: str) -> tuple[str, dict[str, str]]:
@@ -59,7 +68,12 @@ def split_unreleased(text: str) -> tuple[str, dict[str, str]]:
     parts = re.split(r"^### +(.+)$", body, flags=re.MULTILINE)
     preamble = parts[0].strip()
     if preamble:
-        groups.setdefault("notes", []).append(preamble)
+        # A repo that never used `###` headings wrote its entries as bare bullets
+        # straight under `## [Unreleased]`; those are changes, not notes about
+        # the release. Only prose that is not a list is `notes`.
+        bulleted = all(line.startswith(("- ", "* ", "  ")) or not line.strip()
+                       for line in preamble.splitlines())
+        groups.setdefault("changed" if bulleted else "notes", []).append(preamble)
     for heading, chunk in zip(parts[1::2], parts[2::2], strict=True):
         kind = heading.strip().lower().split()[0].strip(":")
         if kind not in KINDS:
@@ -72,21 +86,17 @@ def split_unreleased(text: str) -> tuple[str, dict[str, str]]:
 
 
 def adopt(root: pathlib.Path) -> int:
-    # `tests/` is the only hard requirement: the fold is a script anybody can run,
-    # but the guard that stops a release shipping with its fragments unfolded is a
-    # pytest, and a repo with no suite would carry it inert. A repo with no
-    # pyproject.toml still adopts — that guard skips itself and says why.
-    if not (root / "tests").is_dir():
-        print(f"{root.name}: not applicable (no tests/ — the release guard is a pytest)")
-        return 3
-
+    guarded = (root / "tests").is_dir()
     (root / "scripts").mkdir(exist_ok=True)
     (root / "changelog.d").mkdir(exist_ok=True)
 
     shutil.copy2(HERE / "changelog.py", root / "scripts" / "changelog.py")
     (root / "scripts" / "changelog.py").chmod(0o755)
     shutil.copy2(HERE / "changelog.d-README.md", root / "changelog.d" / "README.md")
-    shutil.copy2(HERE / "test_changelog.py", root / "tests" / "test_changelog.py")
+    if guarded:
+        shutil.copy2(HERE / "test_changelog.py", root / "tests" / "test_changelog.py")
+    (root / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(HERE / "changelog.yml", root / ".github" / "workflows" / "changelog.yml")
 
     changelog = root / "CHANGELOG.md"
     migrated = 0
@@ -102,6 +112,13 @@ def adopt(root: pathlib.Path) -> int:
         # `## [Unreleased]` is still the conflict anchor: the next PR writes a
         # `### Added` under it and the one after that collides on the same
         # three lines. Leaving it because it held nothing leaves the problem.
+        if "changelog.d" not in remaining:
+            # Tell a reader of CHANGELOG.md where the unreleased changes went,
+            # once, above the first released section.
+            m = re.search(r"^## ", remaining, re.MULTILINE)
+            if m:
+                remaining = (remaining[: m.start()].rstrip() + "\n\n" + POINTER + "\n\n"
+                             + remaining[m.start():])
         if remaining != original:
             changelog.write_text(remaining.rstrip() + "\n")
 
@@ -109,6 +126,7 @@ def adopt(root: pathlib.Path) -> int:
         f"{root.name}: adopted"
         + (f", migrated [Unreleased] into {migrated} fragment(s)" if migrated
            else " (no [Unreleased] section to migrate)")
+        + ("" if guarded else "; no tests/, so the unfolded-release pytest is not installed")
     )
     return 0
 

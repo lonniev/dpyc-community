@@ -85,6 +85,22 @@ def split_unreleased(text: str) -> tuple[str, dict[str, str]]:
     return remaining, {k: "\n\n".join(v) + "\n" for k, v in groups.items()}
 
 
+def unignore_fold(root: pathlib.Path) -> None:
+    """A repo that ignores `scripts/` (thebrain-mcp keeps local helpers there)
+    would adopt without the fold: `git add -A` honours the ignore, CI then
+    collects `tests/test_changelog.py` and finds no `scripts/changelog.py`.
+    One negation line after the ignore ships the fold and nothing else."""
+    gi = root / ".gitignore"
+    if not gi.is_file():
+        return
+    text = gi.read_text()
+    if "!scripts/changelog.py" in text:
+        return
+    if not re.search(r"^scripts/?\s*$", text, re.MULTILINE):
+        return
+    gi.write_text(text.rstrip("\n") + "\n!scripts/changelog.py\n")
+
+
 def adopt(root: pathlib.Path) -> int:
     guarded = (root / "tests").is_dir()
     (root / "scripts").mkdir(exist_ok=True)
@@ -92,6 +108,7 @@ def adopt(root: pathlib.Path) -> int:
 
     shutil.copy2(HERE / "changelog.py", root / "scripts" / "changelog.py")
     (root / "scripts" / "changelog.py").chmod(0o755)
+    unignore_fold(root)
     shutil.copy2(HERE / "changelog.d-README.md", root / "changelog.d" / "README.md")
     if guarded:
         shutil.copy2(HERE / "test_changelog.py", root / "tests" / "test_changelog.py")

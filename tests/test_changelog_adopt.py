@@ -119,7 +119,7 @@ def test_an_EMPTY_unreleased_section_is_removed_too(tmp_path) -> None:
 
 def test_a_repo_with_no_test_suite_adopts_without_the_pytest(tmp_path) -> None:
     """The fragments and the fold are what stop the conflicts; the pytest only
-    refuses an unfolded release. A Swift or JS repo has no pytest to carry it,
+    holds the convention's properties. A Swift or JS repo has no pytest to carry it,
     and must not be left on the shared anchor for that reason. Adopt, skip the
     one file, and say so."""
     (tmp_path / "pyproject.toml").write_text('[project]\nversion = "0.1.0"\n')

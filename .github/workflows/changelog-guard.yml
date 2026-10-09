@@ -37,7 +37,8 @@ jobs:
           esac
           patch=$(gh api "repos/$REPO/pulls/$PR/files" --paginate \
             --jq '.[] | select(.filename == "CHANGELOG.md") | .patch // ""')
-          added=$(printf '%s\n' "$patch" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -vE '^\+\s*$' || true)
+          # A line that points the reader at changelog.d/ is not an entry; adoption adds one.
+          added=$(printf '%s\n' "$patch" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -vE '^\+\s*$' | grep -v 'changelog\.d' || true)
           if [ -n "$added" ]; then
             printf '%s\n' "$added" | head -5
             echo "::error file=CHANGELOG.md::This PR adds lines to CHANGELOG.md. Write changelog.d/<added|changed|fixed|removed>-<slug>.md instead; scripts/changelog.py folds it in at release. See changelog.d/README.md."

@@ -127,7 +127,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - \`changelog.d/\` — one file per change, named \`<kind>-<slug>.md\`. Two PRs never touch the same file.
 - \`scripts/changelog.py fold X.Y.Z\` — gathers them into one Keep a Changelog section at release time, in filename order, so merge order never reaches the output.
 - \`.github/workflows/changelog.yml\` — CI fails a PR that adds a line to \`CHANGELOG.md\`; a release PR is exempt.
-- \`tests/test_changelog.py\` (where there is a \`tests/\`) — refuses a release whose fragments were never folded.
+- \`tests/test_changelog.py\` (where there is a \`tests/\`) — holds the order-independence as a property; the shared release workflow names a tag cut with fragments still unfolded.
 
 **Check the CHANGELOG.md diff.** The existing \`[Unreleased]\` section is migrated into fragments rather than dropped; leaving it would leave the conflict anchor.
 

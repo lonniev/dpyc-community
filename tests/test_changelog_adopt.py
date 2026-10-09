@@ -162,3 +162,18 @@ def test_a_real_adoption_writes_the_three_files(tmp_path) -> None:
     fragments = sorted(p.name for p in (tmp_path / "changelog.d").glob("*.md"))
     assert fragments == ["README.md", "added-0001-unreleased.md", "fixed-0001-unreleased.md"]
     assert "Unreleased" not in (tmp_path / "CHANGELOG.md").read_text()
+
+
+def test_a_repo_that_ignores_scripts_still_ships_the_fold(tmp_path) -> None:
+    """thebrain-mcp ignores `scripts/` for local helpers; its adoption PR
+    carried the test and not the script it tests, and CI failed at
+    collection. The adopter adds the one negation that lets the fold through."""
+    (tmp_path / ".gitignore").write_text("*.pyc\nscripts/\n")
+    (tmp_path / "CHANGELOG.md").write_text(SAMPLE)
+    assert adopt.adopt(tmp_path) == 0
+    assert "!scripts/changelog.py" in (tmp_path / ".gitignore").read_text()
+    # And a repo that does not ignore scripts/ is left alone.
+    (tmp_path / ".gitignore").write_text("*.pyc\n")
+    assert adopt.adopt(tmp_path) == 0
+    assert "!scripts" not in (tmp_path / ".gitignore").read_text()
+

@@ -17,8 +17,8 @@ the count so the diff can be checked against it.
     usage: adopt.py <repo-root>
 
 A repo with no `tests/` still adopts — the fragments and the fold are what stop
-the conflicts; only the pytest that refuses an unfolded release is skipped, and
-the run says so. The `Changelog` workflow caller is installed too: CI fails a PR
+the conflicts; only the convention's own pytest is skipped, and the run says so.
+A tag cut with fragments still unfolded is named by the shared release workflow. The `Changelog` workflow caller is installed too: CI fails a PR
 that adds a line to CHANGELOG.md, which is the only enforcement there is.
 
 Exit codes: 0 adopted, 2 usage.
@@ -126,7 +126,7 @@ def adopt(root: pathlib.Path) -> int:
         f"{root.name}: adopted"
         + (f", migrated [Unreleased] into {migrated} fragment(s)" if migrated
            else " (no [Unreleased] section to migrate)")
-        + ("" if guarded else "; no tests/, so the unfolded-release pytest is not installed")
+        + ("" if guarded else "; no tests/, so the convention's pytest is not installed")
     )
     return 0
 

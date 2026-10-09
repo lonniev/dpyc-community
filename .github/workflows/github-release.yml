@@ -29,7 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Extract release notes from CHANGELOG
+      - name: Fragments left unfolded are a release mistake worth naming
+        run: |
+          left=$(ls changelog.d/*.md 2>/dev/null | grep -v '/README\.md$' || true)
+          if [ -n "$left" ]; then
+            echo "::warning title=Unfolded changelog fragments::This tag was cut with fragments still in changelog.d/ — run scripts/changelog.py fold <version> before tagging. Left: $(printf '%s ' $left)"
+          fi
+
         env:
           TAG: ${{ github.ref_name }}
         run: |

@@ -36,6 +36,7 @@ jobs:
             echo "::warning title=Unfolded changelog fragments::This tag was cut with fragments still in changelog.d/ — run scripts/changelog.py fold <version> before tagging. Left: $(printf '%s ' $left)"
           fi
 
+      - name: Release notes are the CHANGELOG section for the tag
         env:
           TAG: ${{ github.ref_name }}
         run: |

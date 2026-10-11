@@ -1,0 +1,1 @@
+- The shared GitHub Release workflow runs again: the unfolded-fragments check added on 10-09 was joined to the notes step as a second `run:` in one step, a duplicate key that failed every fleet release before a job started (tollbooth-web v1.8.0 was the first to hit it). The notes step has its own name again.

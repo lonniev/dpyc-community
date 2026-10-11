@@ -30,7 +30,7 @@ import glob
 import json
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -211,7 +211,7 @@ def main(argv=None) -> int:
     print(f"Probing {len(services)} member services...", file=sys.stderr)
     probes = collect_probes(services)
 
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     status = assemble_network_status(existing, probes, last_updated=today)
 
     if args.dry_run:

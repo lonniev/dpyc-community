@@ -12,7 +12,7 @@ Usage:
 import asyncio
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 try:
@@ -112,7 +112,7 @@ async def collect_all() -> dict:
         registry = json.load(f)
 
     members = registry.get("members", [])
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=MAX_AGE_DAYS)).isoformat()
+    cutoff = (datetime.now(UTC) - timedelta(days=MAX_AGE_DAYS)).isoformat()
 
     operators = []
     for m in members:
@@ -154,7 +154,7 @@ async def collect_all() -> dict:
                 latest_status = recent[0].get("status", "unknown")
                 # Check staleness: no notarization in 7 days
                 latest_created = recent[0].get("created_at", "")
-                stale_cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+                stale_cutoff = (datetime.now(UTC) - timedelta(days=7)).isoformat()
                 if latest_created < stale_cutoff:
                     entry["status"] = "stale"
                 else:
@@ -176,7 +176,7 @@ async def collect_all() -> dict:
     )
 
     return {
-        "collected_at": datetime.now(timezone.utc).isoformat(),
+        "collected_at": datetime.now(UTC).isoformat(),
         "summary": {
             "operators": len(results),
             "total_notarizations": total_notarizations,

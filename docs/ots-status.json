@@ -1,10 +1,10 @@
 {
-  "collected_at": "2026-10-10T22:33:22.508058+00:00",
+  "collected_at": "2026-10-11T01:54:51.447116+00:00",
   "summary": {
     "operators": 15,
     "total_notarizations": 33,
     "confirmed": 0,
-    "coverage_percent": 40
+    "coverage_percent": 33
   },
   "operators": [
     {
@@ -127,7 +127,7 @@
           "receipt_count": 1
         }
       ],
-      "status": "submitted",
+      "status": "stale",
       "error": null
     },
     {
@@ -316,6 +316,22 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "520",
+          "root_hash": "79d5cea3fbee13610e8b449d355a7efcb1954999e404f45743952a3dd6969e11",
+          "leaf_count": 16482,
+          "status": "submitted",
+          "created_at": "2026-10-11 00:40:10.057888+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "519",
+          "root_hash": "b4ec353d90c8ed735cb93aa662d006d874391aa4b0df682da97d397f726b46eb",
+          "leaf_count": 16460,
+          "status": "submitted",
+          "created_at": "2026-10-10 23:36:04.195317+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "518",
           "root_hash": "adb1876f86416e42f0bbeda24888f6d6ba28b5ce631ee5236fcf088bdfae7146",
           "leaf_count": 16400,
@@ -377,22 +393,6 @@
           "leaf_count": 16200,
           "status": "submitted",
           "created_at": "2026-10-10 10:35:13.343246+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "510",
-          "root_hash": "d140362a968ac4b7cd1026c4a129d2278c4a46be5bc94c8cc0cf1056a5d79001",
-          "leaf_count": 16169,
-          "status": "submitted",
-          "created_at": "2026-10-10 09:00:42.589931+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "509",
-          "root_hash": "19a1488df16a5ef0da444eea6d791cd40085edce1a688a1ed242802e2c55ab74",
-          "leaf_count": 16129,
-          "status": "submitted",
-          "created_at": "2026-10-10 07:03:06.026721+00",
           "receipt_count": 4
         }
       ],

@@ -100,7 +100,7 @@ jobs:
       # graph under its own Nostr identity. The nsec lives only in the keyring subprocess's
       # env (the --mcp-config block below), never in the agent's shell.
       - name: Install the agent keyring
-        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.101.1"
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.102.1"
 
       # The Journeyman's behavior lives in factory/journeyman.prompt.md (the agent may evolve
       # it via PR; the workflow skeleton — permissions, token, tools — stays human-only). We

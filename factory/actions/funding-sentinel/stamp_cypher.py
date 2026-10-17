@@ -43,10 +43,9 @@ def _npub_from_nsec(nsec: str) -> str:
 
 async def _stamp(upstream: str, nsec: str,
                  repo: str, kind: str, number: int, state: str, url: str) -> None:
-    # Lazy imports: the SDK primitive that mints the proof, and the MCP client. Reusing
-    # PatronSigner keeps proof-signing DRY (never reimplement crypto).
-    from tollbooth.patron_signer import PatronSigner
-    from fastmcp import Client
+    # The SDK's client signs every request with the nsec (NIP-98), so the call
+    # carries only the npub — never reimplement crypto.
+    from tollbooth.mcp_client import service_client
 
     npub = _npub_from_nsec(nsec)
     # 'historical' retires the block (breaks its BLOCKS edge, keeps the node) when its item
@@ -57,9 +56,8 @@ async def _stamp(upstream: str, nsec: str,
     else:
         tool = "cypher_mark_funding_state"
         params = {"repo_name": repo, "kind": kind, "number": number, "state": state, "url": url}
-    signed = PatronSigner(npub, nsec).authenticate(tool, params)  # injects npub + fresh kind-27235 proof
-    async with Client(upstream, auth="anonymous") as client:
-        res = await client.call_tool(tool, signed)
+    async with service_client(upstream, nsec) as client:
+        res = await client.call_tool(tool, {**params, "npub": npub})
         print(f"stamp_cypher: {tool}({repo} {kind}#{number} -> {state}) ok: "
               f"{getattr(res, 'data', res)}")
 

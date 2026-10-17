@@ -409,7 +409,7 @@ def npub_from_nsec(nsec: str) -> str:
 
 async def _list_tools(url: str) -> list[dict[str, Any]]:
     from fastmcp import Client
-    async with Client(url) as client:
+    async with Client(url, auth="anonymous") as client:
         tools = await client.list_tools()
     out: list[dict[str, Any]] = []
     for t in tools:
@@ -427,7 +427,7 @@ async def _apply(url: str, calls: list[Call], keys: dict[str, RoleKey]) -> int:
         print(f"  ! missing key(s) for role(s): {sorted(missing)}", file=sys.stderr)
         return 2
 
-    async with Client(url) as client:
+    async with Client(url, auth="anonymous") as client:
         async def call(c: Call) -> dict[str, Any]:
             key = keys[c.role]
             # create_proof signs at whole-second resolution with a fixed body, so two calls

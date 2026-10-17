@@ -132,6 +132,7 @@ def _mcp_call(url: str, method: str, params: dict) -> dict:
         headers={
             "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",
+            "Authorization": "Bearer anonymous",
         },
     )
     with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:

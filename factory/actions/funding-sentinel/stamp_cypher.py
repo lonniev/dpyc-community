@@ -58,7 +58,7 @@ async def _stamp(upstream: str, nsec: str,
         tool = "cypher_mark_funding_state"
         params = {"repo_name": repo, "kind": kind, "number": number, "state": state, "url": url}
     signed = PatronSigner(npub, nsec).authenticate(tool, params)  # injects npub + fresh kind-27235 proof
-    async with Client(upstream) as client:
+    async with Client(upstream, auth="anonymous") as client:
         res = await client.call_tool(tool, signed)
         print(f"stamp_cypher: {tool}({repo} {kind}#{number} -> {state}) ok: "
               f"{getattr(res, 'data', res)}")

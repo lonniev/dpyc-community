@@ -1,0 +1,1 @@
+- The cypher stamp, PR mirror and intention harvest sign each request with their role's nsec (NIP-98, tollbooth-dpyc 0.102.0) and pass only the npub; no proof rides in tool arguments.

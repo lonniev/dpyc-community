@@ -41,15 +41,14 @@ def _npub_from_nsec(nsec: str) -> str:
 
 
 async def _mirror(upstream: str, nsec: str, params: dict) -> None:
-    # Reuse the SDK's proof-signer + MCP client (never reimplement crypto).
-    from fastmcp import Client
-    from tollbooth.patron_signer import PatronSigner
+    # The SDK's client signs every request with the nsec (NIP-98), so the call
+    # carries only the npub — never reimplement crypto.
+    from tollbooth.mcp_client import service_client
 
     npub = _npub_from_nsec(nsec)
     tool = "cypher_upsert_pull_request"
-    signed = PatronSigner(npub, nsec).authenticate(tool, params)  # injects npub + fresh kind-27235 proof
-    async with Client(upstream, auth="anonymous") as client:
-        res = await client.call_tool(tool, signed)
+    async with service_client(upstream, nsec) as client:
+        res = await client.call_tool(tool, {**params, "npub": npub})
         print(f"mirror_pr: {tool}({params['repo_name']}#{params['number']} -> {params['state']}) ok: "
               f"{getattr(res, 'data', res)}")
 

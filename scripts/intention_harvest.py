@@ -419,35 +419,27 @@ async def _list_tools(url: str) -> list[dict[str, Any]]:
 
 
 async def _apply(url: str, calls: list[Call], keys: dict[str, RoleKey]) -> int:
-    from fastmcp import Client
-    from tollbooth.identity_proof import create_proof
+    from contextlib import AsyncExitStack
+
+    from tollbooth.mcp_client import service_client
 
     missing = {c.role for c in calls} - {r for r, k in keys.items() if k.npub and k.nsec}
     if missing:
         print(f"  ! missing key(s) for role(s): {sorted(missing)}", file=sys.stderr)
         return 2
 
-    async with Client(url, auth="anonymous") as client:
-        async def call(c: Call) -> dict[str, Any]:
-            key = keys[c.role]
-            # create_proof signs at whole-second resolution with a fixed body, so two calls
-            # for the same tool in one second mint an identical event (replay-rejected).
-            # Re-sign after the second ticks over.
-            for attempt in range(3):
-                payload = {**c.params, "npub": key.npub,
-                           "dpop_token": create_proof(key.nsec, f"{SLUG}_{c.tool}")}
-                res = await client.call_tool(f"{SLUG}_{c.tool}", payload)
-                data = res.data if hasattr(res, "data") else res
-                data = data if isinstance(data, dict) else {"raw": data}
-                if "proof" in str(data.get("error", "")).lower() and attempt < 2:
-                    await asyncio.sleep(1.1)
-                    continue
-                return data
-            return data
-
+    # One client per role: each signs its requests with that role's nsec (NIP-98),
+    # so a call carries only the npub it acts as.
+    async with AsyncExitStack() as stack:
+        clients = {
+            role: await stack.enter_async_context(service_client(url, keys[role].nsec))
+            for role in {c.role for c in calls}
+        }
         ok = 0
         for c in calls:
-            r = await call(c)
+            res = await clients[c.role].call_tool(f"{SLUG}_{c.tool}", {**c.params, "npub": keys[c.role].npub})
+            data = res.data if hasattr(res, "data") else res
+            r = data if isinstance(data, dict) else {"raw": data}
             err = r.get("error")
             print(f"  [{c.role}] {c.tool} {json.dumps(c.params)[:80]}: "
                   f"{r.get('message') or err or 'ok'}")

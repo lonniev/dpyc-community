@@ -1,0 +1,1 @@
+- Renovate refreshes every lockfile weekly (lockFileMaintenance) and merges it on green CI, so no service sits on old transitive dependencies; the @tollbooth-dpyc/web pin is no longer grouped with frontend dependencies, so it self-merges like tollbooth-dpyc.

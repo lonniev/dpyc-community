@@ -82,7 +82,7 @@ jobs:
       # under its own Nostr identity, without ever holding the nsec (that lives only in
       # the keyring subprocess's env — see the --mcp-config block below).
       - name: Install the agent keyring
-        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.63.1"
+        run: python -m pip install --quiet "tollbooth-dpyc[keyring]==0.101.1"
 
       # The Porter's behavior lives in factory/porter.prompt.md (the agent may evolve it via
       # PR; the workflow skeleton — permissions, token, tools — stays human-only). We fetch it

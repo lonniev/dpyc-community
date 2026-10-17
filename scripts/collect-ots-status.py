@@ -44,6 +44,9 @@ async def call_list_notarizations(endpoint: str) -> list[dict]:
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream",
+        # Endpoints with holder bearer on refuse a request with no bearer;
+        # any value they did not mint is an anonymous caller.
+        "Authorization": "Bearer anonymous",
     }
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         # Initialize session

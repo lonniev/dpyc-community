@@ -1,0 +1,1 @@
+- Fleet probes and scripts (deploy-verify, OTS collector, network status, bootstrap audit, intention harvest, canary stamp, PR mirror) send `Authorization: Bearer anonymous`, so an operator with holder bearer on answers them instead of a 401.

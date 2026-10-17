@@ -90,6 +90,7 @@ jobs:
             curl -s -m 25 -X POST "$SERVICE_URL" \
               -H 'Content-Type: application/json' \
               -H 'Accept: application/json, text/event-stream' \
+              -H 'Authorization: Bearer anonymous' \
               -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' 2>/dev/null \
               | sed -n 's/^data: //p' \
               | jq -r '.result.tools[].name | select(endswith("service_status"))' 2>/dev/null | head -1
@@ -101,6 +102,7 @@ jobs:
             raw="$(curl -s -m 25 -X POST "$SERVICE_URL" \
               -H 'Content-Type: application/json' \
               -H 'Accept: application/json, text/event-stream' \
+              -H 'Authorization: Bearer anonymous' \
               -d "$body" 2>/dev/null)"
             text="$(printf '%s\n' "$raw" | sed -n 's/^data: //p' \
               | jq -r '.result.content[0].text // empty' 2>/dev/null | head -1)"

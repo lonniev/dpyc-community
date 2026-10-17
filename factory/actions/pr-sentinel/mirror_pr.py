@@ -48,7 +48,7 @@ async def _mirror(upstream: str, nsec: str, params: dict) -> None:
     npub = _npub_from_nsec(nsec)
     tool = "cypher_upsert_pull_request"
     signed = PatronSigner(npub, nsec).authenticate(tool, params)  # injects npub + fresh kind-27235 proof
-    async with Client(upstream) as client:
+    async with Client(upstream, auth="anonymous") as client:
         res = await client.call_tool(tool, signed)
         print(f"mirror_pr: {tool}({params['repo_name']}#{params['number']} -> {params['state']}) ok: "
               f"{getattr(res, 'data', res)}")

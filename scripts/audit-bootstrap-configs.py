@@ -38,14 +38,14 @@ def _body(result) -> dict:
 
 
 async def _authorities() -> list[dict]:
-    async with Client(ORACLE_URL) as oracle:
+    async with Client(ORACLE_URL, auth="anonymous") as oracle:
         listing = _body(await oracle.call_tool("list_services", {"kind": "authority", "probe": False}))
     return [s for s in listing.get("services", []) if s.get("role") == "authority" and s.get("url")]
 
 
 async def _audit(authority: dict) -> dict:
     try:
-        async with Client(authority["url"]) as client:
+        async with Client(authority["url"], auth="anonymous") as client:
             return _body(await client.call_tool(AUDIT_TOOL, {}, raise_on_error=False))
     except Exception as exc:  # noqa: BLE001 — reported, and fails the run
         return {"success": False, "error": f"{type(exc).__name__}: {exc}"}

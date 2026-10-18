@@ -60,14 +60,16 @@ Two further roles round out the community:
 
 **Identity** is a [Nostr](https://nostr.com/) keypair. Your `npub` is your member ID everywhere in the ecosystem — no email, no username, no government ID.
 
-When a tool call needs to bind a request to its owner, the patron proves control of the npub in one of two ways:
+Every tool call names the npub it acts for, and the HTTP connection that carries the call proves it. A request proves exactly one npub, in one of two ways:
 
-- **Inline Schnorr proof** — a signed Nostr event (kind 27235) carrying the tool name, valid for a short freshness window.
-- **Poison-keyed proof token** — a short, human-readable phrase (e.g., `keen-eagle-58`) issued during a one-time DM **challenge on a pinned rendezvous relay**. The patron's app remembers the phrase and replays it on later calls; the Operator stores just a salted hash, scoped against replay.
+- **Signed request** — the caller holds the npub's nsec and signs each HTTP request (NIP-98): a Nostr event (kind 27235) naming the method, the URL and a hash of the body, so the signature covers that request and nothing else.
+- **Holder connection** — a caller with no key (an AI assistant, a web page) connects by OAuth. Its connection holds no npub until one is proven into it: `request_npub_proof` sends the patron a Nostr DM carrying a short `nonce` (e.g., `keen-eagle-58`), the patron replies from their own Nostr client, and `receive_npub_proof` stores the Operator-signed grant in that connection's wallet for as long as the patron chose. The challenge answers only the connection that asked for it.
+
+An action that needs two parties' consent is a workflow of single-actor calls with an approval: an Operator asks an Authority to adopt it, and the Authority's owner approves the request.
 
 ### Credentials (Secure Courier)
 
-When an Operator or patron must hand over secrets (API keys, OAuth tokens), they travel by **Secure Courier** — a poison-scoped, NIP-encrypted Nostr DM flow pinned to a rendezvous relay. A welcome DM carries a session phrase; that matching phrase unlocks the credential reply, keeping the channel bound to its intended recipient. Returning patrons activate instantly from their encrypted vault (**vault-first recovery**). Credentials can also be packaged as scannable **credential cards** (`ncred1…` bech32 events) for QR delivery.
+When an Operator or patron must hand over secrets (API keys, OAuth tokens), they travel by **Secure Courier** — a NIP-encrypted Nostr DM flow pinned to a rendezvous relay. `request_credential_channel` returns a `nonce` and sends a welcome DM naming it; the reply must carry that nonce, keeping the channel bound to its intended recipient. Returning patrons activate instantly from their encrypted vault (**vault-first recovery**). Credentials can also be packaged as scannable **credential cards** (`ncred1…` bech32 events) for QR delivery.
 
 ### Credits & pricing
 
@@ -207,8 +209,8 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 
 The [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) SDK owns every shared concern — Operators consume it via import, and crypto, vaulting, proof, pricing, and certification all live in the SDK. Current capabilities include:
 
-- **Two-tactic identity proof** — inline Schnorr (kind 27235) or a poison-keyed token issued over a rendezvous-relay challenge.
-- **Secure Courier credential delivery** — poison-scoped, relay-pinned, NIP-encrypted DMs with vault-first recovery and `ncred1…` credential cards.
+- **Identity on the connection** — each request signed with the npub's key (NIP-98), or an OAuth holder connection into which npubs are proven by DM; one acting npub per request.
+- **Secure Courier credential delivery** — nonce-matched, relay-pinned, NIP-encrypted DMs with vault-first recovery and `ncred1…` credential cards.
 - **Tranche-based credit lifecycle** — oldest-first consumption with optional per-allocation expiry (TrancheLifetime).
 - **Composable pricing constraints** — a constraint engine Operators edit live (see below).
 - **Cascading ad valorem certification** — Schnorr-signed certificates up a multi-tier Authority chain.

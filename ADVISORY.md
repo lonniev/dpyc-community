@@ -1,8 +1,43 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-06-11
+> Last updated: 2026-10-18
 
 ## Current Advisories
+
+### October 2026: tollbooth-dpyc 0.103.0 — identity on the connection (2026-10-18)
+
+**Affects:** every operator, Authority, the Oracle, and every client that calls them.
+**Network minimum is now tollbooth-dpyc `==0.103.0`** (tollbooth-fermyon stays on its
+earlier SDK; its Spin host cannot see the HTTP request).
+
+**What changed for a caller**
+
+- Tools take `npub` and their own arguments, nothing more. The `dpop_token` and
+  `authority_proof` arguments are gone.
+- The HTTP connection proves the npub. Holding the nsec: sign each request (NIP-98,
+  `Authorization: Nostr <base64 kind-27235>` naming the method, URL and body hash; the
+  SDK's `sign_request` builds it). Holding no key: connect with OAuth; then
+  `request_npub_proof(patron_npub)` returns a `nonce` and DMs the patron, the patron
+  replies from their Nostr client, and `receive_npub_proof(patron_npub, nonce)` proves
+  the npub into that connection. Pass only `npub` after that.
+- `check_proof_status(patron_npub)` reports whether this connection proves the npub.
+- The Secure Courier phrase is `nonce` everywhere: `request_credential_channel(sender_npub, service)`
+  returns it, and `receive_credentials(sender_npub, service, nonce)` takes it.
+
+**What changed for an operator or Authority**
+
+- `register_operator` is deleted. An operator calls its own `request_adoption(authority_npub, service_url, display_name)`
+  with a request signed by its nsec; the Authority's owner approves it with
+  `approve_operator_request` (or `reject_operator_request`), seen in `list_operator_requests`.
+- `update_operator` records a request the Authority's owner approves the same way.
+- `deregister_operator` is a single-party act: the operator leaving, or the Authority removing it.
+- The Oracle's registry writes require a request signed by the named Authority.
+
+**Action:** none for patrons using the websites, Pricing Studio, the ChartRemotely agent or
+Claude.ai; their clients already speak the new protocol. A script that passed `dpop_token`
+must sign its requests or connect as a holder.
+
+---
 
 ### June 2026 Releases: tollbooth-dpyc v0.44.2–v0.44.5 (2026-06-11)
 

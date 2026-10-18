@@ -54,7 +54,7 @@ STEPS:
      low PBKDF2 iterations.
    - **Transport**: `http://` to a non-localhost host, or TLS verification disabled, where HTTPS
      is available. (semgrep also catches the obvious ones; you catch the ones in context.)
-   - **Proof / anti-replay**: proof window ≤ 60s, proof cache TTL ≤ 3600s, poison/nonce present.
+   - **Proof / anti-replay**: a signed request's window ≤ 60s with replay rejection and its body hash checked; no tool takes a proof argument; a holder grant is checked against the named npub on every call; a Courier receive matches its `nonce`.
    - **Boundaries**: tool arguments treated as adversarial; IDOR — can one patron reach another's
      data by supplying an id/npub? Nostr event-kind numbers validated, not arbitrary.
 

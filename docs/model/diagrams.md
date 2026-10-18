@@ -47,7 +47,7 @@ flowchart TB
         CY["🗝 cypher-mcp<br/><i>named priced queries · never raw access</i>"]:::ext
         AU[("🕸 Neo4j AuraDB<br/><i>ephemeral Bolt · free tier sleeps</i>")]:::data
         LN(["⚡ BTCPay Lightning<br/><i>sats per graph call</i>"]):::money
-        NR(["📡 Nostr relays<br/><i>kind-27235 proofs</i>"]):::money
+        NR(["📡 Nostr relays<br/><i>Courier DMs · npub challenges</i>"]):::money
         HZ["☁️ Horizon<br/><i>hosts the MCP operators</i>"]:::ext
         NE[("🗄 Neon Postgres<br/><i>operator vaults + ledgers</i>")]:::data
     end

@@ -79,7 +79,7 @@ STEPS:
        the owning service and the symbol that realizes it.
      - Then read the installed SDK before writing a line of it: grep the
        `tollbooth` package for the primitive (e.g. `def send_dm`, `_publish_to_relays`,
-       `create_proof`). The DRY boundaries table in CLAUDE.md §3 is the human-readable
+       `sign_request`). The DRY boundaries table in CLAUDE.md §3 is the human-readable
        form of this — crypto, vault, pricing, auth, audit, payments and Nostr transport
        are SDK-owned and are never reimplemented in a consumer.
    If a primitive exists, CALL IT. Extend it in its owning repo (step 4) if it is

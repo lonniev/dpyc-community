@@ -1,8 +1,8 @@
 # DPYC Ecosystem Threat Model
 
 **Framework:** STRIDE + Data Flow Diagrams  
-**Version:** 1.0  
-**Date:** 2026-04-20  
+**Version:** 1.1  
+**Date:** 2026-04-20 (identity rows revised 2026-10-18 for tollbooth-dpyc 0.103: identity on the connection)  
 **Scope:** All DPYC Social Contract components — SDK, Operators, Authority, Oracle, external dependencies  
 **Classification:** Public (no secrets — this document references architecture, not credentials)
 
@@ -20,7 +20,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 | **Operator** | npub + nsec | Semi-trusted (registered) | nsec (env), BTCPay key (vault), Authority npub | Trusted to run service; nsec compromise = full tenant breach |
 | **Authority** | npub + nsec | Trusted (certified) | nsec (env), Neon URL, operator ledgers | Certificate forgery if nsec compromised |
 | **First Curator** | npub + nsec | Root of trust | nsec, authority approval power | Entire Certification Chain compromise if nsec lost |
-| **AI Agent** | Delegated patron session | Untrusted | Session-scoped proof cache | All tool arguments treated as adversarial input |
+| **AI Agent** | OAuth holder connection | Untrusted | Holder access/refresh tokens; its wallet of npub grants stays with the Operator | All tool arguments treated as adversarial input |
 | **Anonymous** | None | Untrusted | None | Can call Oracle (free); blocked from paid tools |
 
 ### 1.2 External Dependencies
@@ -47,7 +47,7 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
                     └──────┬──────┘
                            │ NIP-44 DMs
                            │ NIP-09 deletions
-                           │ Kind-27235 proofs
+                           │ npub challenges
     ┌──────────┐    ┌──────┴──────┐    ┌──────────────┐
     │  Patron  │───▶│  Operator   │───▶│  Authority   │
     │ (npub)   │◀───│  MCP Server │◀───│  MCP Server  │
@@ -72,19 +72,19 @@ DPYC is a federated micropayment network for MCP tool monetization. Identity is 
 ### 2.2 DFD Level 1 — Patron Tool Call (Hot Path)
 
 ```
-Patron ──[npub, proof, tool_kwargs]──▶ MCP Tool Entry
+Patron ──[Authorization header; npub, tool_kwargs]──▶ MCP Tool Entry
                                           │
                     ┌─────────────────────┤
                     ▼                     ▼
-            verify_proof()         pricing_resolver
-            (Schnorr sig,          (tool pricing,
-             60s window,            constraint gates)
-             replay check)               │
-                    │                     ▼
-                    ▼              debit_or_deny()
-            proven_npub_cache      (ledger load,
-            (session-bound,         AES-256-GCM
-             vault-backed)          decrypt,
+            prove_caller(npub)     pricing_resolver
+            signed request:        (tool pricing,
+             Schnorr sig over       constraint gates)
+             method+URL+body,            │
+             60s window, replay          ▼
+            or holder grant:       debit_or_deny()
+             wallet entry for      (ledger load,
+             npub, Operator sig,    AES-256-GCM
+             expiry, revocation     decrypt,
                                     optimistic
                                     concurrency)
                                          │
@@ -140,11 +140,11 @@ Return to patron: {success, field_count}
 ### 2.4 DFD Level 1 — Authority Certification
 
 ```
-Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
+Operator ──[signed request: certify_credits(amount)]──▶ Authority MCP
                                                     │
-                                            verify_proof()
+                                            prove_caller()
                                             (operator npub,
-                                             Schnorr sig)
+                                             NIP-98 sig)
                                                     │
                                             compute fee:
                                             max(TAX_MIN,
@@ -173,14 +173,14 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | ID | Threat | Target | Mitigation | Residual Risk |
 |----|--------|--------|------------|---------------|
-| S-1 | Attacker forges identity proof (kind-27235) | TB1: Patron ↔ Operator | Schnorr signature verification against claimed npub; 60-second validity window | None — Schnorr is unforgeable without nsec |
-| S-2 | Attacker replays a valid proof | TB1 | Event ID recorded in `_consumed_proofs` with expiry; rejected on reuse | In-memory store — lost on cold restart. **Vault-backed proof cache mitigates but has a race window during restart.** |
+| S-1 | Attacker forges a signed request (NIP-98, kind 27235) | TB1: Patron ↔ Operator | Schnorr signature verified against the named npub, over the method, URL path and body hash; 60-second window | None — Schnorr is unforgeable without nsec |
+| S-2 | Attacker replays a signed request | TB1 | Event ID recorded in `_consumed_proofs` for the window; rejected on reuse. The body hash means a replay can only repeat the identical call | In-memory store — a second process or a cold restart accepts one replay of the identical request within 60 s |
 | S-3 | Attacker impersonates Authority | TB2: Operator ↔ Authority | Certificate (kind 30079) verified against known Authority npub; JTI replay check | Operator must securely obtain Authority npub (currently config/env) |
 | S-4 | Attacker spoofs BTCPay settlement | TB5: Operator ↔ BTCPay | API token authentication on BTCPay polling | **No cryptographic settlement proof** — if BTCPay API token is stolen, attacker can fake settlement status |
 | S-5 | Rogue Nostr relay injects fake DMs | TB4/TB6 | All DMs are NIP-44 encrypted + signed; relay cannot forge patron's nsec signature | Relay can *withhold* DMs (censorship) but not forge them |
-| S-6 | AI agent spoofs patron npub in tool args | TB1 | Proof required — agent cannot sign for a different npub without their nsec | Proof cache could be exploited if session ID is predictable (see S-8) |
+| S-6 | AI agent names a patron npub it was never given | TB1 | The connection must prove the named npub: a signature by its nsec, or a grant in this holder's wallet that the patron's own signed DM reply put there | None beyond holder-token theft (S-8) |
 | S-7 | Attacker registers with stolen npub | Oracle/Authority | Registration is idempotent; no secret is granted at registration | Attacker gets a zero-balance ledger entry; useless without nsec to prove or fund |
-| S-8 | Session ID prediction for proof cache hijack | TB7: FastMCP ↔ Operator | Session ID generated by FastMCP runtime (opaque) | **Depends on FastMCP session ID entropy** — if predictable, attacker could inherit cached proof |
+| S-8 | Holder token theft | TB1, TB7 | Access tokens live one hour; refresh tokens are single-use and rotate, and a reused one is refused; tokens are stored only as hashes | **A stolen access token acts as the holder's npubs until it expires.** The patron's `forget_credentials` revokes every grant they issued |
 
 ### 3.2 Tampering
 
@@ -188,7 +188,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 |----|--------|--------|------------|---------------|
 | T-1 | Modify patron balance in transit | TB3: Operator ↔ Neon | AES-256-GCM encryption (integrity tag); optimistic concurrency version column | Neon admin with DB access sees ciphertext only; cannot produce valid ciphertext without operator nsec |
 | T-2 | Modify certificate claims | TB2 | Kind 30079 Schnorr signature covers all fields; any modification invalidates sig | None — Schnorr provides integrity |
-| T-3 | Modify tool_kwargs after proof validation | TB1 | Proof binds to capability (tool name) but **not to specific kwargs** | **tool_kwargs are not signed** — attacker could replay proof with different arguments within the 60s window. Mitigated by event ID anti-replay. |
+| T-3 | Modify tool_kwargs after the request is signed | TB1 | The signature covers the SHA-256 of the request body, which carries the tool name and its arguments | None — any change to the body breaks the signature |
 | T-4 | SQL injection via Neon HTTP API | TB3 | Parameterized queries in `NeonVault._execute()` | Dependent on correct parameterization in all vault methods |
 | T-5 | Tamper with pricing model in Neon | TB3 | Pricing model loaded from Neon at runtime; encrypted if nsec provided | **If Neon credentials (connection string) are compromised**, attacker could alter pricing to zero-cost |
 | T-6 | Modify DM content on relay | TB4/TB6 | NIP-44 ChaCha20-Poly1305 authenticated encryption; AEAD tag prevents tampering | None — AEAD provides integrity |
@@ -232,11 +232,11 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | ID | Threat | Target | Mitigation | Residual Risk |
 |----|--------|--------|------------|---------------|
-| E-1 | Patron calls operator-restricted tool | Operator runtime | `identity.category == "restricted"` requires proof signed by operator nsec specifically | None — patron's nsec cannot produce a valid proof for operator's npub |
+| E-1 | Patron calls operator-restricted tool | Operator runtime | `restricted` tools require the request to prove the operator's own npub | None — a patron cannot prove the operator's npub |
 | E-2 | Operator forges Authority certificate | TB2 | Certificate must be signed by Authority's nsec; operator only holds their own nsec | None — Schnorr is unforgeable |
-| E-3 | Patron accesses another patron's session | Operator runtime | Proof cache bound to `(session_id, npub)` — different npub requires new proof | **If patron can predict/steal session ID** (see S-8), they inherit cached proof |
+| E-3 | One holder acts for another holder's npub | Operator runtime | Grants live in each holder's own wallet; a challenge answers only the holder that asked (`bound_to`) | Holder-token theft (S-8) |
 | E-4 | Lateral movement: compromised operator accesses other operators' Neon data | TB3 | Per-operator Postgres schema; LOGIN role per operator with ownership transferred | **If Neon connection string is shared** (misconfiguration), cross-tenant access possible |
-| E-5 | AI agent escalates beyond patron's intent | TB1 | Proof is human-in-the-loop (patron must consciously approve); 1-hour TTL | **Within the 1-hour proof window**, AI agent acts with full patron authority on all tools |
+| E-5 | AI agent escalates beyond patron's intent | TB1 | The patron consciously answers the DM and names the grant's lifetime (default 2 hours, never more than 30 days) | **For that lifetime**, the agent acts with full patron authority on all tools; the patron revokes with `forget_credentials` |
 | E-6 | OAuth2 collector can derive auth code decryption key | TB (Advocate) | Auth code encrypted with AES-256-GCM, key = `SHA-256(npub)` | Cipher upgraded from XOR to AES-256-GCM, but **key derivation unchanged** — npub is public, so collector (or anyone with Neon access) can derive the key and decrypt. Confidentiality depends on collector integrity, not cryptography. |
 
 ---
@@ -256,17 +256,17 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 **Prerequisite:** Operator nsec theft  
 **Mitigation:** Add cryptographic proof of Lightning settlement (e.g., preimage verification) as defense-in-depth; nsec compromise is the root cause
 
-### Chain 2: Session ID Prediction → Proof Cache Hijack → Account Takeover
+### Chain 2: Holder Token Theft → Act As Held npubs (revised 2026-10-18)
 
-1. Attacker observes or predicts FastMCP session ID (S-8)
-2. Attacker sends tool call with target patron's npub and the predicted session ID
-3. If proof cache has a valid entry for `(session_id, target_npub)`, proof is waived (E-3)
-4. Attacker calls paid tools on target patron's balance
-5. **Impact:** Balance drain, unauthorized data access
+1. Attacker steals a holder's access token (compromised client, leaked log)
+2. Attacker calls paid tools naming an npub the holder's wallet holds
+3. **Impact:** Balance drain, data access for that npub, until the token expires (one hour) or the patron revokes
+
+The earlier chain here (predicting a session ID to inherit a session-bound proof cache) no longer applies: no proof is cached against a session.
 
 **Severity:** High  
-**Prerequisite:** Predictable session IDs  
-**Mitigation:** Ensure FastMCP session IDs are cryptographically random; consider binding proof cache to additional entropy (IP, user-agent hash)
+**Prerequisite:** Theft of a live access token  
+**Mitigation:** One-hour access tokens; single-use rotating refresh tokens with reuse detection; tokens stored only as hashes; `forget_credentials` revokes every grant
 
 ### Chain 3: Neon Connection String Leak → Pricing Manipulation → Zero-Cost Drain
 
@@ -347,7 +347,7 @@ Operator ──[certify_credits(amount, proof)]──▶ Authority MCP
 
 | Rec | Addresses | Action |
 |-----|-----------|--------|
-| **R-3** | S-8, E-3, Chain 2 | Audit FastMCP session ID entropy; consider binding proof cache to `(session_id, npub, client_fingerprint)` |
+| **R-3** | S-8, E-3, Chain 2 | Consider binding holder tokens to a client key (DPoP, RFC 9449) so a stolen access token cannot be used elsewhere |
 | **R-4** | I-3, T-5, Chain 3 | Sign pricing model with operator nsec at write time; verify signature at load time |
 | **R-5** | S-2 | Persist `_consumed_proofs` to vault for cold-restart replay protection (or accept the ~60s race window) |
 | **R-6** | I-1 | Add a runtime secret scanner — grep for nsec/key patterns in all outbound strings before they reach logs or responses |
@@ -377,7 +377,7 @@ These security invariants should be verified continuously (CI, runtime assertion
 7. **DM deletion is attempted after every successful `receive()`**
 8. **Neon queries are parameterized — no string interpolation**
 9. **Each operator has a distinct Neon schema and LOGIN role**
-10. **Proof cache TTL never exceeds 3600 seconds**
+10. **No tool takes a proof argument; every npub is proven on the connection** (a signed request or a holder grant), and a grant's lifetime never exceeds 30 days
 
 ---
 
@@ -385,12 +385,12 @@ These security invariants should be verified continuously (CI, runtime assertion
 
 | Category | Question Asked | DPYC Primary Control |
 |----------|---------------|---------------------|
-| **S**poofing | Can an attacker pretend to be someone else? | Schnorr-signed Nostr proofs (kind-27235) |
+| **S**poofing | Can an attacker pretend to be someone else? | Signed requests (NIP-98) + holder grants proven by the patron's signed DM reply |
 | **T**ampering | Can an attacker modify data in transit or at rest? | AES-256-GCM field encryption + NIP-44 DM encryption |
 | **R**epudiation | Can an actor deny performing an action? | Nostr audit trail + OpenTimestamps + Authority certificates |
 | **I**nformation Disclosure | Can secrets or PII leak? | Vault encryption + credential stripping + env-only secrets |
 | **D**enial of Service | Can an attacker degrade or block service? | Constraint gates + vault-first fallback + serverless retry |
-| **E**levation of Privilege | Can an attacker gain unauthorized access? | Proof-gated ACL + session-bound caches + per-operator schemas |
+| **E**levation of Privilege | Can an attacker gain unauthorized access? | Proof-gated ACL + one npub per request + per-operator schemas |
 
 ## Appendix B: Notation
 

@@ -143,3 +143,97 @@ destroyed on receipt.
 **Disposition (to confirm with counsel):** carry elements 634, 636 and 638 into
 the non-provisional under Claim Family 4; describe item 3 above nowhere as an
 embodiment. Add to the numeral schedule and FIG. 5 accordingly.
+
+---
+
+## Revision 3 — 2026-10-18 — identity on the connection; one acting npub per request (§5.2, §5.3, §5.4, §7.6)
+
+**Affects:** §5.3 step 5 (poison nonce, element 614), §5.4 (Identity Credentials,
+element 624), §7.6 (operator deployment proof, element 826), and Revision 2
+(elements 634, 636, 638). Adds as-built elements 640–648 to the reference numeral
+schedule; FIG. 5 is to be redrawn for the non-provisional to show them.
+
+**As described in Revision 2**, proof of npub control travelled inside each
+paid tool call as tool arguments: a keyed caller passed a freshly signed
+kind-27235 event bound to the tool name, and a keyless agent passed the proof
+grant (636) with its nonce. An agent's tool arguments are untrusted input, the
+event was bound to the tool name and not to the arguments, and a client had to
+store and replay grant material in its own context.
+
+**As built** (`tollbooth-dpyc` 0.103.0, released 2026-10-18, live across the
+network), identity travels on the HTTP connection that carries the call, and no
+tool takes a proof argument. Every tool names the npub it acts for, and the
+`Authorization` header proves it in one of two ways:
+
+1. **Signed request (element 640).** A caller holding the npub's private key
+   signs each HTTP request (NIP-98): a kind-27235 event whose tags name the
+   method, the URL and the SHA-256 of the request body, plus a random nonce,
+   carried as `Authorization: Nostr <base64 event>`. The Operator verifies the
+   Schnorr signature, the method, the path and the body hash, a 60-second
+   freshness window, and single-use replay rejection, before the request reaches
+   any tool. The signature authorizes that request and nothing else, so it binds
+   the tool arguments as well as the tool name. This generalises §7.6 (element
+   826) from deployment to every request, and replaces the per-call argument
+   proof of Revision 2 item 2.
+2. **Holder connection and wallet (element 642).** A caller holding no private
+   key (an AI assistant, a web page, a headless worker) connects by OAuth 2.1:
+   dynamic client registration, an Authorization Code grant with PKCE that the
+   Operator approves at once, short-lived access tokens and single-use rotating
+   refresh tokens with reuse detection, all stored only as hashes. The
+   connection has no identity of its own. Each npub it may act for is proven
+   into its **wallet** one at a time by the npub-ownership challenge (634): the
+   Operator stores the resulting proof grant (636) and its nonce against the
+   holder, and on each call checks the grant the holder holds for the named npub
+   (its own signature, the npub, the nonce hash, expiry, and revocation). The
+   grant never leaves the Operator; the client holds only its OAuth tokens.
+3. **Holder-bound challenge (element 644).** The challenge is bound to the
+   holder that requested it, and `receive_npub_proof` answers only that holder.
+   A reply can therefore prove an npub only into the connection that asked, and
+   nothing is returned that a third party could replay.
+4. **One acting npub per request (element 646).** A request proves exactly one
+   npub. An action that needs the consent of two parties is a workflow of
+   single-actor requests with a recorded approval. As built: an Operator asks an
+   Authority to adopt it (`request_adoption`, a request signed with the
+   Operator's key) and asks to change its registry entry (`update_operator`);
+   both wait in the Authority's request queue until the Authority's owner
+   approves or rejects them (`approve_operator_request`,
+   `reject_operator_request`). Leaving the network (`deregister_operator`) is a
+   single-party act by either the Operator or the Authority. The two-party
+   `register_operator` call, which carried both parties' proofs in one request,
+   is deleted.
+5. **Authority-signed registry writes (element 648).** The community Oracle
+   accepts a registry write (registering, updating or removing an Operator)
+   only on a request signed by the key of the Authority it names; any other
+   request reaches its free read tools as an anonymous caller.
+
+**Changes to earlier elements.**
+
+- **614.** The poison nonce is named `nonce` throughout the wire protocol. It
+  remains a non-secret matching token that selects a challenge or a grant and
+  never authorizes on its own.
+- **636.** The proof grant is unchanged in form (Operator-signed kind 30080 over
+  the patron's verified signature). It is held by the Operator in a holder's
+  wallet (642) and is never presented by the client.
+- **638.** Proxy delegation as described in Revision 2 (an actor binding inside
+  the grant) was not built. Its purpose, letting an agent act for a patron
+  without the patron's key, is met by the holder connection (642): the patron's
+  signed reply proves the npub into the agent's connection. A keyed agent acting
+  as itself signs its own requests (640).
+- **The Revision 2 divergence (bare nonce as credential)** is fully removed. No
+  path accepts a nonce, a grant or a signed event as a tool argument.
+
+**Relation to prior art (for the non-provisional's background).** Element 640
+is NIP-98 HTTP Auth applied to every request of a Model Context Protocol
+session, with the body hash making it a per-request proof of possession in the
+manner of OAuth 2.0 DPoP (RFC 9449) with no authorization server and no
+separate key-binding step: the npub is the key. Element 642 uses the OAuth 2.1
+Authorization Code flow with an empty consent step, because the connection
+carries no identity until an npub is proven into it out of band (634); the
+OAuth layer supplies only a revocable channel identity, and npub authority
+comes from the patron's own signature.
+
+**Disposition (to confirm with counsel):** carry 640–648 into the
+non-provisional under Claim Family 4 as the primary embodiment of per-request
+identity; retain the argument-borne proof of Revision 2 only as an alternative
+embodiment if broader claim scope is wanted; describe 638 as superseded by 642.
+Add to the numeral schedule and FIG. 5 accordingly.

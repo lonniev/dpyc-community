@@ -103,7 +103,7 @@ The same element carries the same numeral in every figure where it appears.
 | 608 | NIP-17 gift wrap layer | 5 |
 | 610 | Secure Courier channel | 5 |
 | 612 | Credential vault | 5 |
-| 614 | Poison nonce | 5 |
+| 614 | Poison nonce (named `nonce` as built; Rev. 3) | 5 |
 | 616 | Citizenship challenge | 5 |
 | 618 | Signature verification (citizenship) | 5 |
 | 620 | Vault encryption (AES-256-GCM, nsec-derived key) | 4, 5 |
@@ -115,7 +115,12 @@ The same element carries the same numeral in every figure where it appears.
 | 632 | Patron credential template | 5 |
 | 634 | npub-ownership challenge DM (agentic caller; Rev. 2) | 5 |
 | 636 | Proof grant (Operator-signed kind 30080 over verified patron signature; Rev. 2) | 5 |
-| 638 | Proxy delegation (keyed agent actor binding; Rev. 2) | 5 |
+| 638 | Proxy delegation (keyed agent actor binding; Rev. 2; superseded by 642, Rev. 3) | 5 |
+| 640 | Signed request (NIP-98 kind 27235 over method, URL and body hash; Rev. 3) | 5 |
+| 642 | Holder connection and wallet (OAuth 2.1 connection holding proof grants per npub; Rev. 3) | 5 |
+| 644 | Holder-bound challenge (npub-ownership challenge answerable only by the requesting holder; Rev. 3) | 5 |
+| 646 | Single-actor request with approval workflow (one npub per request; operator request queue; Rev. 3) | 5, 6 |
+| 648 | Authority-signed registry write (Oracle; Rev. 3) | 5, 6 |
 
 ## Governance (700-series)
 

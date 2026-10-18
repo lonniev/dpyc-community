@@ -40,7 +40,7 @@ STEPS:
        the concern, e.g. "nostr publish", "vault", "identity proof") and
        `mcp__graph__cypher_list_capabilities`.
      - Then grep the installed `tollbooth` package for the primitive itself (e.g.
-       `def send_dm`, `_publish_to_relays`, `create_proof`).
+       `def send_dm`, `_publish_to_relays`, `sign_request`).
    Crypto, vault, pricing, auth, audit, payments and Nostr transport are SDK-owned
    and are never reimplemented in a consumer (CLAUDE.md §3). If a primitive exists,
    CALL IT. If the right home for the code is the SDK or a sibling repo rather than

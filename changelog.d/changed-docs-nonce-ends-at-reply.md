@@ -1,0 +1,1 @@
+- Community docs describe tollbooth-dpyc 0.104: patent Revision 4 (the Courier nonce ends at the reply; holder connection and grant lifetimes; an npub is a key, not a person), threat-model row S-9, the network advisory, the README, and the SysML `Identity` package (NIP-98 keyring, `HolderConnection`, `HolderWallet`, `CourierNonce`, `ProofGrant`).

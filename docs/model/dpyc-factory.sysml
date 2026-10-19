@@ -155,8 +155,10 @@ package DPYCSoftwareFactory {
 
     // =========================================================================
     //  3. IDENTITY — every agent is a DPYC patron holding its own nsec.
-    //     No new actors, no stored tokens, nothing granted per call: the agent
-    //     signs its own ephemeral kind-27235 proof of possession per request.
+    //     Identity rides on the HTTP connection, never in tool arguments
+    //     (tollbooth-dpyc >= 0.103). A keyed caller signs each request
+    //     (NIP-98); a keyless one is an OAuth holder into whose wallet npubs
+    //     are proven by Secure Courier DM. Each request acts for one npub.
     // =========================================================================
     package Identity {
 
@@ -169,24 +171,80 @@ package DPYCSoftwareFactory {
 
         part def AgentKeyring {
             doc /* `python -m tollbooth.agent_keyring` from tollbooth-dpyc[keyring].
-                 * A FastMCP create_proxy plus one middleware that injects the npub
-                 * and a FRESH kind-27235 proof into every forwarded call. Mounted
+                 * A FastMCP create_proxy whose upstream connection signs every
+                 * HTTP request with the nsec (NIP-98), plus one middleware that
+                 * names the agent's npub on each call that names none. Mounted
                  * as a local stdio MCP server via claude-code-action's
                  * --mcp-config, whose per-server `env` is isolated from the
                  * agent's own shell. It is the agent's signing HAND, not an actor. */
             attribute upstream : String = "https://cypher-mcp.fastmcp.app/mcp";
-            attribute sdkExtra : String = "tollbooth-dpyc[keyring]==0.63.1";
+            attribute sdkExtra : String = "tollbooth-dpyc[keyring]==0.103.0";
             port graphTools : GraphToolPort;
         }
 
         item def SignedToolCall {
-            doc /* One mcp__graph__cypher_* call as it leaves the keyring: the patron
-                 * npub and a freshly minted kind-27235 proof attached. Nothing is
-                 * stored — a DPoP is proof of possession for THIS call only, which is
-                 * why there is no token to expire, leak, or revoke. */
+            doc /* One mcp__graph__cypher_* call as it leaves the keyring: the tool
+                 * arguments name the npub, and the request carries
+                 * `Authorization: Nostr <base64 kind-27235>` whose tags bind the
+                 * method, the URL and the SHA-256 of the body. The operator accepts
+                 * it within 60 s, once. Nothing is stored: the signature proves
+                 * possession for THIS request only, so there is no token to
+                 * expire, leak, or revoke. */
             attribute tool : String;
             attribute npub : String;
             attribute proofKind : Integer = 27235;
+            attribute freshnessSeconds : Integer = 60;
+        }
+
+        /* The keyless path (SDK holder_auth): an AI assistant, a web page or a
+         * headless worker. Scout reaches the network this way, through Claude.ai's
+         * connector. Not used by the Factory's own runners, which hold nsecs. */
+        part def HolderConnection {
+            doc /* An OAuth 2.1 connection to one operator: dynamic client
+                 * registration, an auto-approved Authorization Code grant with PKCE
+                 * (a web page fetches /authorize as JSON and never navigates), an
+                 * access token and a single-use rotating refresh token, both stored
+                 * only as hashes. The holder id is minted per sign-in, kept only on
+                 * the operator, and survives every refresh, so the access token is a
+                 * renewable handle on one persistent connection. Replaying a spent
+                 * refresh token forgets the holder, wallet included. The connection
+                 * has no npub of its own. */
+            attribute holderId : String;
+            attribute accessTtlSeconds : Integer = 3600;
+            attribute refreshTtlSeconds : Integer = 2592000;
+            part wallet : HolderWallet;
+        }
+
+        part def HolderWallet {
+            doc /* Per npub, the grant a DM proved into this connection, encrypted at
+                 * rest, reachable only by its holder id. It holds the grant alone
+                 * (tollbooth-dpyc >= 0.104.1). One connection may hold many npubs;
+                 * an npub is a key, not a person. */
+            item grants : ProofGrant[0..*];
+        }
+
+        item def CourierNonce {
+            doc /* The one-time phrase request_npub_proof issues and the challenge DM
+                 * shows. The patron's reply carries it; receive_npub_proof uses it to
+                 * find that reply, answers only the holder that asked, and discards
+                 * the exchange. Its hash is recorded in the grant; after the reply it
+                 * is never stored, checked or presented again. It never authorizes. */
+            attribute phrase : String;
+        }
+
+        item def ProofGrant {
+            doc /* Operator-signed kind 30080 over the patron's verified reply
+                 * signature. Checked on every call: the operator's own signature,
+                 * the npub it names, its expiry, and the patron's forget_credentials
+                 * watermark. Its lifetime is the patron's choice, independent of the
+                 * connection's tokens; a lapsed grant is re-proven on the same
+                 * connection. */
+            attribute kind : Integer = 30080;
+            attribute patronNpub : String;
+            attribute challengeHash : String;     // sha256(CourierNonce::phrase)
+            attribute patronSig : String;
+            attribute defaultTtlSeconds : Integer = 7200;
+            attribute maxTtlSeconds : Integer = 2592000;
         }
 
         item def GraphAnswer {
@@ -226,12 +284,14 @@ package DPYCSoftwareFactory {
         }
 
         /* Scout is NOT a workflow. It is an outside patron — Claude.ai reporting
-         * under its own npub through the SDK `report_issue` tool — whose reports
+         * under its own npub, proven into its HolderConnection, through the SDK
+         * `report_issue` tool — whose reports
          * arrive on a dedicated `dpyc-scout` GitHub account that is deliberately a
          * NON-collaborator with zero write access. */
         part def ScoutReporter :> NostrIdentity {
             attribute githubAccount : String = "dpyc-scout";
             attribute writeAccess : Boolean = false;
+            part connection : HolderConnection;
         }
     }
 

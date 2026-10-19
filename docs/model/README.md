@@ -63,6 +63,7 @@ file's own header comments, which are unusually rich.
 | `Roles::BlockRetire`, `Behavior::FundingBlockLifecycle` | `.github/workflows/block-retire.yml`, `factory/actions/funding-sentinel/stamp_cypher.py` |
 | `Roles::Scout`, `Identity::ScoutReporter` | `tollbooth-dpyc/src/tollbooth/tools/report_issue.py`, the FIELD REPORTS clause in `factory/porter.prompt.md`, `allowed_non_write_users` in `service-desk.yml` |
 | `Identity::AgentKeyring`, `Guards::G9` | the `--mcp-config` blocks in `service-desk.yml` / `engineering.yml`; `tollbooth.agent_keyring` in the SDK |
+| `Identity::HolderConnection`, `HolderWallet`, `CourierNonce`, `ProofGrant` | tollbooth-dpyc `holder_auth.py`, `vaults/holder_store.py`, `tools/proof.py` (`receive_npub_proof`), `identity_proof.require_held_grant`, `proven_npub.py` (grant lifetimes) |
 | `Platform::OpenRouter`, the tier map | `factory/actions/resolve-model/action.yml` |
 | `Vocabulary::*` — all 32 labels | `scripts/apply_labels.sh` |
 | `Distribution::ThinCaller` and every caller guard | `scripts/factory-callers/agentic-*.yml` |
@@ -128,7 +129,7 @@ sysml validate docs/model/dpyc-factory.sysml
 {"file":"docs/model/dpyc-factory.sysml","valid":true,"diagnostics":[]}
 ```
 
-Indexing reports 476 elements and 949 relationships, including all 14 requirements, four
+Indexing reports 494 elements and 981 relationships, including all 14 requirements, four
 state machines with 42 transitions, ten enumerations and twelve packages — so the grammar
 is understood, not merely tokenized.
 

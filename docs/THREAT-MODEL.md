@@ -2,7 +2,7 @@
 
 **Framework:** STRIDE + Data Flow Diagrams  
 **Version:** 1.1  
-**Date:** 2026-04-20 (identity rows revised 2026-10-18 for tollbooth-dpyc 0.103: identity on the connection)  
+**Date:** 2026-04-20 (identity rows revised 2026-10-18 for tollbooth-dpyc 0.103: identity on the connection; S-9 added 2026-10-19 for 0.104.1)  
 **Scope:** All DPYC Social Contract components — SDK, Operators, Authority, Oracle, external dependencies  
 **Classification:** Public (no secrets — this document references architecture, not credentials)
 
@@ -181,6 +181,7 @@ Operator ──[signed request: certify_credits(amount)]──▶ Authority MCP
 | S-6 | AI agent names a patron npub it was never given | TB1 | The connection must prove the named npub: a signature by its nsec, or a grant in this holder's wallet that the patron's own signed DM reply put there | None beyond holder-token theft (S-8) |
 | S-7 | Attacker registers with stolen npub | Oracle/Authority | Registration is idempotent; no secret is granted at registration | Attacker gets a zero-balance ledger entry; useless without nsec to prove or fund |
 | S-8 | Holder token theft | TB1, TB7 | Access tokens live one hour; refresh tokens are single-use and rotate, and a reused one is refused; tokens are stored only as hashes | **A stolen access token acts as the holder's npubs until it expires.** The patron's `forget_credentials` revokes every grant they issued |
+| S-9 | Attacker learns a Courier `nonce` and the patron's npub (a seen DM, a transcript) | TB1, TB4 | The challenge answers only the holder that requested it (`bound_to`); the nonce's life ends at the reply, and no call ever takes it again; the wallet keeps the grant alone | None — on another connection `receive_npub_proof` refuses (`courier_nonce_mismatch`) and paid calls stay `proof_required` (live-probed 2026-10-19) |
 
 ### 3.2 Tampering
 

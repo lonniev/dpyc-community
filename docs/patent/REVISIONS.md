@@ -237,3 +237,66 @@ non-provisional under Claim Family 4 as the primary embodiment of per-request
 identity; retain the argument-borne proof of Revision 2 only as an alternative
 embodiment if broader claim scope is wanted; describe 638 as superseded by 642.
 Add to the numeral schedule and FIG. 5 accordingly.
+
+---
+
+## Revision 4 — 2026-10-19 — the nonce ends at the reply; holder lifetimes; one key is not one person (§5.3, §5.4)
+
+**Affects:** §5.3 step 5 (poison nonce, element 614) and Revision 3 (elements
+636, 642, 646). No new elements.
+
+**As described in Revision 3**, the Operator stored the proof grant (636)
+together with its nonce in the holder's wallet (642), and on each call checked
+the nonce hash among the grant's other checks.
+
+**As built** (`tollbooth-dpyc` 0.104.1, released 2026-10-19):
+
+1. **The nonce's life ends at the reply (614).** `request_npub_proof` issues a
+   one-time nonce and shows it in the challenge DM; the patron's reply must
+   carry it; `receive_npub_proof` uses it to find that one reply among the DMs
+   on the pinned relay, then discards the pending exchange. The grant's
+   `challenge` tag records `sha256(nonce)`, so the grant names the exchange the
+   patron answered. After that the nonce is neither stored nor checked, and no
+   caller ever presents it again. The Revision 3 per-call nonce check compared
+   two values read from one encrypted wallet row, so it could only confirm the
+   row against itself; it is removed. Rows written before 0.104.1 still carry a
+   nonce; it is ignored and they remain valid until their grants expire.
+2. **What each call checks (642).** The holder's wallet keeps the grant alone,
+   reachable only through the server-side holder identifier the caller's access
+   token resolves to. On each call the Operator checks the grant's own
+   signature, that it names the npub the call acts for, its expiry, and that it
+   post-dates the patron's last `forget_credentials` (the revocation
+   watermark).
+3. **Two lifetimes, independent of each other (642, 636).**
+   - *The connection.* Authorization mints a random holder identifier, kept
+     only on the Operator and never shown to the client. The client holds an
+     access token (one hour) and a refresh token (thirty days, single use,
+     replaced on every refresh), both stored only as hashes. The holder
+     identifier survives every refresh, so the access token is in effect a
+     renewable, expiring handle on one persistent connection. Presenting a
+     spent refresh token forgets the holder: its tokens and its wallet.
+   - *The npub's grant.* The patron chooses its length in the reply (for
+     example `cache_duration: 7d`); the default is two hours and the cap is
+     thirty days. When it expires, calls for that npub are refused with a proof
+     error while the connection itself stays live, and the patron may prove the
+     npub into the same connection again.
+4. **A connection can be signed in without a redirect (642).** A web page asks
+   `/authorize` with `Accept: application/json` and is answered with the
+   redirect target as JSON (with CORS), so it reads the authorization code and
+   exchanges it in place, never leaving the page (`tollbooth-dpyc` 0.104.0).
+   Other clients still receive the standard redirect.
+5. **An npub is a key, not a person (646).** The protocol proves possession of a
+   key and asserts nothing about who holds it. One connection may hold grants
+   for several npubs and act for each in turn, one npub per request; one person
+   may control several npubs. A multi-party action therefore needs one recorded
+   approval per npub, each proven by that npub's own request, and makes no
+   claim that the approvers are different people.
+
+**Relation to prior art:** unchanged from Revision 3. Item 3 is the ordinary
+OAuth 2.1 refresh-token rotation with reuse detection; item 4 is a non-standard
+JSON rendering of the Authorization Code redirect for same-page clients.
+
+**Disposition (to confirm with counsel):** describe the nonce (614) in the
+non-provisional as a one-time matching token whose hash the grant records,
+with no role after the reply; describe the per-call checks of 642 as items 2
+and 3 above.

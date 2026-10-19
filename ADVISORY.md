@@ -1,8 +1,30 @@
 # DPYC™ Network Advisory
 
-> Last updated: 2026-10-18
+> Last updated: 2026-10-19
 
 ## Current Advisories
+
+### October 2026: tollbooth-dpyc 0.104.0–0.104.1 — sign-in by fetch; the nonce ends at the reply (2026-10-19)
+
+**Affects:** every operator and Authority (Renovate bumps the pin). No tool changed.
+
+- **0.104.0:** a web page signs in as a holder without leaving itself. `GET /authorize`
+  with `Accept: application/json` answers `{"redirect_uri": …}`, and the page exchanges
+  the code in place. Programs still follow the redirect.
+- **0.104.1:** a holder's wallet keeps the proof grant alone. The Courier `nonce` finds the
+  patron's reply and its hash is recorded in the grant; after `receive_npub_proof` it is
+  neither stored nor checked. Each call checks the grant's signature, its npub, its expiry
+  and revocation. Grants already held keep working until they expire.
+
+**Lifetimes, for a holder:** the access token lasts one hour and the refresh token thirty
+days, replaced on every refresh, so a client that keeps refreshing keeps one connection.
+Each npub's grant lasts as long as the patron chose in the reply (default two hours, at
+most thirty days); when it lapses, calls for that npub need a fresh DM proof on the same
+connection.
+
+**Action:** none.
+
+---
 
 ### October 2026: tollbooth-dpyc 0.103.0 — identity on the connection (2026-10-18)
 

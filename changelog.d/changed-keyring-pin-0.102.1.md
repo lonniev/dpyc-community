@@ -1,1 +1,0 @@
-- The factory's agent keyring installs tollbooth-dpyc 0.102.1: the proxy signs every request with the agent's nsec (NIP-98), so a cypher call proves its npub on the connection.

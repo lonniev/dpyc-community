@@ -1,1 +1,0 @@
-- README now matches the code: operators join by `request_adoption` and the Authority owner's approval, after which the Oracle's `register_operator` commits the registry entry (Authorities and Advocates likewise go through the Oracle, not a PR); the Related Repositories list adds goodearth-mcp, beesknees-mcp, roastify-mcp, ChartRemotely-mcp and tollbooth-web.

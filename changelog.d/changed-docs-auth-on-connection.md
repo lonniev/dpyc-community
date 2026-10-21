@@ -1,1 +1,0 @@
-- Community docs describe identity on the connection (tollbooth-dpyc 0.103): README, threat model, network advisory, the Sentinel's checklist, and patent Revision 3 with reference numerals 640–648.

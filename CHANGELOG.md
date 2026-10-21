@@ -3,6 +3,91 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.5.0] — 2026-10-21
+
+### Added
+
+- **The changelog convention, hoisted to the shared home.**
+  `scripts/changelog-fragments/` is now the canonical set — `changelog.py` (the
+  fold), the `changelog.d/README.md` that states the convention, the tests that
+  hold it as a property, and `adopt.py` which installs all three into one repo.
+  `scripts/sync-changelog-fragments.sh` fans it out the way
+  `sync-factory-callers.sh` fans out the factory callers: throwaway clones, one
+  PR per repo, discovery from the checkouts under the working directory.
+
+  `CHANGELOG.md` was the fleet's most conflict-prone file for a structural
+  reason rather than a careless one. Every PR appended to the same
+  `### Added` / `### Fixed` anchors of the same `## [Unreleased]` section, so
+  two PRs sharing no source file still collided there — six did in
+  `beesknees-mcp` in one day. One file per change removes the anchor; files
+  nobody else touches never conflict.
+
+- **Adoption migrates the existing `[Unreleased]` section rather than leaving
+  it.** Installing the machinery and keeping the section is the null change:
+  the next two PRs collide on it exactly as before. `adopt.py` lifts every
+  entry into a fragment, keeps prose that was under no heading (as `notes`),
+  keeps an invented heading's content (also as `notes`) rather than dropping
+  it, and removes the section **even when it was empty** — an empty
+  `[Unreleased]` is still the anchor the next PR writes under.
+
+- **This repo adopted it first.** Its own empty `[Unreleased]` is gone and this
+  entry is a fragment. It has no `pyproject.toml` — it versions itself by git
+  tag — so the guard that refuses a release with unfolded fragments skips
+  itself here and says why; the fold and the order-independence do not need a
+  version file.
+
+- **A PR may not add a line to `CHANGELOG.md`.** The fragment convention removed
+  the anchor that made any two open PRs conflict, and nothing enforced it; a PR
+  that still wrote its bullet there put the anchor straight back. The reusable
+  `changelog-guard.yml` fails such a PR (a release PR, title beginning
+  "release", is exempt), and `adopt.py` installs the thin caller with the rest.
+- `adopt.py` adopts a repo with no `tests/` too — the fragments and the fold are
+  what stop the conflicts; only the unfolded-release pytest is skipped, and the
+  run says so. `sync-changelog-fragments.sh` opens each PR as the factory App
+  and wakes its CI, as every PR not written by the owner is opened.
+
+- **Shared front-end deploy.** `.github/workflows/deploy-frontend.yml` is a reusable
+  workflow that builds a repo's `frontend/` and publishes it to Cloudflare Pages, making
+  the Pages project on first deploy. Operator repos call it with their `pages-project`
+  instead of carrying their own copy. ChartRemotely is the first caller.
+- **Renovate follows `@tollbooth-dpyc/web`.** The npm browser SDK gets the same rules as
+  the `tollbooth-dpyc` wheel: exact pin, patch and minor self-merge on green CI, major
+  waits for review.
+
+### Changed
+
+- Community docs describe identity on the connection (tollbooth-dpyc 0.103): README, threat model, network advisory, the Sentinel's checklist, and patent Revision 3 with reference numerals 640–648.
+
+- Community docs describe tollbooth-dpyc 0.104: patent Revision 4 (the Courier nonce ends at the reply; holder connection and grant lifetimes; an npub is a key, not a person), threat-model row S-9, the network advisory, the README, and the SysML `Identity` package (NIP-98 keyring, `HolderConnection`, `HolderWallet`, `CourierNonce`, `ProofGrant`).
+
+- The factory's agent keyring installs tollbooth-dpyc 0.102.1: the proxy signs every request with the agent's nsec (NIP-98), so a cypher call proves its npub on the connection.
+
+- The factory's agent keyring installs tollbooth-dpyc 0.103.0: the proxy signs each request with the agent's nsec and names its npub; tools take no proof argument.
+
+- README now matches the code: operators join by `request_adoption` and the Authority owner's approval, after which the Oracle's `register_operator` commits the registry entry (Authorities and Advocates likewise go through the Oracle, not a PR); the Related Repositories list adds goodearth-mcp, beesknees-mcp, roastify-mcp, ChartRemotely-mcp and tollbooth-web.
+
+- Renovate refreshes every lockfile weekly (lockFileMaintenance) and merges it on green CI, so no service sits on old transitive dependencies; the @tollbooth-dpyc/web pin is no longer grouped with frontend dependencies, so it self-merges like tollbooth-dpyc.
+
+- The cypher stamp, PR mirror and intention harvest sign each request with their role's nsec (NIP-98, tollbooth-dpyc 0.102.0) and pass only the npub; no proof rides in tool arguments.
+
+### Fixed
+
+- A repo that ignores `scripts/` adopts with its fold script: `adopt.py` adds
+  the one `.gitignore` negation that lets `scripts/changelog.py` through.
+  thebrain-mcp's adoption PR had carried the test without the script it tests.
+
+- The Changelog guard no longer rejects adoption: a line that only points the
+  reader at `changelog.d/` is not an entry. The convention's pytest no longer
+  fails every PR between releases (fragments present while `pyproject.toml`
+  still names the last release is the normal state); the shared release
+  workflow instead names a tag cut with fragments still unfolded.
+
+- The factory's agent keyring installs tollbooth-dpyc 0.101.1, whose proxy sends `Authorization: Bearer anonymous`, so agents keep reaching cypher once it turns on holder bearer.
+
+- Fleet probes and scripts (deploy-verify, OTS collector, network status, bootstrap audit, intention harvest, canary stamp, PR mirror) send `Authorization: Bearer anonymous`, so an operator with holder bearer on answers them instead of a 401.
+
+- The shared GitHub Release workflow runs again: the unfolded-fragments check added on 10-09 was joined to the notes step as a second `run:` in one step, a duplicate key that failed every fleet release before a job started (tollbooth-web v1.8.0 was the first to hit it). The notes step has its own name again.
+
 ## [1.4.0] — 2026-08-26
 
 ### Added — one identity for a code symbol, fleet-wide

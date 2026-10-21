@@ -1,1 +1,0 @@
-- The factory's agent keyring installs tollbooth-dpyc 0.101.1, whose proxy sends `Authorization: Bearer anonymous`, so agents keep reaching cypher once it turns on holder bearer.

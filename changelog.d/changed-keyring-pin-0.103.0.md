@@ -1,1 +1,0 @@
-- The factory's agent keyring installs tollbooth-dpyc 0.103.0: the proxy signs each request with the agent's nsec and names its npub; tools take no proof argument.

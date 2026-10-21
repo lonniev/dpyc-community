@@ -1,0 +1,1 @@
+- `network-status.json` reports the fleet as of 2026-10-21: tollbooth-dpyc 0.105.1, every service's current release, and the five services it had not yet listed.

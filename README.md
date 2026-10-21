@@ -101,7 +101,7 @@ Each file is named `{npub}.json` and holds the member record for an Operator, Au
 
 ### Governance
 
-**Governance** uses GitHub's native tools — PRs for membership changes, Issues for ban proposals, branch protection for integrity. Git's Merkle tree provides a tamper-evident audit trail.
+**Governance** uses GitHub's native tools — commits to `members/` for membership changes (the Oracle commits each entry once the sponsoring Authority approves), Issues for ban proposals, branch protection for integrity. Git's Merkle tree provides a tamper-evident audit trail.
 
 ### The Certification Chain
 
@@ -135,9 +135,12 @@ Value flows from **actual API consumption at the edges**, not from recruitment. 
 
 2. **Find a sponsoring Authority** — an existing Authority in the network who will vouch for you.
 
-3. **Your Authority submits a PR** adding a file `members/{role}/{npub}.json` with your role, services, and their npub as your `upstream_authority_npub`. **Advocates** (shared community utilities) register directly via the Oracle's `register_advocate` tool.
+3. **Ask to join, by role:**
+   - **Operators** — call your own service's `request_adoption(authority_npub, service_url, display_name)`, signed with your operator key. The request waits in that Authority's queue until its owner approves it (`approve_operator_request`). Approval provisions your Neon tenant, and the Authority has the Oracle's `register_operator` commit `members/operators/{npub}.json`, naming the Authority as your `upstream_authority_npub`. Your service's `adoption_status` reports progress.
+   - **Authorities** — claim the role on your own Authority service (`register_authority_npub` → `confirm_authority_claim` → `check_authority_approval`); once your upstream Authority approves, the Oracle's `register_authority` commits your entry. See [How to Add an Authority](docs/how-to-add-authority.md).
+   - **Advocates** (shared community utilities) register via the Oracle's `register_advocate` tool.
 
-4. **PR reviewed and merged** — the CI workflow validates individual member files and auto-regenerates `members/read-only-lookup-cache.json`.
+4. **Registry rebuilt** — CI validates the new member file and auto-regenerates `members/read-only-lookup-cache.json`.
 
 ## How Banning Works
 
@@ -178,6 +181,10 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | [cypher-mcp](https://github.com/lonniev/cypher-mcp) | Monetized graph answers — named Cypher templates over Neo4j/AuraDB |
 | [taxsort-mcp](https://github.com/lonniev/taxsort-mcp) | Tax-transaction classification MCP with a hosted frontend |
 | [optionality-mcp](https://github.com/lonniev/optionality-mcp) | AI-judged options-trading practice MCP |
+| [goodearth-mcp](https://github.com/lonniev/goodearth-mcp) | Region-scoped climate analytics for small specialty-crop and flower farms |
+| [beesknees-mcp](https://github.com/lonniev/beesknees-mcp) | The Bee's Knees — a monetized multiplayer race to the queen |
+| [roastify-mcp](https://github.com/lonniev/roastify-mcp) | Roastify coffee catalog and packaging-artwork MCP |
+| [ChartRemotely-mcp](https://github.com/lonniev/ChartRemotely-mcp) | Puts a security on a patron's desktop chart via an agent on their own Mac |
 | [tollbooth-fermyon](https://github.com/lonniev/tollbooth-fermyon) | Spin/WASI edge Operator — the tollbooth-sample operator running in WebAssembly |
 | [tollbooth-sample](https://github.com/lonniev/tollbooth-sample) | Reference Operator — the canonical template for new servers |
 
@@ -193,6 +200,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 | Repository | Purpose |
 |-----------|---------|
 | [tollbooth-pricing-studio](https://github.com/lonniev/tollbooth-pricing-studio) | Operator workbench (iPadOS) — live pricing editor, constraint pipeline, AI pricing campaigns |
+| [tollbooth-web](https://github.com/lonniev/tollbooth-web) | Shared browser SDK for Operator front ends |
 | [tollbooth-dpyc-site](https://github.com/lonniev/tollbooth-dpyc-site) | Marketing site, live at [tollbooth-dpyc.com](https://tollbooth-dpyc.com) |
 | [network-states-of-the-internet](https://github.com/lonniev/network-states-of-the-internet) | Reference material — a dashboard of startup societies |
 

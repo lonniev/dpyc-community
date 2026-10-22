@@ -118,6 +118,7 @@ jobs:
         if: steps.touched.outputs.any == 'true'
         with:
           node-version: '24'
+          check-latest: true
           cache: npm
           cache-dependency-path: docs/model/package-lock.json
 

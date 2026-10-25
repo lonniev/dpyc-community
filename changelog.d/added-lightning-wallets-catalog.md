@@ -1,0 +1,1 @@
+- `wallets.json`: the Lightning wallets a new guest can install, which the Oracle ranks by a live search.

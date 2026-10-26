@@ -1,7 +1,7 @@
 {
   "components": {
     "tollbooth-dpyc": {
-      "current": "0.105.1",
+      "current": "0.106.0",
       "minimum": "0.86.1",
       "changelog_url": "https://github.com/lonniev/tollbooth-dpyc/releases"
     },
@@ -106,7 +106,7 @@
       "changelog_url": "https://github.com/lonniev/ChartRemotely-mcp/releases"
     },
     "tollbooth-web": {
-      "current": "2.3.0",
+      "current": "2.6.0",
       "minimum": "2.3.0",
       "changelog_url": "https://github.com/lonniev/tollbooth-web/releases"
     }
@@ -114,7 +114,7 @@
   "protocols": [
     "dpyp-01-base-certificate"
   ],
-  "last_updated": "2026-10-21",
-  "advisory": "October 2026. The fleet runs tollbooth-dpyc 0.105.1, pinned by every consumer except the frozen Spin operator. 0.105.1 closes a payment-ledger flaw: a settled Lightning invoice could be credited more than once by naming it under a different spelling of its id, and an invoice carrying no owner could be credited to whichever patron named it first. Each settled invoice now credits exactly once, and only to the patron it was created for. Since 0.103.0, identity travels on the connection itself (a NIP-98 signed request or an OAuth holder grant); tools no longer take a per-call proof, and a proof lasts as long as the patron chose, up to 30 days.",
+  "last_updated": "2026-10-26",
+  "advisory": "October 2026. Every live operator and Authority runs tollbooth-dpyc 0.106.0, and every site runs @tollbooth-dpyc/web 2.6.0; the frozen Spin operator is the one exception. 0.106.0 adds oracle_lightning_wallets, the wallet list behind a site's \"Need a wallet?\" card. Web 2.6.0 opens the patron's own Lightning wallet on an invoice (lightning: plus the BOLT11) and says when the page is watching for the payment. Since 0.105.1 each settled invoice credits exactly once, and only to the patron it was created for. Since 0.103.0, identity travels on the connection itself (a NIP-98 signed request or an OAuth holder grant), and a proof lasts as long as the patron chose, up to 30 days.",
   "architecture_notes": "Schema symmetry: every operator and Authority gets its own Neon schema; credentials live in an encrypted_blob column. vault_source and purchase_mode are independent axes (a sub-Authority self-provisions its Neon from env yet still certifies up). Each service reports its version in service_status from its own pyproject [project].version (installed metadata, with a from-source pyproject.toml fallback) — there is no hand-maintained version constant to drift. Standard tool bodies live in tested tollbooth.tools.* modules behind thin proof-gate shims; tool names and behavior are unchanged. Operators run on one of two hosts from the same source: FastMCP (on Prefect Horizon) or the Spin/WASI SpinOperatorHost (tollbooth-wasmcp); the Spin host carries the WASI seams (crypto component, relay bridge, nsec-only bootstrap) so the operator stays business-logic only."
 }

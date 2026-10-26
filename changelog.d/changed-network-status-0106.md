@@ -1,0 +1,1 @@
+- network-status.json reports the fleet on tollbooth-dpyc 0.106.0 and @tollbooth-dpyc/web 2.6.0.

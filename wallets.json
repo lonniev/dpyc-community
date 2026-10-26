@@ -11,7 +11,6 @@
         "WoS",
         "walletofsatoshi"
       ],
-      "pinned": true,
       "line": "The easiest start: install it and it's ready to receive and pay.",
       "custody": "self-custodial",
       "buys_in_app": false,

@@ -1,0 +1,1 @@
+- Wallet of Satoshi is no longer pinned first in `wallets.json`; every wallet now ranks on what the web says.

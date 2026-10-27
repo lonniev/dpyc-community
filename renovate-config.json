@@ -26,6 +26,11 @@
   },
   "packageRules": [
     {
+      "description": "Lockfiles are written with npm 11 until npm/cli#9800 is fixed. npm 12 made allow-remote default to none, and a bug then reads a registry tarball with bundleDependencies as a REMOTE fetch and refuses it. Tailwind 4's optional @tailwindcss/oxide-wasm32-wasi is one, so every frontend lockfile refresh failed with EALLOWREMOTE (2026-10-27: beesknees, cypher, excalibur, goodearth, optionality, roastify, taxsort) and left package.json ahead of its lock. npm 11 allowed these fetches anyway, so this restores the old behaviour exactly; allow-remote=all would loosen it fleet-wide instead. Remove once a fixed npm 12 ships.",
+      "matchManagers": ["npm"],
+      "constraints": { "npm": "<12" }
+    },
+    {
       "description": "SDK pin — keep tollbooth-dpyc pinned to the exact == version on every update type. (rangeStrategy lives in its OWN rule: Renovate rejects combining it with matchUpdateTypes.) SCHEDULE EXEMPTION: the SDK is first-party and released deliberately, so it does not wait for the weekly window. minimumReleaseAge:0 below already said 'do not wait for it to settle' — but the global schedule still gated PR creation to Mondays 00:00-06:59, and the schedule won, so the exemption bought nothing. v0.89.1 (the courier rendezvous fix) was cut on a Wednesday and would have sat published-but-undelivered for five days. Everything else keeps the Monday batch.",
       "matchPackageNames": ["tollbooth-dpyc", "@tollbooth-dpyc/web"],
       "rangeStrategy": "pin",

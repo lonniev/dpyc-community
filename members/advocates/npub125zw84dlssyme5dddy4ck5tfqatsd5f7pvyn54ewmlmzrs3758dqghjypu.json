@@ -7,13 +7,14 @@
   "services": [
     {
       "name": "tollbooth-oauth2-collector",
-      "url": "https://tollbooth-oauth2-collector.fastmcp.app",
-      "description": "Community OAuth2 code storage and retrieval via MCP tools"
+      "url": "https://tollbooth-oauth2-collector.fastmcp.app/mcp",
+      "description": "Holds OAuth2 authorization codes, sealed to the operator that asked, until that operator's MCP collects them once."
     },
     {
       "name": "tollbooth-oauth2-callback",
       "url": "https://tollbooth-dpyc-oauth.val.run",
-      "description": "Serverless OAuth2 browser callback — receives GET redirects from OAuth providers"
+      "description": "The browser callback OAuth providers redirect to. It turns their GET redirect into the POST an MCP takes and hands the code to the collector.",
+      "transport": "http"
     }
   ],
   "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",

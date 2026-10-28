@@ -8,7 +8,7 @@
     {
       "name": "Excalibur MCP",
       "url": "https://excalibur-mcp.fastmcp.app/mcp",
-      "description": "Social media posting via MCP with Tollbooth monetization"
+      "description": "Posting to X and Nostr for AI agents: scheduled posts, live dynamic blocks resolved at send time, and post performance."
     }
   ],
   "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",

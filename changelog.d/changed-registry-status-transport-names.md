@@ -1,0 +1,3 @@
+- Members may be `inactive`: in good standing and kept on record, but not serving, so listings leave them out. Tollbooth Fermyon, frozen and reachable only on a private network, is now inactive.
+- A service may declare `transport: http` for a plain web endpoint that is not an MCP. The OAuth2 browser callback says so; the OAuth2 collector's URL now names its `/mcp` endpoint.
+- Display names read as names: Schwab MCP, Optionality MCP, TaxSort MCP, Cypher MCP, TheBrain MCP, Tollbooth Authority, Tollbooth Authority North America.

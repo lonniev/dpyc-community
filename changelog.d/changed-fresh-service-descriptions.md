@@ -1,0 +1,1 @@
+- Every operator in the registry describes itself in plain words. Eight still carried the registration placeholder ("MCP Operator registered under Authority npub…"), and eXcalibur's and TheBrain's had gone stale.

@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-10-11T12:58:51Z",
+  "updated_at": "2026-10-28T12:41:39Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -40,7 +40,7 @@
       "role": "authority",
       "status": "active",
       "member_since": "2026-03-01",
-      "display_name": "Lonnie-Authority",
+      "display_name": "Tollbooth Authority",
       "services": [
         {
           "name": "tollbooth-authority",
@@ -56,7 +56,7 @@
       "role": "authority",
       "status": "active",
       "member_since": "2026-05-16",
-      "display_name": "Tollbooth-Authority-NorthAmerica",
+      "display_name": "Tollbooth Authority North America",
       "services": [
         {
           "name": "tollbooth-authority-northamerica",
@@ -77,7 +77,7 @@
         {
           "name": "GoodEarth MCP",
           "url": "https://goodearth-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+          "description": "Climate analytics for small specialty-crop and flower farms: frost, heat, rain, daylight and planting windows, read for each plot you farm."
         }
       ],
       "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
@@ -88,7 +88,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-03-11",
-      "display_name": "schwab-mcp",
+      "display_name": "Schwab MCP",
       "services": [
         {
           "name": "schwab-mcp",
@@ -109,7 +109,7 @@
         {
           "name": "Excalibur MCP",
           "url": "https://excalibur-mcp.fastmcp.app/mcp",
-          "description": "Social media posting via MCP with Tollbooth monetization"
+          "description": "Posting to X and Nostr for AI agents: scheduled posts, live dynamic blocks resolved at send time, and post performance."
         }
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -118,7 +118,7 @@
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
       "role": "operator",
-      "status": "active",
+      "status": "inactive",
       "member_since": "2026-07-02",
       "display_name": "Tollbooth Fermyon",
       "services": [
@@ -141,7 +141,7 @@
         {
           "name": "ChartRemotely MCP",
           "url": "https://chartremotely-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+          "description": "Puts a security on your own desktop trading chart from anywhere, by voice or tool call, through a small agent on your Mac, and sends back a snapshot of what it shows."
         }
       ],
       "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
@@ -152,12 +152,12 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-05-23",
-      "display_name": "optionality-mcp",
+      "display_name": "Optionality MCP",
       "services": [
         {
           "name": "optionality-mcp",
           "url": "https://optionality-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+          "description": "An AI-judged options-trading drill: the Firm composes an opportunity, you pitch a trade, and a judge model scores it on five dimensions with a Facts Ledger."
         }
       ],
       "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",
@@ -168,12 +168,12 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-04-05",
-      "display_name": "taxsort-mcp",
+      "display_name": "TaxSort MCP",
       "services": [
         {
           "name": "taxsort-mcp",
           "url": "https://taxsort-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
+          "description": "Personal tax transaction storage: import bank and card CSVs, classify each line, and total them by IRS tax line, ready to share with a spouse."
         }
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -189,7 +189,7 @@
         {
           "name": "Roastify MCP",
           "url": "https://roastify-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+          "description": "The Roastify coffee catalog and packaging artwork for merchants: products, blends and stock, with a private library of label designs to rebrand."
         }
       ],
       "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
@@ -205,7 +205,7 @@
         {
           "name": "Tollbooth Sample",
           "url": "https://tollbooth-sample.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
+          "description": "Weather statistics from Open-Meteo, served by the reference Tollbooth DPYC™ operator that new MCP servers are built from."
         }
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -216,12 +216,12 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-06-17",
-      "display_name": "cypher-mcp",
+      "display_name": "Cypher MCP",
       "services": [
         {
           "name": "cypher-mcp",
           "url": "https://cypher-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+          "description": "Monetized graph answers: operator-authored, parameterized Cypher queries over a Neo4j graph, each sold as a named, priced answer."
         }
       ],
       "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
@@ -232,12 +232,12 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-02-20",
-      "display_name": "thebrain-mcp",
+      "display_name": "TheBrain MCP",
       "services": [
         {
           "name": "thebrain-mcp",
           "url": "https://personal-brain.fastmcp.app/mcp",
-          "description": "TheBrain knowledge graph access via MCP"
+          "description": "AI-agent access to a personal TheBrain knowledge graph: query, create and link thoughts, notes and attachments."
         }
       ],
       "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
@@ -253,7 +253,7 @@
         {
           "name": "BeesKnees MCP",
           "url": "https://beesknees-mcp.fastmcp.app/mcp",
-          "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+          "description": "The Bee's Knees: a race to the queen across five hives, where every move is a paid tool call and the first bee to reach a queen takes the round."
         }
       ],
       "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
@@ -268,13 +268,14 @@
       "services": [
         {
           "name": "tollbooth-oauth2-collector",
-          "url": "https://tollbooth-oauth2-collector.fastmcp.app",
-          "description": "Community OAuth2 code storage and retrieval via MCP tools"
+          "url": "https://tollbooth-oauth2-collector.fastmcp.app/mcp",
+          "description": "Holds OAuth2 authorization codes, sealed to the operator that asked, until that operator's MCP collects them once."
         },
         {
           "name": "tollbooth-oauth2-callback",
           "url": "https://tollbooth-dpyc-oauth.val.run",
-          "description": "Serverless OAuth2 browser callback — receives GET redirects from OAuth providers"
+          "description": "The browser callback OAuth providers redirect to. It turns their GET redirect into the POST an MCP takes and hands the code to the collector.",
+          "transport": "http"
         }
       ],
       "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",

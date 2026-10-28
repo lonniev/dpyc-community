@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-10-28T08:33:59.284495+00:00",
+  "collected_at": "2026-10-28T16:04:14.431107+00:00",
   "summary": {
     "operators": 15,
     "total_notarizations": 26,
@@ -17,7 +17,7 @@
     },
     {
       "npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
-      "display_name": "Lonnie-Authority",
+      "display_name": "Tollbooth Authority",
       "role": "authority",
       "notarizations": [],
       "status": "never",
@@ -25,7 +25,7 @@
     },
     {
       "npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",
-      "display_name": "Tollbooth-Authority-NorthAmerica",
+      "display_name": "Tollbooth Authority North America",
       "role": "authority",
       "notarizations": [],
       "status": "never",
@@ -50,7 +50,7 @@
     },
     {
       "npub": "npub15e3ver3pskqsuqzszrp9mxpks7tqg7kedzyhmxfwlmu2jf8enaas86ll75",
-      "display_name": "schwab-mcp",
+      "display_name": "Schwab MCP",
       "role": "operator",
       "notarizations": [
         {
@@ -149,7 +149,7 @@
     },
     {
       "npub": "npub1qchpfnuw76gjmg6y9w4e5yaj9xcq97ft6rd49mj4j0vrsdrkujpqzl7tz0",
-      "display_name": "optionality-mcp",
+      "display_name": "Optionality MCP",
       "role": "operator",
       "notarizations": [],
       "status": "never",
@@ -157,7 +157,7 @@
     },
     {
       "npub": "npub1sz60evcudpnaa9q9rmtnj9y4w6waz9vlt3p23hg82q3mlwu7y2xqem9rpl",
-      "display_name": "taxsort-mcp",
+      "display_name": "TaxSort MCP",
       "role": "operator",
       "notarizations": [],
       "status": "never",
@@ -214,7 +214,7 @@
     },
     {
       "npub": "npub1xdv5j2tf769s20wh3a0dj4hn6pms9vp7awnnd3fde8ata8fak7pqwg09av",
-      "display_name": "cypher-mcp",
+      "display_name": "Cypher MCP",
       "role": "operator",
       "notarizations": [
         {
@@ -247,7 +247,7 @@
     },
     {
       "npub": "npub1y20qa7d3ddmh6730hdr0u0r08zys4p7pyk30uhur9edx4d88q4zqnr3q2h",
-      "display_name": "thebrain-mcp",
+      "display_name": "TheBrain MCP",
       "role": "operator",
       "notarizations": [],
       "status": "never",
@@ -258,6 +258,30 @@
       "display_name": "BeesKnees MCP",
       "role": "operator",
       "notarizations": [
+        {
+          "notarization_id": "799",
+          "root_hash": "5f62851a417f269081233123184b966a9ddfc4a1fe4710434e0d5022d2d56316",
+          "leaf_count": 24962,
+          "status": "submitted",
+          "created_at": "2026-10-28 14:03:21.039684+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "798",
+          "root_hash": "d7ab0e648abbf9d50ca4867c66ba5d4f88d0d8a44c3855c77d1955a00cbd3d78",
+          "leaf_count": 24942,
+          "status": "submitted",
+          "created_at": "2026-10-28 13:00:52.352587+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "797",
+          "root_hash": "413d8e6d09b6ac640e38fca9e46202e6f4bdacb89f1c9d7bc64315b7300eec3c",
+          "leaf_count": 24866,
+          "status": "submitted",
+          "created_at": "2026-10-28 09:12:00.150595+00",
+          "receipt_count": 4
+        },
         {
           "notarization_id": "796",
           "root_hash": "aa5c3a0d33a45b57f3b39d466d7363aef5999414a4756a7b763aa7795cabbf4d",
@@ -312,30 +336,6 @@
           "leaf_count": 24617,
           "status": "submitted",
           "created_at": "2026-10-27 20:47:03.297116+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "789",
-          "root_hash": "0bc07a5e068005aaba7a7996e05a933ad2c22680c80c5542fd18b24da07e0ebc",
-          "leaf_count": 24593,
-          "status": "submitted",
-          "created_at": "2026-10-27 19:35:39.594214+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "788",
-          "root_hash": "2832b47d42413c0ce9073d2da17af8bfce5995541344c3e38856eb1293834850",
-          "leaf_count": 24572,
-          "status": "submitted",
-          "created_at": "2026-10-27 18:32:40.354777+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "787",
-          "root_hash": "93e568e12ef5764610740c924cfef0e831175e8307f28f60f3e000c12c7d32b8",
-          "leaf_count": 24540,
-          "status": "submitted",
-          "created_at": "2026-10-27 16:57:28.672011+00",
           "receipt_count": 4
         }
       ],

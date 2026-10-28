@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "description": "Naturalist quotations for Good Earth, shown while a subject's life cycle is looked up: the tradition of the field study — going out, looking closely, and writing down what is there. Every entry's wording and attribution are checkable. White, Thoreau's Walden, Muir and Darwin were checked word for word against the Project Gutenberg texts (White's 'greatest variety', letter of 8 October 1768; Walden's 'beech-tree' and 'yellow-birch'; Darwin's sentence continues where the ellipsis stands). Thoreau's journal line is dated 5 August 1851 by the Walden Woods Project. Oliver, Carson and Leopold were checked against several printings; verify against the books before quoting them in print. Agassiz's 'Study nature, not books' was left out: its earliest record words it differently.",
+  "quotes": [
+    {
+      "text": "All nature is so full that that district produces the greatest variety which is the most examined.",
+      "author": "Gilbert White, The Natural History of Selborne"
+    },
+    {
+      "text": "I frequently tramped eight or ten miles through the deepest snow to keep an appointment with a beech-tree, or a yellow-birch, or an old acquaintance among the pines.",
+      "author": "Henry David Thoreau, Walden"
+    },
+    {
+      "text": "The question is not what you look at, but what you see.",
+      "author": "Henry David Thoreau, Journal, 5 August 1851"
+    },
+    {
+      "text": "Heaven is under our feet as well as over our heads.",
+      "author": "Henry David Thoreau, Walden"
+    },
+    {
+      "text": "In every walk with Nature one receives far more than he seeks.",
+      "author": "John Muir, Steep Trails"
+    },
+    {
+      "text": "It is interesting to contemplate an entangled bank, clothed with many plants of many kinds, with birds singing on the bushes, with various insects flitting about, and with worms crawling through the damp earth…",
+      "author": "Charles Darwin, On the Origin of Species"
+    },
+    {
+      "text": "Instructions for living a life: Pay attention. Be astonished. Tell about it.",
+      "author": "Mary Oliver, Sometimes"
+    },
+    {
+      "text": "Those who contemplate the beauty of the earth find reserves of strength that will endure as long as life lasts.",
+      "author": "Rachel Carson, The Sense of Wonder"
+    },
+    {
+      "text": "There are some who can live without wild things, and some who cannot.",
+      "author": "Aldo Leopold, A Sand County Almanac"
+    }
+  ]
+}

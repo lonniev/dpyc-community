@@ -3,7 +3,7 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-04-05",
-  "display_name": "taxsort-mcp",
+  "display_name": "TaxSort MCP",
   "services": [
     {
       "name": "taxsort-mcp",

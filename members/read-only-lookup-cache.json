@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-10-28T12:35:07Z",
+  "updated_at": "2026-10-28T12:41:39Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -40,7 +40,7 @@
       "role": "authority",
       "status": "active",
       "member_since": "2026-03-01",
-      "display_name": "Lonnie-Authority",
+      "display_name": "Tollbooth Authority",
       "services": [
         {
           "name": "tollbooth-authority",
@@ -56,7 +56,7 @@
       "role": "authority",
       "status": "active",
       "member_since": "2026-05-16",
-      "display_name": "Tollbooth-Authority-NorthAmerica",
+      "display_name": "Tollbooth Authority North America",
       "services": [
         {
           "name": "tollbooth-authority-northamerica",
@@ -88,7 +88,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-03-11",
-      "display_name": "schwab-mcp",
+      "display_name": "Schwab MCP",
       "services": [
         {
           "name": "schwab-mcp",
@@ -118,7 +118,7 @@
     {
       "npub": "npub1ajcnwx8l4kd89x7qquv33dhc4u5cdr2r35qfq4mgqh9r3alp8gtqfs46u0",
       "role": "operator",
-      "status": "active",
+      "status": "inactive",
       "member_since": "2026-07-02",
       "display_name": "Tollbooth Fermyon",
       "services": [
@@ -152,7 +152,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-05-23",
-      "display_name": "optionality-mcp",
+      "display_name": "Optionality MCP",
       "services": [
         {
           "name": "optionality-mcp",
@@ -168,7 +168,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-04-05",
-      "display_name": "taxsort-mcp",
+      "display_name": "TaxSort MCP",
       "services": [
         {
           "name": "taxsort-mcp",
@@ -216,7 +216,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-06-17",
-      "display_name": "cypher-mcp",
+      "display_name": "Cypher MCP",
       "services": [
         {
           "name": "cypher-mcp",
@@ -232,7 +232,7 @@
       "role": "operator",
       "status": "active",
       "member_since": "2026-02-20",
-      "display_name": "thebrain-mcp",
+      "display_name": "TheBrain MCP",
       "services": [
         {
           "name": "thebrain-mcp",
@@ -268,13 +268,14 @@
       "services": [
         {
           "name": "tollbooth-oauth2-collector",
-          "url": "https://tollbooth-oauth2-collector.fastmcp.app",
-          "description": "Community OAuth2 code storage and retrieval via MCP tools"
+          "url": "https://tollbooth-oauth2-collector.fastmcp.app/mcp",
+          "description": "Holds OAuth2 authorization codes, sealed to the operator that asked, until that operator's MCP collects them once."
         },
         {
           "name": "tollbooth-oauth2-callback",
           "url": "https://tollbooth-dpyc-oauth.val.run",
-          "description": "Serverless OAuth2 browser callback — receives GET redirects from OAuth providers"
+          "description": "The browser callback OAuth providers redirect to. It turns their GET redirect into the POST an MCP takes and hands the code to the collector.",
+          "transport": "http"
         }
       ],
       "upstream_authority_npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",

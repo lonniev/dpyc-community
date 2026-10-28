@@ -4,7 +4,12 @@
   "title": "DPYC Social Contract Member Record",
   "description": "Schema for an individual member file in the members/ directory.",
   "type": "object",
-  "required": ["npub", "role", "status", "member_since"],
+  "required": [
+    "npub",
+    "role",
+    "status",
+    "member_since"
+  ],
   "properties": {
     "npub": {
       "type": "string",
@@ -13,13 +18,24 @@
     },
     "role": {
       "type": "string",
-      "enum": ["prime_authority", "authority", "operator", "advocate", "citizen"],
+      "enum": [
+        "prime_authority",
+        "authority",
+        "operator",
+        "advocate",
+        "citizen"
+      ],
       "description": "Member's role in the Social Contract."
     },
     "status": {
       "type": "string",
-      "enum": ["active", "banned", "suspended"],
-      "description": "Current standing in the community."
+      "enum": [
+        "active",
+        "inactive",
+        "banned",
+        "suspended"
+      ],
+      "description": "Current standing in the community. inactive: in good standing and kept on record, but not serving at present; listings leave it out."
     },
     "member_since": {
       "type": "string",
@@ -35,10 +51,13 @@
       "items": {
         "$ref": "#/$defs/service"
       },
-      "description": "MCP services operated by this member."
+      "description": "Services operated by this member: MCP servers, and any plain HTTP endpoints they depend on."
     },
     "upstream_authority_npub": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "npub of the member's upstream Authority. Null for prime_authority."
     },
     "notes": {
@@ -59,7 +78,11 @@
   "$defs": {
     "service": {
       "type": "object",
-      "required": ["name", "url", "description"],
+      "required": [
+        "name",
+        "url",
+        "description"
+      ],
       "properties": {
         "name": {
           "type": "string"
@@ -70,6 +93,14 @@
         },
         "description": {
           "type": "string"
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "http"
+          ],
+          "description": "How the endpoint is reached. mcp (the default when absent): an MCP server over streamable HTTP. http: a plain web endpoint, such as a browser callback, that is not an MCP and is never probed as one."
         }
       },
       "additionalProperties": false

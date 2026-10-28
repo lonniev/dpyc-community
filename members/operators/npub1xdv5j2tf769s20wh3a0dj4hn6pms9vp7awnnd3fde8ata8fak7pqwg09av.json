@@ -3,7 +3,7 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-06-17",
-  "display_name": "cypher-mcp",
+  "display_name": "Cypher MCP",
   "services": [
     {
       "name": "cypher-mcp",

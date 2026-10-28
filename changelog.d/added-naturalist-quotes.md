@@ -1,0 +1,1 @@
+- `quotes-naturalist.json`: nine checked quotations on field study, for Good Earth to show while a life cycle is looked up.

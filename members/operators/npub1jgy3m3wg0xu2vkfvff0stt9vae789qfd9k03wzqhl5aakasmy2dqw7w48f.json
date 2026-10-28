@@ -8,7 +8,7 @@
     {
       "name": "ChartRemotely MCP",
       "url": "https://chartremotely-mcp.fastmcp.app/mcp",
-      "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+      "description": "Puts a security on your own desktop trading chart from anywhere, by voice or tool call, through a small agent on your Mac, and sends back a snapshot of what it shows."
     }
   ],
   "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",

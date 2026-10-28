@@ -8,7 +8,7 @@
     {
       "name": "optionality-mcp",
       "url": "https://optionality-mcp.fastmcp.app/mcp",
-      "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+      "description": "An AI-judged options-trading drill: the Firm composes an opportunity, you pitch a trade, and a judge model scores it on five dimensions with a Facts Ledger."
     }
   ],
   "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",

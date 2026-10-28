@@ -8,7 +8,7 @@
     {
       "name": "cypher-mcp",
       "url": "https://cypher-mcp.fastmcp.app/mcp",
-      "description": "MCP Operator registered under Authority npub1zummm5awn88..."
+      "description": "Monetized graph answers: operator-authored, parameterized Cypher queries over a Neo4j graph, each sold as a named, priced answer."
     }
   ],
   "upstream_authority_npub": "npub1zummm5awn88kw2hz6deeyjprpw0fzuv9rvzrxf3vu453yyqzvdss49xd2t",

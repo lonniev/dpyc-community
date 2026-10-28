@@ -8,7 +8,7 @@
     {
       "name": "taxsort-mcp",
       "url": "https://taxsort-mcp.fastmcp.app/mcp",
-      "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
+      "description": "Personal tax transaction storage: import bank and card CSVs, classify each line, and total them by IRS tax line, ready to share with a spouse."
     }
   ],
   "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",

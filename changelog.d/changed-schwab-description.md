@@ -1,0 +1,1 @@
+- Schwab MCP describes itself in plain words.

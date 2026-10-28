@@ -8,7 +8,7 @@
     {
       "name": "schwab-mcp",
       "url": "https://schwab-mcp.fastmcp.app/mcp",
-      "description": "Charles Schwab brokerage data via MCP with Tollbooth monetization"
+      "description": "Charles Schwab brokerage data for AI agents: quotes, option chains, price history, positions, balances and order history from your own Schwab account."
     }
   ],
   "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",

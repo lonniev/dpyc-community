@@ -1,0 +1,1 @@
+- Founder CV now lists the GoodEarth, FieldData and Bee's Knees MCP operators.

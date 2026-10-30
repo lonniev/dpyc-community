@@ -1,0 +1,1 @@
+- FieldData MCP gets its real name and description in the registry, in place of the placeholder from its registration.

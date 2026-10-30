@@ -8,7 +8,8 @@
     {
       "name": "FieldData MCP",
       "url": "https://fielddata-mcp.fastmcp.app/mcp",
-      "description": "What your own ground actually measured: readings, history and daily summaries from your own weather station and soil probes, read under your own vendor keys."
+      "description": "What your own ground actually measured: readings, history and daily summaries from your own weather station and soil probes, read under your own vendor keys.",
+      "product_url": "https://cafe.tollbooth-dpyc.com/products/fielddata-mcp"
     }
   ],
   "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",

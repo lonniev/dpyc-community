@@ -3,12 +3,12 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-10-30",
-  "display_name": "npub1z578tazry4m...",
+  "display_name": "FieldData MCP",
   "services": [
     {
-      "name": "npub1z578tazry4m...",
+      "name": "FieldData MCP",
       "url": "https://fielddata-mcp.fastmcp.app/mcp",
-      "description": "MCP Operator registered under Authority npub157hmysd6sw7..."
+      "description": "What your own ground actually measured: readings, history and daily summaries from your own weather station and soil probes, read under your own vendor keys."
     }
   ],
   "upstream_authority_npub": "npub157hmysd6sw7m8kkldycnnc74mssxp9nweddk2p5sw9l2nktr950qyxrenn",

@@ -1,6 +1,6 @@
 # Lonnie VanZandt
 
-**Curriculum Vitae — April 2026**
+**Curriculum Vitae — October 2026**
 
 > *Enterprise Architect · Systems Engineer · Founder, DPYC Network State*
 > *Vergennes / Panton, Vermont*
@@ -50,6 +50,9 @@
 - **taxsort-mcp** — Personal tax-transaction classification with bulk CSV import and IRS category mapping; paired with a React 18 + Vite + TypeScript frontend deployed on Cloudflare Pages.
 - **optionality-mcp** — An AI-judged options-trading drill that grades practice trades across multiple dimensions; paired with a React 18 + Vite + TypeScript frontend on Cloudflare Pages.
 - **tollbooth-sample** — An educational weather-stats Operator; the canonical reference implementation new Operators are scaffolded from.
+- **goodearth-mcp** — Region-scoped climate analytics for small specialty-crop and flower farms: growing-degree days, frost windows, planting and pest timing, and disease risk, computed per saved field block across the terrain inside it ([goodearth.tollbooth-dpyc.com](https://goodearth.tollbooth-dpyc.com)).
+- **fielddata-mcp** — Reads a grower's own Ecowitt weather station and soil probes with the grower's own keys and normalizes every reading to SI units and UTC; GoodEarth composes it MCP-to-MCP for on-farm measurements ([fielddata.tollbooth-dpyc.com](https://fielddata.tollbooth-dpyc.com)).
+- **beesknees-mcp** — The Bee's Knees, a gamified pollinator-awareness game whose proceeds go to a pollinator charity, paid programmatically over Lightning ([beesknees.tollbooth-dpyc.com](https://beesknees.tollbooth-dpyc.com)).
 - Beyond the Operators, authored two community-utility (Advocate) MCPs: **tollbooth-oauth2-collector** (a shared, unauthenticated OAuth2 callback mailbox) and **tollbooth-shortlinks** (ephemeral, Nostr-friendly short URLs).
 - All Operators implement the Tollbooth Patron Credential Architecture: NeonVault-backed credential storage, BTCPay Lightning invoicing, and per-field regex credential delivery.
 - Python maintainer of the **tollbooth-dpyc** wheel — the shared library underlying all Tollbooth-compliant MCP servers.

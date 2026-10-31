@@ -1,7 +1,7 @@
 {
   "_comment": "Lightning wallets a new guest can install. The Oracle's lightning_wallets tool ranks them by how many results of `query` on Brave Search mention each, `pinned` first; a wallet missing here never appears. Links were checked on each store on 2026-10-25.",
   "query": "Lightning wallet \"Lightning Address\" (\"point of sale\" OR POS) merchants self-custodial OR custodial 2026",
-  "show": 5,
+  "show": 7,
   "credit": "App Store is a trademark of Apple Inc. Google Play is a trademark of Google LLC. Wallet names are trademarks of their owners.",
   "wallets": [
     {

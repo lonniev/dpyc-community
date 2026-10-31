@@ -1,0 +1,2 @@
+- The adoption skill says a frontend uses the one shared wallet, and corrects its notes on custom domains, `.gitignore` and services that report no commit.
+- The wallet list says Strike and Cash App can pay a Lightning invoice from a cash balance.

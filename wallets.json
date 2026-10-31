@@ -87,7 +87,7 @@
         "Strike app",
         "strike.me"
       ],
-      "line": "Buy bitcoin from your bank or card, then pay a Lightning invoice from the same app.",
+      "line": "Pay a Lightning invoice from the cash balance you hold there, with no bitcoin needed.",
       "custody": "custodial",
       "buys_in_app": true,
       "homepage": "https://strike.me",
@@ -101,7 +101,7 @@
       "aliases": [
         "CashApp"
       ],
-      "line": "If you already use it, it can buy bitcoin and pay a Lightning invoice.",
+      "line": "If you already use it, it can pay a Lightning invoice from your cash balance.",
       "custody": "custodial",
       "buys_in_app": true,
       "homepage": "https://cash.app",

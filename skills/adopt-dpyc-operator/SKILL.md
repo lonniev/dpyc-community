@@ -117,9 +117,14 @@ credential on a repo with nothing to deploy is one more thing to rotate for no r
 scripts/set_pages_secrets.sh <repo>   # CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 ```
 
-That token deploys a Pages project and can do nothing else — notably it cannot create the
-DNS record a custom domain needs, so `deploy-frontend.yml` attaches the domain and a human
-still adds the CNAME in the dashboard.
+That token deploys a Pages project and can do nothing else. It cannot create the DNS record a
+custom domain needs, and `deploy-frontend.yml` does not attach the domain. A human attaches the
+custom domain to the Pages project in the dashboard, which adds the CNAME.
+
+**A frontend uses the one wallet.** Wallet UX is DPYC brand: layout, scope and behavior are the
+same on every site. Use `Wallet` or `BalanceAndTopUp` from `@tollbooth-dpyc/web/react`, import
+`@tollbooth-dpyc/web/wallet.css`, and restyle through its variables, with `decorateTile` for tile
+names and marks. Never draw a top-up card of your own.
 
 ### 6. Install the App on the repo
 
@@ -176,8 +181,9 @@ Expect three keys:
 Only `fastmcp_cloud_url` means Horizon is injecting env for the project but not the git
 pair — the deployment is not associated with the GitHub repo the way a repo-linked one
 is. Nothing in the repo causes this: `fastmcp.json`, the SDK version and `deployment.env`
-are identical across services that do and do not report it. Fix it in the Horizon
-project's source settings, not here.
+are identical across services that do and do not report it. A project already linked to its
+repo can still report no sha (FieldData, BeesKnees, ChartRemotely), and only Prefect can fix
+that, so note it and move on.
 
 The consequence if you skip this: `deploy-verify` cannot confirm any deploy for that
 service, ever. It will report "healthy, cannot confirm the exact live commit" on every
@@ -202,11 +208,11 @@ adoption is incomplete — see `factory/README.md` for the PR procedure itself.
   including `frontend/src/lib`. The files stay on disk, so `tsc` and `vite build` both pass
   locally; only a deploy, checking out what git actually has, finds the app has no lib, and
   it reports that as a wall of unrelated-looking type errors rather than as an absence. Any
-  operator that grows a frontend needs `!src/lib/` in `frontend/.gitignore`.
+  operator that grows a frontend needs `!frontend/src/lib/` in the root `.gitignore`.
 - **A service that never reports a commit sha.** `build_info` carries only
-  `fastmcp_cloud_url` and `deploy-verify` can never confirm a deploy. It is a Horizon
-  project setting, not anything in the repo — beesknees-mcp was the only one of six
-  services in this state, with a byte-identical `fastmcp.json` to the five that worked.
+  `fastmcp_cloud_url` and `deploy-verify` can never confirm a deploy. It is on Horizon's
+  side, not anything in the repo: beesknees-mcp, chartremotely and fielddata-mcp are in this
+  state, with `fastmcp.json` files matching services that report it.
   Until lonniev/dpyc-community#221 this ALSO produced a false "Deploy did not land"
   issue on every merge, because the probe's `"<sha> <version>"` string became `" 0.1.2"`
   and `read` slid the version into the sha variable.

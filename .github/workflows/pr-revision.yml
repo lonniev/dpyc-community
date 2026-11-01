@@ -58,10 +58,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # SECURITY BOUNDARY. The caller's OWNER guard authorizes a comment, not the code it will
+  # run. A fork's head is whatever its author pushed last, and this role runs that tree with
+  # the App's write token and inherited secrets, so a fork PR never reaches the bench.
+  # A same-repo head can only be pushed by someone who already has write access.
+  same-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse a pull request from a fork
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          cross=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json isCrossRepository -q .isCrossRepository)
+          if [ "$cross" != "false" ]; then
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --body "The bench revises branches in this repository only. This pull request comes from a fork, so its author makes the change." || true
+            echo "::error::PR #$PR_NUMBER is not a same-repository pull request (isCrossRepository=$cross)."
+            exit 1
+          fi
+
   # Same toolchain sniff as engineering.yml: this role RUNS the project's tests before
   # pushing, so it needs the right runner OS. macOS bills ~10x, so only Xcode/Swift repos
   # get it. Callers stay thin — the language is detected here, never declared per repo.
   detect:
+    needs: same-repo
     runs-on: ubuntu-latest
     outputs:
       runner: ${{ steps.stack.outputs.runner }}

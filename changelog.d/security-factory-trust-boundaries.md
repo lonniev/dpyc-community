@@ -1,0 +1,2 @@
+- PR Revision refuses a pull request from a fork, so an owner's `@journeyman revise` never runs a fork's code with the App's write token and secrets.
+- Engineering receives its handoff from a workflow step that selects comments by author, so a public comment cannot pose as the Porter's spec.

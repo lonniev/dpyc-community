@@ -159,21 +159,33 @@ jobs:
       # The Journeyman's behavior lives in factory/journeyman.prompt.md (the agent may evolve
       # it via PR; the workflow skeleton — permissions, token, tools — stays human-only). We
       # fetch it from dpyc-community (this reusable workflow's checkout is the CALLER's repo)
-      # and fill only the three named GitHub-context placeholders. envsubst's restricted form
-      # touches nothing else in the file.
+      # and fill only the named placeholders. envsubst's restricted form touches nothing else
+      # in the file.
+      #
+      # SECURITY BOUNDARY. Anyone may comment on a public issue, so the spec the agent starts
+      # from is chosen here, by author, and never by the agent. Only the Porter's App and the
+      # repository owner qualify. This reads the REST API because its login carries the
+      # `[bot]` suffix, which no person's account can hold; GraphQL's login drops it.
       - name: Render the Journeyman prompt
         id: prompt
         env:
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REPO_NAME: ${{ github.event.repository.name }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -euo pipefail
+          TRUSTED_COMMENTS=$(gh api --paginate "repos/$REPO/issues/$ISSUE_NUMBER/comments" --jq '
+            .[]
+            | select((.user.login == "dpyc-agentic-desk[bot]" and .user.type == "Bot") or .author_association == "OWNER")
+            | "--- " + .user.login + "\n" + .body')
+          export TRUSTED_COMMENTS
           curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/journeyman.prompt.md" \
             -o /tmp/journeyman.prompt.md
-          rendered=$(envsubst '${REPO} ${REPO_NAME} ${ISSUE_NUMBER}' < /tmp/journeyman.prompt.md)
-          { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
+          rendered=$(envsubst '${REPO} ${REPO_NAME} ${ISSUE_NUMBER} ${TRUSTED_COMMENTS}' < /tmp/journeyman.prompt.md)
+          delimiter="PROMPT_$(openssl rand -hex 16)"
+          { echo "text<<$delimiter"; echo "$rendered"; echo "$delimiter"; } >> "$GITHUB_OUTPUT"
 
       # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
       # /home (not /home/runner), so it can't create /home/.mcp.json and every agent

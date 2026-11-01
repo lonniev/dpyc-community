@@ -156,20 +156,37 @@ jobs:
       # Behavior lives in factory/pr-revision.prompt.md (the agent may evolve it via PR;
       # this skeleton — permissions, token, tools — stays human-only). Fetched from
       # dpyc-community because this reusable workflow's checkout is the CALLER's repo.
-      # envsubst's restricted form fills only the three named placeholders.
+      # envsubst's restricted form fills only the named placeholders.
+      #
+      # SECURITY BOUNDARY. Anyone may comment on a pull request, so the discussion this
+      # write-capable role reads is chosen here, by author, and never by the agent. Only the
+      # App and the owner qualify. This reads the REST API because its login carries the
+      # `[bot]` suffix, which no person's account can hold.
       - name: Render the PR Revision prompt
         id: prompt
         env:
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REPO_NAME: ${{ github.event.repository.name }}
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
+          trusted='select((.user.login == "dpyc-agentic-desk[bot]" and .user.type == "Bot") or .author_association == "OWNER")'
+          TRUSTED_COMMENTS=$(
+            gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" --jq \
+              ".[] | $trusted | \"--- comment by \" + .user.login + \"\n\" + .body"
+            gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/reviews" --jq \
+              ".[] | $trusted | select((.body // \"\") != \"\") | \"--- \" + .state + \" review by \" + .user.login + \"\n\" + .body"
+            gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/comments" --jq \
+              ".[] | $trusted | \"--- on \" + .path + \" by \" + .user.login + \"\n\" + .body"
+          )
+          export TRUSTED_COMMENTS
           curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 \
             "https://raw.githubusercontent.com/lonniev/dpyc-community/${{ inputs.ref }}/factory/pr-revision.prompt.md" \
             -o /tmp/pr-revision.prompt.md
-          rendered=$(envsubst '${REPO} ${REPO_NAME} ${PR_NUMBER}' < /tmp/pr-revision.prompt.md)
-          { echo 'text<<PROMPT_EOF'; echo "$rendered"; echo 'PROMPT_EOF'; } >> "$GITHUB_OUTPUT"
+          rendered=$(envsubst '${REPO} ${REPO_NAME} ${PR_NUMBER} ${TRUSTED_COMMENTS}' < /tmp/pr-revision.prompt.md)
+          delimiter="PROMPT_$(openssl rand -hex 16)"
+          { echo "text<<$delimiter"; echo "$rendered"; echo "$delimiter"; } >> "$GITHUB_OUTPUT"
 
       # Unbreak the agent bash sandbox: a runner-image change left bwrap's HOME at
       # /home (not /home/runner), so it can't create /home/.mcp.json and every agent

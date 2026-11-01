@@ -326,7 +326,8 @@ halves of step 4 are your job, and the routing half is the one that moves the wo
   gh issue view ${ISSUE_NUMBER} --json labels,state
 Read the output and confirm BOTH, by name:
   - the three classification labels you chose in step 3, AND
-  - the outcome of step 4 — one of: `agent/fix` present | `agent/refinement` present
+  - the outcome of step 4 — one of: `agent/fix` present | `agent/held` present (Engineering's
+    gate replaced `agent/fix`, and you leave it that way) | `agent/refinement` present
     (and `agent/fix` ABSENT) | `blocked/upstream` present |
     a `rejected/*` label present AND state CLOSED | `rejected/needs-info` present.
   For a refinement outcome, also confirm the in-flight issue received a

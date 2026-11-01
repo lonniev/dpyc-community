@@ -1,0 +1,3 @@
+- Engineering runs only on an issue the owner wrote or approved, or one the App wrote. Anything else becomes `agent/held` until the owner applies `agent/fix`, and an escalated child is judged by the issue it came from.
+- PR Revision reads only the owner's and the App's comments.
+- Only the owner can summon PR Dialogue.

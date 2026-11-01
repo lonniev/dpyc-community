@@ -17,9 +17,9 @@ customizing YAML.
 | Role | Fires on | Can write code? | Behavior lives in |
 |---|---|---|---|
 | **Porter** (Service Desk) | issue opened / `agent/retriage` | no — triages and labels | `porter.prompt.md` |
-| **Journeyman** (Engineering) | issue labeled `agent/fix` | **yes** — branch + PR | `journeyman.prompt.md` |
+| **Journeyman** (Engineering) | issue labeled `agent/fix`, on an issue the owner wrote or approved, or the App wrote; anything else becomes `agent/held` | **yes** — branch + PR | `journeyman.prompt.md` |
 | **QA** | PR opened/synchronized on `agent/fix-*` | no — labels `qa/pass` / `qa/flag` | inline in `qa.yml` |
-| **PR Dialogue** | any `@journeyman` mention on a PR | no — answers on the record | inline in `pr-dialogue.yml` |
+| **PR Dialogue** | the OWNER's `@journeyman` mention on a PR | no — answers on the record | inline in `pr-dialogue.yml` |
 | **PR Revision** | OWNER requests changes, or `@journeyman revise` | **yes** — pushes to the PR branch | `pr-revision.prompt.md` |
 | **Housekeeper** | schedule | no — tidies stale state | `housekeeper.prompt.md` |
 | **Surveyor** | schedule (hub) | no — files cross-repo `audit/dry` issues | `surveyor.prompt.md` |
@@ -113,7 +113,7 @@ Both answer to `@journeyman`, and the split is deliberate:
 
 - **A question** → Dialogue. Read-only by construction: no `Edit`/`Write` in its
   `--allowedTools`, and both its tokens are `contents: read`, so even a coerced
-  `git push` fails. *Anyone* may summon it, precisely because it cannot do anything.
+  `git push` fails. Only the OWNER may summon it, because its read token reaches every repo.
 - **A change order** → Revision. Has `Edit`, `Write`, and `contents: write`. Because it
   cannot keep Dialogue's mitigation, it substitutes a different one: the caller requires
   `author_association == 'OWNER'`. Only the repository owner can command commits.

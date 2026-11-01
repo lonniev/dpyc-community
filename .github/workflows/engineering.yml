@@ -45,11 +45,65 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # SECURITY BOUNDARY. Porter is a model reading a stranger's text, so its agent/fix label
+  # cannot authorize this role, which runs code with the App's write token. The work runs
+  # when the owner wrote the issue or applied agent/fix, or when our App wrote it. An
+  # escalated child is the App's writing of someone else's request, so it is judged by the
+  # issue it came from. No LLM here. Everything else is held for the owner.
+  authorized:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.check.outputs.ok }}
+    steps:
+      - name: Require an issue the owner wrote or approved
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          approvals=$(gh api --paginate "repos/$REPO/issues/$ISSUE/events" --jq \
+            '.[] | select(.event == "labeled" and .label.name == "agent/fix" and .actor.login == "'"$OWNER"'") | .id' | wc -l)
+
+          trusted=false
+          if [ "$approvals" -gt 0 ]; then
+            trusted=true
+          else
+            at_repo=$REPO; at_issue=$ISSUE
+            for _hop in 1 2 3 4; do
+              meta=$(gh api "repos/$at_repo/issues/$at_issue" --jq \
+                '[.user.login, .user.type, .author_association, ((.body // "") | contains("<!-- dpyc-escalated-child -->"))] | @tsv') || break
+              IFS=$'\t' read -r login kind association child <<< "$meta"
+              if [ "$association" = "OWNER" ]; then trusted=true; break; fi
+              if [ "$login" != "dpyc-agentic-desk[bot]" ] || [ "$kind" != "Bot" ]; then break; fi
+              if [ "$child" != "true" ]; then trusted=true; break; fi
+              origin=$(gh api "repos/$at_repo/issues/$at_issue" --jq '.body' \
+                | sed -nE "s#^Origin: https://github\.com/($OWNER/[A-Za-z0-9._-]+)/issues/([0-9]+)[[:space:]]*\$#\1 \2#p" | sed -n 1p)
+              [ -n "$origin" ] || break
+              read -r at_repo at_issue <<< "$origin"
+            done
+          fi
+
+          echo "ok=$trusted" >> "$GITHUB_OUTPUT"
+          if [ "$trusted" = "true" ]; then
+            gh issue edit "$ISSUE" --repo "$REPO" --remove-label agent/held >/dev/null 2>&1 || true
+            exit 0
+          fi
+          gh label create agent/held --repo "$REPO" --color fbca04 \
+            --description "Waiting for the owner to apply agent/fix" --force >/dev/null
+          gh issue edit "$ISSUE" --repo "$REPO" --remove-label agent/fix --add-label agent/held
+          gh issue comment "$ISSUE" --repo "$REPO" --body \
+            "This issue is held for the owner, who starts the work by applying \`agent/fix\`."
+
   # Detect the target repo's toolchain so the implement job runs on the right OS.
   # Xcode/iPadOS projects need macOS + Xcode; everything else builds on ubuntu. macOS
   # runners bill ~10x ubuntu minutes, so this gate keeps macOS to repos that actually need it.
   # Callers stay identical (thin) — the language is auto-detected here, not declared per repo.
   detect:
+    needs: authorized
+    if: needs.authorized.outputs.ok == 'true'
     runs-on: ubuntu-latest
     outputs:
       runner: ${{ steps.stack.outputs.runner }}

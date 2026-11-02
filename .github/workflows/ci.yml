@@ -117,7 +117,7 @@ jobs:
       - uses: actions/setup-node@v7
         if: steps.touched.outputs.any == 'true'
         with:
-          node-version: '24'
+          node-version: '26'
           check-latest: true
           cache: npm
           cache-dependency-path: docs/model/package-lock.json

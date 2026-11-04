@@ -1,0 +1,1 @@
+- The README and threat model no longer describe credential cards (ncred), which tollbooth-dpyc 0.114.0 removes; threat I-8 is marked retired.

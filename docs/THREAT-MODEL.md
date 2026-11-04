@@ -215,7 +215,7 @@ Operator ──[signed request: certify_credits(amount)]──▶ Authority MCP
 | I-5 | Timing side-channel on proof verification | TB1 | Schnorr verification is constant-time in secp256k1 library | Python-level timing may leak proof validity before full verification completes |
 | I-6 | Balance inference from error messages | TB1 | `debit_or_deny` returns "Insufficient credit balance" without revealing exact balance | Attacker can binary-search balance by varying tool cost (if tool pricing varies by kwargs) |
 | I-7 | BTCPay API key exposure | TB5 | Delivered via Secure Courier, encrypted at rest in Neon vault (AES-256-GCM, operator nsec-derived key) | **Requires operator nsec to decrypt** — vault compromise alone yields only ciphertext |
-| I-8 | Credential card (ncred1) interception | Patron device | Bech32-encoded, encrypted with operator nsec-derived key | **If patron's device is compromised**, ncred1 is recoverable — but useless without operator's nsec to decrypt |
+| I-8 | Credential card (ncred1) replay | Patron device, agent transcripts | **Retired in tollbooth-dpyc 0.114.0**: operators no longer issue or redeem cards, and Pricing Studio deletes any it saved | None. Before 0.114.0 a copied card could be replayed for 90 days without proof to overwrite the stored credentials of the npub it named; decryption was never needed |
 
 ### 3.5 Denial of Service
 

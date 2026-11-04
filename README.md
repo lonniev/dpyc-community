@@ -69,7 +69,7 @@ An action that needs two parties' consent is a workflow of single-actor calls wi
 
 ### Credentials (Secure Courier)
 
-When an Operator or patron must hand over secrets (API keys, OAuth tokens), they travel by **Secure Courier** — a NIP-encrypted Nostr DM flow pinned to a rendezvous relay. `request_credential_channel` returns a `nonce` and sends a welcome DM naming it; the reply must carry that nonce, keeping the channel bound to its intended recipient. Returning patrons activate instantly from their encrypted vault (**vault-first recovery**). Credentials can also be packaged as scannable **credential cards** (`ncred1…` bech32 events) for QR delivery.
+When an Operator or patron must hand over secrets (API keys, OAuth tokens), they travel by **Secure Courier** — a NIP-encrypted Nostr DM flow pinned to a rendezvous relay. `request_credential_channel` returns a `nonce` and sends a welcome DM naming it; the reply must carry that nonce, keeping the channel bound to its intended recipient. Returning patrons activate instantly from their encrypted vault (**vault-first recovery**).
 
 ### Credits & pricing
 
@@ -218,7 +218,7 @@ See [GOVERNANCE.md](https://github.com/lonniev/dpyc-community/blob/main/GOVERNAN
 The [tollbooth-dpyc](https://github.com/lonniev/tollbooth-dpyc) SDK owns every shared concern — Operators consume it via import, and crypto, vaulting, proof, pricing, and certification all live in the SDK. Current capabilities include:
 
 - **Identity on the connection** — each request signed with the npub's key (NIP-98), or an OAuth holder connection into which npubs are proven by DM; one acting npub per request.
-- **Secure Courier credential delivery** — nonce-matched, relay-pinned, NIP-encrypted DMs with vault-first recovery and `ncred1…` credential cards.
+- **Secure Courier credential delivery** — nonce-matched, relay-pinned, NIP-encrypted DMs with vault-first recovery.
 - **Tranche-based credit lifecycle** — oldest-first consumption with optional per-allocation expiry (TrancheLifetime).
 - **Composable pricing constraints** — a constraint engine Operators edit live (see below).
 - **Cascading ad valorem certification** — Schnorr-signed certificates up a multi-tier Authority chain.

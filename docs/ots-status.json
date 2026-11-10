@@ -1,9 +1,9 @@
 {
-  "collected_at": "2026-11-09T17:30:11.941062+00:00",
+  "collected_at": "2026-11-10T01:32:37.022380+00:00",
   "summary": {
     "operators": 16,
-    "total_notarizations": 52,
-    "confirmed": 38,
+    "total_notarizations": 53,
+    "confirmed": 40,
     "coverage_percent": 50
   },
   "operators": [
@@ -124,11 +124,20 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "8",
+          "root_hash": "a4b3b520aa111fdd3cfa80de5873a4845672e9140548d6a9e1daf461fb05d1a0",
+          "leaf_count": 3,
+          "status": "submitted",
+          "created_at": "2026-11-09 17:44:57.087546+00",
+          "receipt_count": 3
+        },
+        {
           "notarization_id": "7",
           "root_hash": "ec6eca6384a2fa12ab48aa59adc4a63522782f340ddc24b69dc12be7376b5161",
           "leaf_count": 3,
-          "status": "submitted",
+          "status": "confirmed",
           "created_at": "2026-11-03 20:41:10.74463+00",
+          "confirmed_at": "2026-11-09 17:44:09.762134+00",
           "receipt_count": 2
         }
       ],
@@ -472,90 +481,91 @@
       "role": "operator",
       "notarizations": [
         {
+          "notarization_id": "1016",
+          "root_hash": "e18c09abde1bd1b1759dcc00f78b644532568e62e38d5f83b820d465d5b1bd0a",
+          "leaf_count": 31041,
+          "status": "submitted",
+          "created_at": "2026-11-10 01:31:33.123068+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1015",
+          "root_hash": "cf8475fc9409f485b1d9a585ad29703bde638ec4b540d1d8c057b483b6b916fa",
+          "leaf_count": 31021,
+          "status": "submitted",
+          "created_at": "2026-11-10 00:31:00.761128+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1014",
+          "root_hash": "992550c350015c33d5af7ed252b3b17849dc3359ad92803cd2763f5ede5e0968",
+          "leaf_count": 30999,
+          "status": "confirmed",
+          "created_at": "2026-11-09 23:24:56.023646+00",
+          "confirmed_at": "2026-11-10 01:28:35.666445+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1013",
+          "root_hash": "2b6e7a9897cd28984890752601b01dfec74e397ff66829e46f7683784e3e7d9f",
+          "leaf_count": 30972,
+          "status": "confirmed",
+          "created_at": "2026-11-09 22:03:45.133023+00",
+          "confirmed_at": "2026-11-10 00:30:06.278505+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1012",
+          "root_hash": "ba2a40c7fe46fe75a6c291d33da5846506959999ed90faf47066da7c01c36e8f",
+          "leaf_count": 30949,
+          "status": "confirmed",
+          "created_at": "2026-11-09 20:55:34.527033+00",
+          "confirmed_at": "2026-11-10 00:30:06.278505+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1011",
+          "root_hash": "887e85a31ae3e6fce2d61a4f99d4496596c8bf62fe8e1a338a2e99d6401528bb",
+          "leaf_count": 30914,
+          "status": "confirmed",
+          "created_at": "2026-11-09 19:11:55.539027+00",
+          "confirmed_at": "2026-11-09 21:14:50.277568+00",
+          "receipt_count": 4
+        },
+        {
+          "notarization_id": "1010",
+          "root_hash": "9b70d4fedbb18ce4a0efdc2fdd3b076205bcd38162d04502455b1a4b27b5ea70",
+          "leaf_count": 30887,
+          "status": "confirmed",
+          "created_at": "2026-11-09 17:50:55.442404+00",
+          "confirmed_at": "2026-11-09 20:55:03.052275+00",
+          "receipt_count": 4
+        },
+        {
           "notarization_id": "1009",
           "root_hash": "ea752264c8988681f6f42722a10a999fdd31f026930b7a7ccbbe49058373ad3b",
           "leaf_count": 30859,
-          "status": "submitted",
+          "status": "confirmed",
           "created_at": "2026-11-09 16:37:30.821192+00",
+          "confirmed_at": "2026-11-09 19:11:25.054301+00",
           "receipt_count": 4
         },
         {
           "notarization_id": "1008",
           "root_hash": "48ed4591b130abc6e0879caa65ea3c8067ef11ef3c466ffad01600bb66af7a34",
           "leaf_count": 30859,
-          "status": "submitted",
+          "status": "confirmed",
           "created_at": "2026-11-09 16:35:59.559324+00",
+          "confirmed_at": "2026-11-09 19:11:25.054301+00",
           "receipt_count": 4
         },
         {
           "notarization_id": "1007",
           "root_hash": "107c9e20bea3204f80bb05cb2812377d30723c0d304eaeaa62ac1c14b1bf56a4",
           "leaf_count": 30837,
-          "status": "submitted",
+          "status": "confirmed",
           "created_at": "2026-11-09 15:30:19.020093+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1006",
-          "root_hash": "7bbc43bd0a162087247dc1081577e695985c9900896c59eef3b386bcacf897a0",
-          "leaf_count": 30815,
-          "status": "confirmed",
-          "created_at": "2026-11-09 14:29:06.939619+00",
-          "confirmed_at": "2026-11-09 16:35:25.068745+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1005",
-          "root_hash": "08e0bb5b9c509cf74e5040cc2662dab397560c9b3799a4fa2a513715df1a01d4",
-          "leaf_count": 30775,
-          "status": "confirmed",
-          "created_at": "2026-11-09 12:30:45.358459+00",
-          "confirmed_at": "2026-11-09 14:39:01.033747+00",
-          "receipt_count": 2
-        },
-        {
-          "notarization_id": "1004",
-          "root_hash": "bb3895c9df5210930f636d58aae1dde130d99f8da3dba3286a2304c3ddf8fb86",
-          "leaf_count": 30755,
-          "status": "confirmed",
-          "created_at": "2026-11-09 11:29:29.189263+00",
-          "confirmed_at": "2026-11-09 13:38:51.643975+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1003",
-          "root_hash": "0f1895e7ba40a0d89b8684f22359a0e432e588aba0f3d99455e4846d1f57aa08",
-          "leaf_count": 30735,
-          "status": "confirmed",
-          "created_at": "2026-11-09 10:28:35.298568+00",
-          "confirmed_at": "2026-11-09 12:29:25.924729+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1002",
-          "root_hash": "1290eb43dc84ae6b83a868a7471d389439d3ced558c00f21b7156ecc825360c6",
-          "leaf_count": 30715,
-          "status": "confirmed",
-          "created_at": "2026-11-09 09:27:32.589145+00",
-          "confirmed_at": "2026-11-09 11:28:52.354489+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1001",
-          "root_hash": "579403d5ccc59e7be68406dbc817e1fc615f4c19a4a1495c9356484db5681414",
-          "leaf_count": 30694,
-          "status": "confirmed",
-          "created_at": "2026-11-09 08:26:46.01554+00",
-          "confirmed_at": "2026-11-09 10:27:03.953441+00",
-          "receipt_count": 4
-        },
-        {
-          "notarization_id": "1000",
-          "root_hash": "041adb4cb70cdfe2099292154399189ce802398290915ab05561dd72b8a018ad",
-          "leaf_count": 30673,
-          "status": "confirmed",
-          "created_at": "2026-11-09 07:24:21.236614+00",
-          "confirmed_at": "2026-11-09 09:26:23.095741+00",
+          "confirmed_at": "2026-11-09 17:50:32.620634+00",
           "receipt_count": 4
         }
       ],

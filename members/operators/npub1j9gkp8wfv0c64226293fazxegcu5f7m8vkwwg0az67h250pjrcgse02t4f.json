@@ -1,0 +1,16 @@
+{
+  "npub": "npub1j9gkp8wfv0c64226293fazxegcu5f7m8vkwwg0az67h250pjrcgse02t4f",
+  "role": "operator",
+  "status": "active",
+  "member_since": "2026-11-12",
+  "display_name": "Purser MCP",
+  "services": [
+    {
+      "name": "Purser MCP",
+      "url": "https://purser-mcp.fastmcp.app/mcp",
+      "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
+    }
+  ],
+  "upstream_authority_npub": "npub1fuhq0clgzhhkuhywe8c5c5hdnnkzlhedesy6e35x2aucz6xy9c6s6mhv7z",
+  "notes": "Registered via Authority-mediated operator registration protocol"
+}

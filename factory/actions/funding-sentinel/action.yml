@@ -47,6 +47,14 @@ inputs:
 runs:
   using: composite
   steps:
+    # Pin the interpreter pip installs into. Without this the job used the runner's
+    # system Python, and when ubuntu-latest became 26.04 that was 3.14: no cffi wheel
+    # for it, so pip built cffi from source and failed ("Expected exactly one LICENSE
+    # file in cffi distribution"). 3.12 is what Horizon and mcp-ci run.
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+
     - id: flag
       shell: bash
       env:

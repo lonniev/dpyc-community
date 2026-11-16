@@ -3,11 +3,11 @@
   "role": "operator",
   "status": "active",
   "member_since": "2026-11-14",
-  "display_name": "npub100nklzufr8c...",
+  "display_name": "Task Booth",
   "services": [
     {
-      "name": "npub100nklzufr8c...",
-      "url": "https://taskqueue-mcp.fastmcp.app/mcp",
+      "name": "Task Booth",
+      "url": "https://taskbooth-mcp.fastmcp.app/mcp",
       "description": "MCP Operator registered under Authority npub1fuhq0clgzhh..."
     }
   ],

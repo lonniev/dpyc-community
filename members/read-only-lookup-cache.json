@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/members.schema.json",
   "version": "1.1.0",
-  "updated_at": "2026-11-16T20:54:31Z",
+  "updated_at": "2026-11-16T22:45:37Z",
   "members": [
     {
       "npub": "npub1l94pd4qu4eszrl6ek032ftcnsu3tt9a7xvq2zp7eaxeklp6mrpzssmq8pf",
@@ -321,7 +321,7 @@
         },
         {
           "name": "tollbooth-oauth2-callback",
-          "url": "https://oauth.tollbooth-dpyc.com",
+          "url": "https://tollbooth-dpyc-oauth.val.run",
           "description": "The browser callback OAuth providers redirect to. It turns their GET redirect into the POST an MCP takes and hands the code to the collector.",
           "transport": "http"
         }

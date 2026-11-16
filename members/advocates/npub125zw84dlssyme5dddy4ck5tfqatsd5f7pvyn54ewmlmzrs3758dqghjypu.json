@@ -12,7 +12,7 @@
     },
     {
       "name": "tollbooth-oauth2-callback",
-      "url": "https://oauth.tollbooth-dpyc.com",
+      "url": "https://tollbooth-dpyc-oauth.val.run",
       "description": "The browser callback OAuth providers redirect to. It turns their GET redirect into the POST an MCP takes and hands the code to the collector.",
       "transport": "http"
     }

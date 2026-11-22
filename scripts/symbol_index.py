@@ -371,23 +371,28 @@ def _ts_exported_names(modules: dict[str, TsModule], file: str,
     return names
 
 
-def ts_entry_points(repo_root: Path, src: str = "src") -> list[str]:
-    """The source files behind package.json ``exports`` (``./dist/x.js`` -> ``src/x.ts``)."""
+def ts_entry_map(repo_root: Path, src: str = "src") -> dict[str, str]:
+    """package.json ``exports`` subpath -> its source file: ``"."`` -> ``src/index.ts``,
+    ``"./react"`` -> ``src/react.ts`` (``./dist/x.js`` maps back to ``src/x.ts(x)``)."""
     pkg = json.loads((repo_root / "package.json").read_text())
     exports = pkg.get("exports") or {}
-    targets: list[str] = []
-    for value in (exports.values() if isinstance(exports, dict) else [exports]):
+    pairs = exports.items() if isinstance(exports, dict) else [(".", exports)]
+    out: dict[str, str] = {}
+    for subpath, value in pairs:
         target = value.get("default") or value.get("import") if isinstance(value, dict) else value
-        if isinstance(target, str) and target.endswith(".js"):
-            targets.append(target)
-    out: list[str] = []
-    for t in targets:
-        stem = re.sub(r"^\./(?:dist|build|lib)/", f"{src}/", t)[: -len(".js")]
+        if not (isinstance(target, str) and target.endswith(".js")):
+            continue
+        stem = re.sub(r"^\./(?:dist|build|lib)/", f"{src}/", target)[: -len(".js")]
         for suffix in TS_SUFFIXES:
             if (repo_root / (stem + suffix)).is_file():
-                out.append(stem + suffix)
+                out[subpath] = stem + suffix
                 break
     return out
+
+
+def ts_entry_points(repo_root: Path, src: str = "src") -> list[str]:
+    """The source files behind package.json ``exports``."""
+    return list(ts_entry_map(repo_root, src).values())
 
 
 def ts_public_api(modules: dict[str, TsModule], entries: list[str]) -> dict[str, Definition]:

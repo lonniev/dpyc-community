@@ -1,0 +1,3 @@
+- `scripts/symbol_index.py` brings the factory graph's code Symbols up to date from the code, for tollbooth-dpyc (Python, read with `ast`) and tollbooth-web (TypeScript, read from its export statements). It indexes and anchors what is new, re-anchors what moved, and reports what is gone without deleting it. The weekly Intention Forward Map sweep runs it at each SDK's latest release tag.
+- TypeScript symbol names drop a leading `src/`, as Python's do: `tollbooth-web:react/AccountPage#AccountPage`.
+- TypeScript imports from a parent folder (`../holder.ts`) now resolve, so re-exports through them are indexed.

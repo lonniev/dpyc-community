@@ -108,6 +108,7 @@ ROLE_FOR_TOOL: dict[str, str] = {
     "link_capability_consumer": JOURNEYMAN,
     "bind_capability_to_symbol": JOURNEYMAN,
     "index_symbol": JOURNEYMAN,
+    "anchor_symbol": JOURNEYMAN,
     "authorize_capability_why": OPERATOR,
     "assert_invariant": OPERATOR,
     "guard_invariant_symbol": OPERATOR,

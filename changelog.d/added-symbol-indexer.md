@@ -1,0 +1,1 @@
+- `scripts/symbol_index.py` brings the factory graph's code Symbols up to date from the code: it reads tollbooth-dpyc's public API with Python's `ast`, indexes and anchors what is new, re-anchors what moved, and reports what is gone without deleting it. The weekly Intention Forward Map sweep runs it at the SDK's latest release tag.

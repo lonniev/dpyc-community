@@ -174,6 +174,22 @@ Encode it and a file move renames the node, orphaning every `REALIZED_BY`, `GUAR
 authored `why` pointing at it, with no error. Also excluded: signatures, arity, line numbers,
 `def`/`class` markers, a leading `src.`, and the file extension.
 
+### Unused is observed; obsolete is decided
+
+The weekly sweep keeps two marks apart on every SDK Symbol:
+
+| mark | who sets it | template | meaning |
+|---|---|---|---|
+| `usage: unused` | the Journeyman, every sweep | `observe_symbol_usage` | no fleet repo imports it and the SDK never reads it |
+| `status: obsolete` | a human | `retire_symbol` | someone decided it should go, with a reason and maybe a replacement |
+
+`scripts/symbol_usage.py` makes the observation. The fleet is every repo whose
+`renovate.json` extends the dpyc-community preset. A use is an import, a module attribute,
+a method call anywhere in a repo that imports the SDK, a subclass override, a function that
+implements a Protocol member, or a framework hook. A consumer's tests count; the SDK's own
+tests do not. Every rule errs toward "used", so `unused` is a short list worth reading:
+`cypher_unused_or_obsolete_symbols(repo_name)` returns it. Nothing is ever deleted.
+
 ## Adding a new role
 
 This is the procedure the PR Revision role was built with; follow it as the worked example.

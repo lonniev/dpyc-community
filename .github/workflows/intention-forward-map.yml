@@ -157,3 +157,49 @@ jobs:
           git -C tollbooth-web checkout --quiet "$(git -C tollbooth-web describe --tags --abbrev=0)"
           python scripts/symbol_index.py --lang typescript --repo tollbooth-web \
             --root tollbooth-web --extra-module holder
+
+      # Who USES each SDK symbol (scripts/symbol_usage.py): every fleet repo at its default
+      # branch, read for imports of the SDK, recorded per symbol as CONSUMED_BY edges and an
+      # `unused` mark when nothing refers to it. An observation, never a retirement — only a
+      # human retires a symbol. Only what changed since the last sweep is written.
+      #
+      # The fleet is every repo whose renovate.json extends the dpyc-community preset, the
+      # same rule that enrols a repo in the SDK's dependency chain. Anything short of the
+      # whole fleet (a failed listing, API call or clone) fails this step, and the observe
+      # steps run only when it succeeded — even in advisory mode, where the job continues:
+      # a missing consumer would mark live symbols unused.
+      - name: Check out the fleet
+        id: fleet
+        if: ${{ env.JOURNEYMAN_NSEC != '' && inputs.service == '' }}
+        continue-on-error: ${{ inputs.advisory || false }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p fleet
+          repos=$(gh repo list lonniev --no-archived --source --limit 1000 --json name -q '.[].name')
+          for repo in $repos; do
+            if ! renovate=$(gh api "repos/lonniev/$repo/contents/renovate.json" \
+                 -H "Accept: application/vnd.github.raw" 2>err.txt); then
+              grep -q "HTTP 404" err.txt || { cat err.txt; exit 1; }  # no renovate.json: not fleet
+              continue
+            fi
+            case "$renovate" in
+              *lonniev/dpyc-community*) git clone --quiet --depth 1 "https://github.com/lonniev/$repo.git" "fleet/$repo" ;;
+            esac
+          done
+          ls fleet | wc -l | xargs echo "fleet repos:"
+
+      - name: Observe tollbooth-dpyc usage across the fleet
+        if: ${{ steps.fleet.outcome == 'success' }}
+        continue-on-error: ${{ inputs.advisory || false }}
+        run: |
+          python scripts/symbol_usage.py --repo tollbooth-dpyc --root tollbooth-dpyc \
+            --consumers fleet --extra-module tollbooth.holder_auth
+
+      - name: Observe tollbooth-web usage across the fleet
+        if: ${{ steps.fleet.outcome == 'success' }}
+        continue-on-error: ${{ inputs.advisory || false }}
+        run: |
+          python scripts/symbol_usage.py --lang typescript --repo tollbooth-web \
+            --root tollbooth-web --consumers fleet --extra-module holder

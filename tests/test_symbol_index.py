@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from symbol_index import (
+    _ts_resolve_spec,
     compare,
     index_package,
     plan,
@@ -223,3 +224,11 @@ def test_ts_fqns_pass_the_naming_check_and_plan_typescript(tmp_path):
     langs = {c.params["lang"] for c in calls if c.tool == "index_symbol"}
     assert langs == {"typescript"}
     assert "web:holder#holderEnabled" in {c.params["symbol_fqn"] for c in calls}
+
+
+def test_ts_relative_specifiers_climb_out_of_their_folder():
+    files = {"src/holder.ts", "src/react/NpubGate.tsx", "src/react/index.ts"}
+    assert _ts_resolve_spec("../holder.ts", "src/react/NpubGate.tsx", files) == "src/holder.ts"
+    assert _ts_resolve_spec("../holder.js", "src/react/NpubGate.tsx", files) == "src/holder.ts"
+    assert _ts_resolve_spec("./index", "src/react/NpubGate.tsx", files) == "src/react/index.ts"
+    assert _ts_resolve_spec("react", "src/react/NpubGate.tsx", files) is None

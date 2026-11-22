@@ -278,8 +278,8 @@ def _ts_resolve_spec(spec: str, from_file: str, files: set[str]) -> str | None:
     """A relative import specifier -> the repo-relative file it names, if it is in ``files``."""
     if not spec.startswith("."):
         return None  # a package import is not this repo's symbol
-    base = (Path(from_file).parent / spec).as_posix()
-    base = str(Path(base))  # normalise ./ and ../
+    # normpath, never Path(): pathlib keeps "..", so src/react/../holder.ts matched nothing
+    base = os.path.normpath((Path(from_file).parent / spec).as_posix())
     stem = re.sub(r"\.(?:js|jsx|ts|tsx)$", "", base)
     for cand in (base, *(stem + s for s in TS_SUFFIXES),
                  *(f"{stem}/index{s}" for s in TS_SUFFIXES)):

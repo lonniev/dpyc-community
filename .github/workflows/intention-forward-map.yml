@@ -120,7 +120,7 @@ jobs:
         env:
           SERVICE: ${{ inputs.service }}
 
-      # The SDK's code Symbols, from the code outward (scripts/symbol_index.py): index its
+      # The SDKs' code Symbols, from the code outward (scripts/symbol_index.py): index its
       # public API, re-anchor what moved, REPORT what is gone (never delete). Only on a full
       # sweep — a deploy-triggered run names one operator and must not re-read the SDK.
       # Read at the latest release tag, because the published wheel is what the fleet runs.
@@ -140,3 +140,20 @@ jobs:
           git -C tollbooth-dpyc checkout --quiet "$(git -C tollbooth-dpyc describe --tags --abbrev=0)"
           python scripts/symbol_index.py --repo tollbooth-dpyc --root tollbooth-dpyc \
             --extra-module tollbooth.holder_auth
+
+      - name: Check out tollbooth-web at its latest release
+        if: ${{ env.JOURNEYMAN_NSEC != '' && inputs.service == '' }}
+        uses: actions/checkout@v7
+        with:
+          repository: lonniev/tollbooth-web
+          path: tollbooth-web
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Index tollbooth-web symbols
+        if: ${{ env.JOURNEYMAN_NSEC != '' && inputs.service == '' }}
+        continue-on-error: ${{ inputs.advisory || false }}
+        run: |
+          git -C tollbooth-web checkout --quiet "$(git -C tollbooth-web describe --tags --abbrev=0)"
+          python scripts/symbol_index.py --lang typescript --repo tollbooth-web \
+            --root tollbooth-web --extra-module holder

@@ -20,7 +20,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from symbol_index import compare, index_package, plan, public_api
+from symbol_index import (
+    compare,
+    index_package,
+    plan,
+    public_api,
+    ts_definitions,
+    ts_entry_points,
+    ts_index,
+    ts_public_api,
+)
 
 REPO = "demo-dpyc"
 
@@ -105,7 +114,7 @@ def test_verdicts(tmp_path):
         {"symbol": "other-repo:demo.runtime.Runtime", "file": None},       # not ours
         {"symbol": f"{REPO}:demo.runtime.Runtime.debit", "file": "src/demo/runtime.py"},
     ]
-    by = {o.fqn: o for o in compare(REPO, idx, public, rows)}
+    by = {o.fqn: o for o in compare(REPO, idx.defs, public, rows)}
     assert by[f"{REPO}:demo.runtime.Runtime.debit"].verdict == "ok"
     moved = by[f"{REPO}:demo.runtime.Runtime.refund"]
     assert (moved.verdict, moved.was, moved.file_path) == (
@@ -124,7 +133,7 @@ def test_plan_never_writes_gone_or_malformed(tmp_path):
     public = public_api(idx, "demo")
     rows = [{"symbol": f"{REPO}:demo.runtime.Deleted", "file": "src/demo/runtime.py"},
             {"symbol": "demo.bare", "file": None}]
-    calls = plan(REPO, "abc123", compare(REPO, idx, public, rows))
+    calls = plan(REPO, "abc123", compare(REPO, idx.defs, public, rows))
     touched = {c.params["symbol_fqn"] for c in calls}
     assert f"{REPO}:demo.runtime.Deleted" not in touched
     assert "demo.bare" not in touched
@@ -140,6 +149,77 @@ def test_plan_never_writes_gone_or_malformed(tmp_path):
 def test_moved_only_reanchors(tmp_path):
     _, idx = _index(tmp_path)
     rows = [{"symbol": f"{REPO}:demo.runtime.Runtime.refund", "file": "src/demo/old.py"}]
-    calls = plan(REPO, "s", compare(REPO, idx, {}, rows))
+    calls = plan(REPO, "s", compare(REPO, idx.defs, {}, rows))
     assert [(c.tool, c.params["file_path"]) for c in calls] == [
         ("anchor_symbol", "src/demo/runtime.py")]
+
+
+# --- TypeScript ---------------------------------------------------------------
+
+WEB = {
+    "package.json": (
+        '{"exports": {".": {"types": "./dist/index.d.ts", "default": "./dist/index.js"},'
+        ' "./react": {"default": "./dist/react/index.js"}, "./theme.css": "./theme.css"}}'
+    ),
+    "src/index.ts": (
+        "// export function commentedOut() {}\n"
+        "export { holderEnabled, type HolderConnection } from \"./holder.ts\";\n"
+        "export * from \"./identity.ts\";\n"
+        "export { renamed as publicName } from \"./internal.ts\";\n"
+        "export { useState } from \"react\";\n"
+    ),
+    "src/holder.ts": (
+        "const TOKENS = 'x';\n"
+        "export function holderEnabled(): boolean { return true; }\n"
+        "export interface HolderConnection { npub: string }\n"
+        "function hidden() {}\n"
+    ),
+    "src/identity.ts": "export const isLoggedIn = () => true;\nexport async function logOut() {}\n",
+    "src/internal.ts": "function renamed() {}\nexport { renamed };\n",
+    "src/react/index.ts": "export { default as AccountPage, type Props } from \"./AccountPage.tsx\";\n",
+    "src/react/AccountPage.tsx": (
+        "export interface Props { a: string }\n"
+        "export default function AccountPage(p: Props) { return null; }\n"
+    ),
+    "src/holder.test.ts": "export function testOnly() {}\n",
+}
+
+
+def _web(tmp_path: Path):
+    root = _write(tmp_path, WEB)
+    modules = ts_index(root)
+    return root, modules
+
+
+def test_ts_entry_points_map_dist_to_src(tmp_path):
+    root, _ = _web(tmp_path)
+    assert ts_entry_points(root) == ["src/index.ts", "src/react/index.ts"]
+
+
+def test_ts_public_api_resolves_to_declaring_file_without_src(tmp_path):
+    root, modules = _web(tmp_path)
+    public = ts_public_api(modules, ts_entry_points(root))
+    assert set(public) == {
+        "holder#holderEnabled", "holder#HolderConnection",       # named, incl. `type`
+        "identity#isLoggedIn", "identity#logOut",                # through `export *`
+        "internal#renamed",                                      # `as` rename, local export
+        "react/AccountPage#AccountPage", "react/AccountPage#Props",  # `default as`
+    }
+    assert public["react/AccountPage#AccountPage"].file_path == "src/react/AccountPage.tsx"
+    assert public["holder#holderEnabled"].lang == "typescript"
+
+
+def test_ts_definitions_include_private_but_not_tests_or_comments(tmp_path):
+    _, modules = _web(tmp_path)
+    defs = ts_definitions(modules)
+    assert "holder#hidden" in defs and "holder#TOKENS" in defs
+    assert not any("testOnly" in k or "commentedOut" in k for k in defs)
+
+
+def test_ts_fqns_pass_the_naming_check_and_plan_typescript(tmp_path):
+    root, modules = _web(tmp_path)
+    public = ts_public_api(modules, ts_entry_points(root))
+    calls = plan("web", "sha", compare("web", ts_definitions(modules), public, []))
+    langs = {c.params["lang"] for c in calls if c.tool == "index_symbol"}
+    assert langs == {"typescript"}
+    assert "web:holder#holderEnabled" in {c.params["symbol_fqn"] for c in calls}

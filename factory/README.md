@@ -158,12 +158,15 @@ Split on the **first** colon. The repo prefix is mandatory.
 |---|---|
 | python | `tollbooth-dpyc:tollbooth.runtime.OperatorRuntime.debit_or_deny` |
 | typescript | `excalibur-mcp:frontend/src/lib/schedulerState#deriveSchedulerState` |
+| typescript (package root) | `tollbooth-web:react/AccountPage#AccountPage` |
 | swift | `pricing-studio:PricingStudioCore.ConstraintSolver.resolve` |
 | rust | `tollbooth-wasmcp:dpyc_crypto::schnorr::verify` |
 
 It is one rule, not four: the surface differs because the languages differ. Python and Swift
 have real module paths; TypeScript's module identity *is* its path, so it keeps the path
-(extension dropped, `#` before the symbol).
+(extension dropped, `#` before the symbol). A leading `src/` is dropped, as for Python: a
+library's `src/react/AccountPage.tsx` is `react/AccountPage`. A `src/` deeper in the path
+stays, as in `frontend/src/lib/…`.
 
 **Never put the file path in a Python/Swift/Rust `fqn`.** `anchor_symbol` already records
 `file_path` and `verified_at_sha` as properties — location is deliberately not identity.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Index a Python package's code Symbols into the factory graph, from the code outward.
+"""Index a package's code Symbols (Python or TypeScript) into the factory graph, from the code outward.
 
 ``symbol_audit.py`` reads the graph and asks whether each anchor still points at live code.
 This is the other direction: read the CODE and bring the graph up to date with it. Together
@@ -48,6 +48,7 @@ import ast
 import asyncio
 import json
 import os
+import re
 import subprocess
 import sys
 from collections import Counter
@@ -68,15 +69,14 @@ from intention_harvest import (  # the shared naming doctrine and the signed-cal
     npub_from_nsec,
 )
 
-LANG = "python"
-
 
 @dataclass(frozen=True)
 class Definition:
-    """One definition found in the code: its dotted import path and the file it lives in."""
-    path: str        # e.g. tollbooth.runtime.OperatorRuntime.debit_or_deny
+    """One definition found in the code: the part of its fqn after ``<repo>:``, and its file."""
+    path: str        # tollbooth.runtime.OperatorRuntime.debit_or_deny | holder#holderEnabled
     file_path: str   # repo-relative, e.g. src/tollbooth/runtime.py
     kind: str        # "class" | "function" | "name"
+    lang: str = "python"
 
 
 # --------------------------------------------------------------------------- #
@@ -231,6 +231,175 @@ def public_api(index: PackageIndex, package: str,
 
 
 # --------------------------------------------------------------------------- #
+# TypeScript (pure, unit-tested)
+# --------------------------------------------------------------------------- #
+# A TypeScript symbol's fqn is its module path under ``src/``, extension dropped, then ``#``
+# and the name: ``tollbooth-web:holder#holderEnabled``, ``tollbooth-web:react/AccountPage#
+# AccountPage``. The leading ``src/`` is dropped as it is for Python.
+#
+# Read with regexes over EXPORT statements and top-level declarations, not a compiler: the
+# repo's TypeScript is 7 (the native compiler), which has no stable JS API to call. Exports
+# are a small, regular grammar, and the patterns below are anchored at the start of a line,
+# so a nested declaration is never mistaken for a top-level one.
+
+TS_SUFFIXES = (".ts", ".tsx")
+_TS_DECL = re.compile(
+    r"^(export\s+)?(?:declare\s+)?(default\s+)?(?:abstract\s+)?(?:async\s+)?"
+    r"(function\*?|class|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)",
+    re.MULTILINE)
+_TS_EXPORT_LIST = re.compile(
+    r"^export\s+(?:type\s+)?\{([^}]*)\}\s*(?:from\s*[\"']([^\"']+)[\"'])?",
+    re.MULTILINE)
+_TS_EXPORT_STAR = re.compile(r"^export\s+\*\s+from\s*[\"']([^\"']+)[\"']", re.MULTILINE)
+_TS_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+_TS_LINE_COMMENT = re.compile(r"^\s*//.*$", re.MULTILINE)
+_TS_KIND = {"function": "function", "function*": "function", "class": "class"}
+
+
+@dataclass
+class TsModule:
+    file_path: str                                  # repo-relative
+    decls: dict[str, tuple[str, bool]]              # name -> (kind, exported)
+    reexports: dict[str, tuple[str | None, str]]    # exported name -> (from file | None, local name)
+    stars: list[str]                                # files re-exported with `export *`
+    default_name: str | None = None                 # `export default function X` -> "X"
+
+
+def ts_module_path(file_path: str) -> str:
+    """``src/react/AccountPage.tsx`` -> ``react/AccountPage``."""
+    p = file_path.removeprefix("src/")
+    for suffix in TS_SUFFIXES:
+        if p.endswith(suffix):
+            return p[: -len(suffix)]
+    return p
+
+
+def _ts_resolve_spec(spec: str, from_file: str, files: set[str]) -> str | None:
+    """A relative import specifier -> the repo-relative file it names, if it is in ``files``."""
+    if not spec.startswith("."):
+        return None  # a package import is not this repo's symbol
+    base = (Path(from_file).parent / spec).as_posix()
+    base = str(Path(base))  # normalise ./ and ../
+    stem = re.sub(r"\.(?:js|jsx|ts|tsx)$", "", base)
+    for cand in (base, *(stem + s for s in TS_SUFFIXES),
+                 *(f"{stem}/index{s}" for s in TS_SUFFIXES)):
+        if cand in files:
+            return cand
+    return None
+
+
+def parse_ts_module(text: str, file_path: str, files: set[str]) -> TsModule:
+    text = _TS_LINE_COMMENT.sub("", _TS_BLOCK_COMMENT.sub("", text))
+    decls: dict[str, tuple[str, bool]] = {}
+    default_name: str | None = None
+    for m in _TS_DECL.finditer(text):
+        decls.setdefault(m.group(4), (_TS_KIND.get(m.group(3), "name"), bool(m.group(1))))
+        if m.group(1) and m.group(2):
+            default_name = m.group(4)
+    reexports: dict[str, tuple[str | None, str]] = {}
+    for m in _TS_EXPORT_LIST.finditer(text):
+        source = _ts_resolve_spec(m.group(2), file_path, files) if m.group(2) else None
+        if m.group(2) and source is None:
+            continue  # re-exported from a package: not this repo's symbol
+        for item in m.group(1).split(","):
+            item = re.sub(r"^\s*type\s+", "", item).strip()
+            if not item:
+                continue
+            local, _, exported = (p.strip() for p in item.partition(" as "))
+            reexports[exported or local] = (source, local)
+    stars = [f for spec in _TS_EXPORT_STAR.findall(text)
+             if (f := _ts_resolve_spec(spec, file_path, files))]
+    return TsModule(file_path, decls, reexports, stars, default_name)
+
+
+def ts_index(repo_root: Path, src: str = "src") -> dict[str, TsModule]:
+    """Every .ts/.tsx module under ``src``, tests and declaration files excluded."""
+    files = sorted(
+        p.relative_to(repo_root).as_posix() for p in (repo_root / src).rglob("*")
+        if p.suffix in TS_SUFFIXES and not p.name.endswith(".d.ts")
+        and ".test." not in p.name and ".spec." not in p.name)
+    known = set(files)
+    return {f: parse_ts_module((repo_root / f).read_text(encoding="utf-8"), f, known)
+            for f in files}
+
+
+def ts_definitions(modules: dict[str, TsModule]) -> dict[str, Definition]:
+    """Every top-level declaration, exported or not, keyed by its fqn body."""
+    out: dict[str, Definition] = {}
+    for f, mod in modules.items():
+        for name, (kind, _exported) in mod.decls.items():
+            path = f"{ts_module_path(f)}#{name}"
+            out[path] = Definition(path, f, kind, "typescript")
+    return out
+
+
+def _ts_resolve(modules: dict[str, TsModule], file: str, name: str,
+                depth: int = 0) -> Definition | None:
+    """Where is the export ``name`` of ``file`` actually declared?"""
+    mod = modules.get(file)
+    if mod is None or depth > 20:
+        return None
+    if name == "default" and mod.default_name:
+        name = mod.default_name
+    if name in mod.decls and mod.decls[name][1]:
+        kind = mod.decls[name][0]
+        return Definition(f"{ts_module_path(file)}#{name}", file, kind, "typescript")
+    if name in mod.reexports:
+        source, local = mod.reexports[name]
+        if source is None:  # `export { local as name }` of a local declaration
+            if local in mod.decls:
+                return Definition(f"{ts_module_path(file)}#{local}", file,
+                                  mod.decls[local][0], "typescript")
+            return None
+        return _ts_resolve(modules, source, local, depth + 1)
+    for star in mod.stars:
+        if (d := _ts_resolve(modules, star, name, depth + 1)):
+            return d
+    return None
+
+
+def _ts_exported_names(modules: dict[str, TsModule], file: str,
+                       seen: frozenset[str] = frozenset()) -> set[str]:
+    mod = modules.get(file)
+    if mod is None or file in seen:
+        return set()
+    names = {n for n, (_k, exported) in mod.decls.items() if exported}
+    names |= set(mod.reexports)
+    for star in mod.stars:
+        names |= _ts_exported_names(modules, star, seen | {file})
+    names.discard("default")
+    return names
+
+
+def ts_entry_points(repo_root: Path, src: str = "src") -> list[str]:
+    """The source files behind package.json ``exports`` (``./dist/x.js`` -> ``src/x.ts``)."""
+    pkg = json.loads((repo_root / "package.json").read_text())
+    exports = pkg.get("exports") or {}
+    targets: list[str] = []
+    for value in (exports.values() if isinstance(exports, dict) else [exports]):
+        target = value.get("default") or value.get("import") if isinstance(value, dict) else value
+        if isinstance(target, str) and target.endswith(".js"):
+            targets.append(target)
+    out: list[str] = []
+    for t in targets:
+        stem = re.sub(r"^\./(?:dist|build|lib)/", f"{src}/", t)[: -len(".js")]
+        for suffix in TS_SUFFIXES:
+            if (repo_root / (stem + suffix)).is_file():
+                out.append(stem + suffix)
+                break
+    return out
+
+
+def ts_public_api(modules: dict[str, TsModule], entries: list[str]) -> dict[str, Definition]:
+    out: dict[str, Definition] = {}
+    for entry in entries:
+        for name in sorted(_ts_exported_names(modules, entry)):
+            if (d := _ts_resolve(modules, entry, name)):
+                out[d.path] = d
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Comparing with the graph (pure, unit-tested)
 # --------------------------------------------------------------------------- #
 
@@ -240,9 +409,10 @@ class Outcome:
     verdict: str          # new | moved | unanchored | ok | gone | malformed
     file_path: str | None = None
     was: str | None = None
+    lang: str = "python"
 
 
-def compare(repo: str, index: PackageIndex, public: dict[str, Definition],
+def compare(repo: str, defs: dict[str, Definition], public: dict[str, Definition],
             graph_rows: list[dict[str, Any]]) -> list[Outcome]:
     """Sort every symbol into a verdict. Graph rows are ``symbols_in_service`` rows:
     ``{"symbol": fqn, "lang": ..., "file": ...}``."""
@@ -261,20 +431,20 @@ def compare(repo: str, index: PackageIndex, public: dict[str, Definition],
             continue
         if not fqn.startswith(f"{repo}:"):
             continue  # IN_SERVICE to this repo but named for another: not ours to judge
-        d = index.defs.get(fqn.partition(":")[2])
+        d = defs.get(fqn.partition(":")[2])
         if d is None:
             outcomes.append(Outcome(fqn, "gone", was=file))
         elif not file:
-            outcomes.append(Outcome(fqn, "unanchored", d.file_path))
+            outcomes.append(Outcome(fqn, "unanchored", d.file_path, lang=d.lang))
         elif file != d.file_path:
-            outcomes.append(Outcome(fqn, "moved", d.file_path, was=file))
+            outcomes.append(Outcome(fqn, "moved", d.file_path, was=file, lang=d.lang))
         else:
-            outcomes.append(Outcome(fqn, "ok", d.file_path))
+            outcomes.append(Outcome(fqn, "ok", d.file_path, lang=d.lang))
 
     for path, d in sorted(public.items()):
         fqn = f"{repo}:{path}"
         if fqn not in in_graph:
-            outcomes.append(Outcome(check_symbol_fqn(fqn), "new", d.file_path))
+            outcomes.append(Outcome(check_symbol_fqn(fqn), "new", d.file_path, lang=d.lang))
     return outcomes
 
 
@@ -282,7 +452,7 @@ def plan(repo: str, sha: str, outcomes: list[Outcome]) -> list[Call]:
     calls: list[Call] = []
     for o in outcomes:
         if o.verdict == "new":
-            calls.append(_call("index_symbol", repo_name=repo, symbol_fqn=o.fqn, lang=LANG))
+            calls.append(_call("index_symbol", repo_name=repo, symbol_fqn=o.fqn, lang=o.lang))
         if o.verdict in ("new", "moved", "unanchored"):
             calls.append(_call("anchor_symbol", symbol_fqn=o.fqn, file_path=o.file_path,
                                verified_at_sha=sha))
@@ -331,12 +501,13 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repo", required=True, help="repo slug, e.g. tollbooth-dpyc")
     ap.add_argument("--root", required=True, type=Path, help="that repo's checkout")
+    ap.add_argument("--lang", choices=["python", "typescript"], default="python")
     ap.add_argument("--src", default="src", help="source root inside the repo")
     ap.add_argument("--package", default="", help="top-level package (default: repo's, "
                     "e.g. tollbooth-dpyc -> tollbooth)")
     ap.add_argument("--extra-module", action="append", default=[],
-                    help="a module imported directly by the fleet but not re-exported from "
-                         "__init__ (repeatable), e.g. tollbooth.holder_auth")
+                    help="a module that holds public symbols though no entry point re-exports "
+                         "it (repeatable): tollbooth.holder_auth (Python), holder (TypeScript)")
     ap.add_argument("--graph-rows", type=Path,
                     help="offline: a JSON file of symbols_in_service rows instead of a live read")
     ap.add_argument("--url", default=os.environ.get("CYPHER_MCP_URL",
@@ -345,12 +516,20 @@ def main() -> int:
     args = ap.parse_args()
 
     root = args.root.expanduser().resolve()
-    package = args.package or args.repo.split("-")[0]
-    index = index_package(root, args.src, package)
-    public = public_api(index, package, tuple(args.extra_module))
+    if args.lang == "typescript":
+        modules = ts_index(root, args.src)
+        defs = ts_definitions(modules)
+        entries = ts_entry_points(root, args.src)
+        for extra in args.extra_module:  # e.g. "holder" -> src/holder.ts
+            entries += [f for f in modules if ts_module_path(f) == extra]
+        public = ts_public_api(modules, entries)
+    else:
+        package = args.package or args.repo.split("-")[0]
+        index = index_package(root, args.src, package)
+        defs = index.defs
+        public = public_api(index, package, tuple(args.extra_module))
     if not public:
-        print(f"  ! {package}/__init__.py has no __all__; nothing public to index",
-              file=sys.stderr)
+        print("  ! no public API found; nothing new to index", file=sys.stderr)
 
     nsec = os.environ.get("JOURNEYMAN_NSEC", "")
     key = RoleKey(npub_from_nsec(nsec), nsec)
@@ -363,7 +542,7 @@ def main() -> int:
               file=sys.stderr)
         rows = []
 
-    outcomes = compare(args.repo, index, public, rows)
+    outcomes = compare(args.repo, defs, public, rows)
     print(format_report(args.repo, outcomes))
     calls = plan(args.repo, head_sha(root), outcomes)
     if args.dry_run or not calls:

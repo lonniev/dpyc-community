@@ -1,0 +1,1 @@
+- Manna joins the Lightning wallet list: self-custodial, with a Lightning store to sell from; all eight wallets show.
